@@ -5,6 +5,7 @@ import type { NextAuthConfig } from "next-auth";
  * Prisma/bcrypt) and spread into the full config in lib/auth.ts.
  */
 export const authConfig = {
+  trustHost: true, // required behind the Nginx reverse proxy (not auto-true off Vercel)
   pages: { signIn: "/login" },
   providers: [],
   callbacks: {
