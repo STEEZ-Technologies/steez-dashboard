@@ -1,0 +1,176 @@
+// STEEZ multi-tenant dashboard — Phase 1 schema (Tenant/User) + full model set
+// per plan: /Users/yxngsterx/.claude/plans/snoopy-roaming-zebra.md
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  slug      String   @unique // "konlito" — public API path + CORS lookup
+  name      String
+  createdAt DateTime @default(now())
+
+  users         User[]
+  categories    Category[]
+  products      Product[]
+  productEvents ProductEvent[]
+  pageViews     PageView[]
+  auditLogs     AuditLog[]
+}
+
+enum Role {
+  OWNER
+  STAFF
+}
+
+model User {
+  id           String   @id @default(cuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(STAFF)
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  slug        String
+  label       String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  products Product[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  slug        String // e.g. "k6602"
+  model       String // display code, e.g. "K6602"
+  name        String
+  description String?
+  imagePath   String? // OSS object key
+  specs       Json? // mirrors Record<string,string> in Konlito's lib/products.ts
+  sortOrder   Int       @default(0)
+  featured    Boolean   @default(false)
+  published   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  finishes      ProductFinish[]
+  productEvents ProductEvent[]
+  images        ProductImage[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+  @@index([categoryId])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imagePath String // OSS key
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductFinish {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  key           String // matches Konlito's Finish.key
+  materialLabel String // matches Finish.material
+  imagePath     String // OSS key, matches Finish.img
+  accentHex     String // matches Finish.accent
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@unique([productId, key])
+  @@index([productId])
+}
+
+enum ProductEventType {
+  VIEW
+  CLICK
+}
+
+model ProductEvent {
+  id        String           @id @default(cuid())
+  tenantId  String
+  tenant    Tenant           @relation(fields: [tenantId], references: [id])
+  productId String?
+  product   Product?         @relation(fields: [productId], references: [id])
+  finishKey String?
+  eventType ProductEventType
+  sessionId String
+  path      String?
+  referrer  String?
+  createdAt DateTime         @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([productId, createdAt])
+}
+
+model PageView {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  path      String
+  sessionId String
+  referrer  String?
+  userAgent String?
+  country   String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([path, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  userId    String?
+  userEmail String?
+  action    String // e.g. "product.create", "team.remove"
+  entity    String // e.g. "product", "category", "user"
+  entityId  String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}
+
+// Standalone signup code — when redeemed it creates a NEW tenant + OWNER user.
+// Not tied to a tenant FK (the tenant it creates doesn't exist yet).
+model InviteCode {
+  id                String    @id @default(cuid())
+  code              String    @unique
+  createdByTenantId String? // provenance: which tenant's owner issued it
+  createdByEmail    String?
+  usedAt            DateTime?
+  usedByEmail       String?
+  createdAt         DateTime  @default(now())
+}

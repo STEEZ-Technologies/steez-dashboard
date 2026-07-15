@@ -1,0 +1,45 @@
+export const en = {
+  nav: {
+    overview: "Overview",
+    products: "Products",
+    categories: "Categories",
+    analytics: "Analytics",
+    team: "Team",
+    settings: "Settings",
+    groupOverview: "Overview",
+    groupCatalog: "Catalog",
+    groupWorkspace: "Workspace",
+  },
+  actions: {
+    new: "New",
+    newProduct: "New product",
+    newCategory: "New category",
+    save: "Save",
+    saveChanges: "Save changes",
+    delete: "Delete",
+    cancel: "Cancel",
+    edit: "Edit",
+    duplicate: "Duplicate",
+    search: "Search…",
+    export: "Export CSV",
+    signOut: "Sign out",
+    language: "Language",
+    theme: "Theme",
+  },
+  command: {
+    placeholder: "Type a command or search…",
+    empty: "No results found.",
+    navigate: "Navigate",
+    create: "Create",
+  },
+  pages: {
+    products: { eyebrow: "Catalog", title: "Products" },
+    categories: { eyebrow: "Catalog", title: "Categories" },
+    analytics: { eyebrow: "Insights", title: "Analytics" },
+    team: { eyebrow: "Workspace", title: "Team" },
+    settings: { eyebrow: "Workspace", title: "Settings" },
+    overview: { eyebrow: "Dashboard", title: "Overview" },
+  },
+};
+
+export type Dictionary = typeof en;

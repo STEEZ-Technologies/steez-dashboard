@@ -1,0 +1,45 @@
+import type { Dictionary } from "./en";
+
+export const zh: Dictionary = {
+  nav: {
+    overview: "总览",
+    products: "产品",
+    categories: "分类",
+    analytics: "数据分析",
+    team: "团队",
+    settings: "设置",
+    groupOverview: "总览",
+    groupCatalog: "产品目录",
+    groupWorkspace: "工作区",
+  },
+  actions: {
+    new: "新建",
+    newProduct: "新建产品",
+    newCategory: "新建分类",
+    save: "保存",
+    saveChanges: "保存更改",
+    delete: "删除",
+    cancel: "取消",
+    edit: "编辑",
+    duplicate: "复制",
+    search: "搜索…",
+    export: "导出 CSV",
+    signOut: "退出登录",
+    language: "语言",
+    theme: "主题",
+  },
+  command: {
+    placeholder: "输入命令或搜索…",
+    empty: "未找到结果。",
+    navigate: "导航",
+    create: "创建",
+  },
+  pages: {
+    products: { eyebrow: "产品目录", title: "产品" },
+    categories: { eyebrow: "产品目录", title: "分类" },
+    analytics: { eyebrow: "洞察", title: "数据分析" },
+    team: { eyebrow: "工作区", title: "团队" },
+    settings: { eyebrow: "工作区", title: "设置" },
+    overview: { eyebrow: "仪表板", title: "总览" },
+  },
+};
