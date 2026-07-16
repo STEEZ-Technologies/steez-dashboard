@@ -172,5 +172,17 @@ model InviteCode {
   createdByEmail    String?
   usedAt            DateTime?
   usedByEmail       String?
+  expiresAt         DateTime // 7 days from creation — see createInviteCode()
   createdAt         DateTime  @default(now())
+}
+
+// Sliding-window rate limiting backed by Postgres (no Redis dependency).
+// One row per hit; checkRateLimit() counts rows in the window and prunes
+// old ones for the same key on each check, so the table stays small.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String // e.g. "login:owner@konlito.com", "track:1.2.3.4"
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
 }

@@ -13,6 +13,7 @@ export type InviteCodeRow = {
   code: string;
   used: boolean;
   usedByEmail: string | null;
+  expired: boolean;
 };
 
 export function InviteCodes({ codes }: { codes: InviteCodeRow[] }) {
@@ -58,11 +59,13 @@ export function InviteCodes({ codes }: { codes: InviteCodeRow[] }) {
                 <span className="font-mono text-sm">{c.code}</span>
                 {c.used ? (
                   <Badge variant="secondary">Used{c.usedByEmail ? ` · ${c.usedByEmail}` : ""}</Badge>
+                ) : c.expired ? (
+                  <Badge variant="secondary">Expired</Badge>
                 ) : (
                   <Badge>Active</Badge>
                 )}
                 <div className="ml-auto flex items-center gap-1">
-                  {!c.used && (
+                  {!c.used && !c.expired && (
                     <Button variant="ghost" size="icon-sm" onClick={() => copy(c.code)} aria-label="Copy">
                       {copied === c.code ? <Check className="size-4" /> : <Copy className="size-4" />}
                     </Button>

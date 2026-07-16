@@ -35,6 +35,7 @@ export default async function TeamPage() {
     code: c.code,
     used: c.usedAt != null,
     usedByEmail: c.usedByEmail,
+    expired: c.expiresAt < new Date(),
   }));
 
   return (

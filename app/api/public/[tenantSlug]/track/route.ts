@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import geoip from "geoip-lite";
 import { prisma } from "@/lib/db";
 import { corsHeadersFor, isBot } from "@/lib/cors";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 function clientIp(request: Request): string | null {
   const xff = request.headers.get("x-forwarded-for");
@@ -34,6 +35,14 @@ export async function POST(
     return NextResponse.json({ ok: true, skipped: "bot" }, { headers: CORS });
   }
 
+  // Unauthenticated, public endpoint — cap per-IP volume so it can't be used
+  // to flood the DB. 60/min covers a real visitor browsing many products.
+  const ip = clientIp(request) ?? "unknown";
+  const withinLimit = await checkRateLimit(`track:${ip}`, { max: 60, windowMs: 60_000 });
+  if (!withinLimit) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429, headers: CORS });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -50,8 +59,7 @@ export async function POST(
   }
 
   if (kind === "page_view") {
-    const ip = clientIp(request);
-    const country = ip ? geoip.lookup(ip)?.country ?? null : null;
+    const country = ip !== "unknown" ? geoip.lookup(ip)?.country ?? null : null;
     await prisma.pageView.create({
       data: {
         tenantId: tenant.id,

@@ -78,11 +78,13 @@ export async function createInviteCode() {
   if (session.role !== "OWNER") return null;
 
   const code = randomBytes(6).toString("hex").toUpperCase(); // 12-char code
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60_000); // 7 days
   await prisma.inviteCode.create({
     data: {
       code,
       createdByTenantId: session.tenantId,
       createdByEmail: session.email,
+      expiresAt,
     },
   });
   await logAudit({ action: "invite.create", entity: "invite", detail: code });
