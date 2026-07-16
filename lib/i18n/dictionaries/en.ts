@@ -123,6 +123,14 @@ export const en = {
     range30: "30 days",
     range90: "90 days",
   },
+  digest: {
+    title: "Weekly digest",
+    subtitle: "Last 7 days vs the 7 days before that.",
+    topClicked: "Most clicked",
+    topViewed: "Most viewed",
+    topReferrers: "Top referrers",
+    noData: "No activity yet this week.",
+  },
   form: {
     slug: "Slug",
     model: "Model",

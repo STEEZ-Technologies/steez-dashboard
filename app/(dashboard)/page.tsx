@@ -6,9 +6,11 @@ import {
   getViewsVsClicksByDay,
   getPageViewsByDay,
   getRecentActivity,
+  getWeeklyDigest,
 } from "@/lib/analytics";
 import { PageHeader } from "@/components/shell/page-header";
 import { StatCard } from "@/components/overview/stat-card";
+import { WeeklyDigest } from "@/components/overview/weekly-digest";
 import { ViewsClicksChart } from "@/components/analytics/views-clicks-chart";
 import { ActivityFeed } from "@/components/analytics/activity-feed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,12 +22,13 @@ export default async function OverviewPage() {
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
   const dict = await getDictionary();
 
-  const [kpis, series, pv, activity, productCount] = await Promise.all([
+  const [kpis, series, pv, activity, productCount, digest] = await Promise.all([
     getKpis(tenantId, 30),
     getViewsVsClicksByDay(tenantId, 30),
     getPageViewsByDay(tenantId, 30),
     getRecentActivity(tenantId, 10),
     prisma.product.count({ where: { tenantId } }),
+    getWeeklyDigest(tenantId),
   ]);
 
   const pvSpark = pv.map((d) => d.count);
@@ -70,6 +73,10 @@ export default async function OverviewPage() {
             <ActivityFeed items={activity} />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4">
+        <WeeklyDigest digest={digest} />
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-3">

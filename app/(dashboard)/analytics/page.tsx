@@ -54,7 +54,7 @@ export default async function AnalyticsPage({
       <PageHeader
         eyebrow={dict.pages.analytics.eyebrow}
         title={dict.pages.analytics.title}
-        description={`Last ${days} days.`}
+        description={dict.analytics.lastDays.replace("{days}", String(days))}
         action={
           <div className="flex items-center gap-2">
             <LinkButton
@@ -70,17 +70,17 @@ export default async function AnalyticsPage({
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard label="Page views" value={kpis.pageViews.value} delta={kpis.pageViews.delta} />
-        <StatCard label="Unique visitors" value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />
-        <StatCard label="Product views" value={kpis.productViews.value} delta={kpis.productViews.delta} />
-        <StatCard label="Product clicks" value={kpis.productClicks.value} delta={kpis.productClicks.delta} />
-        <StatCard label="Click-through" value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
+        <StatCard label={dict.overview.pageViews} value={kpis.pageViews.value} delta={kpis.pageViews.delta} />
+        <StatCard label={dict.analytics.uniqueVisitors} value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />
+        <StatCard label={dict.overview.productViews} value={kpis.productViews.value} delta={kpis.productViews.delta} />
+        <StatCard label={dict.overview.productClicks} value={kpis.productClicks.value} delta={kpis.productClicks.delta} />
+        <StatCard label={dict.analytics.clickThrough} value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Views vs clicks over time</CardTitle>
+            <CardTitle>{dict.analytics.viewsVsClicksTime}</CardTitle>
           </CardHeader>
           <CardContent>
             <ViewsClicksChart data={series} />
@@ -88,7 +88,7 @@ export default async function AnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Devices</CardTitle>
+            <CardTitle>{dict.analytics.devices}</CardTitle>
           </CardHeader>
           <CardContent>
             <DevicePie data={devices} />
@@ -99,7 +99,7 @@ export default async function AnalyticsPage({
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Top products by views</CardTitle>
+            <CardTitle>{dict.analytics.topByViews}</CardTitle>
           </CardHeader>
           <CardContent>
             <RankBarChart data={byViews} dataKey="views" color="var(--chart-1)" />
@@ -107,7 +107,7 @@ export default async function AnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Top products by clicks</CardTitle>
+            <CardTitle>{dict.analytics.topByClicks}</CardTitle>
           </CardHeader>
           <CardContent>
             <RankBarChart data={byClicks} dataKey="clicks" color="var(--chart-2)" />
@@ -118,18 +118,18 @@ export default async function AnalyticsPage({
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Top finishes clicked</CardTitle>
+            <CardTitle>{dict.analytics.topFinishes}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarList
               items={finishes.map((f) => ({ label: f.finish, count: f.clicks }))}
-              emptyLabel="No finish clicks yet."
+              emptyLabel={dict.analytics.noFinish}
             />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Top referrers</CardTitle>
+            <CardTitle>{dict.analytics.topReferrers}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarList items={referrers.map((r) => ({ label: r.source, count: r.count }))} />
@@ -137,12 +137,12 @@ export default async function AnalyticsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Top countries</CardTitle>
+            <CardTitle>{dict.analytics.topCountries}</CardTitle>
           </CardHeader>
           <CardContent>
             <BarList
               items={countries.map((c) => ({ label: c.country, count: c.count }))}
-              emptyLabel="No geo data yet."
+              emptyLabel={dict.analytics.noGeo}
             />
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ export default async function AnalyticsPage({
       <div className="mt-4">
         <Card>
           <CardHeader>
-            <CardTitle>Recent activity</CardTitle>
+            <CardTitle>{dict.analytics.recentActivity}</CardTitle>
           </CardHeader>
           <CardContent>
             <ActivityFeed items={activity} />

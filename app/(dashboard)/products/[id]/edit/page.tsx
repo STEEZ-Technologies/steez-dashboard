@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Plus, BarChart3 } from "lucide-react";
+import { Plus, BarChart3, ExternalLink } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { ProductForm } from "@/components/products/ProductForm";
@@ -51,9 +51,20 @@ export default async function EditProductPage({
         title="Edit product"
         description={product.model}
         action={
-          <LinkButton variant="outline" size="sm" href={`/products/${product.id}/analytics`}>
-            <BarChart3 /> View analytics
-          </LinkButton>
+          <div className="flex items-center gap-2">
+            <LinkButton
+              variant="outline"
+              size="sm"
+              href={`https://konlito.steez.digital/products/${product.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <ExternalLink /> Preview on site
+            </LinkButton>
+            <LinkButton variant="outline" size="sm" href={`/products/${product.id}/analytics`}>
+              <BarChart3 /> View analytics
+            </LinkButton>
+          </div>
         }
       />
 

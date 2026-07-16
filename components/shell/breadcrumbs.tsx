@@ -11,35 +11,36 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-
-const LABELS: Record<string, string> = {
-  "": "Overview",
-  products: "Products",
-  categories: "Categories",
-  analytics: "Analytics",
-  team: "Team",
-  settings: "Settings",
-  new: "New",
-  edit: "Edit",
-  finishes: "Finishes",
-};
-
-function label(seg: string) {
-  return LABELS[seg] ?? seg;
-}
+import { useT } from "@/lib/i18n/provider";
 
 export function Breadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
+  const { dict } = useT();
+
+  const LABELS: Record<string, string> = {
+    "": dict.nav.overview,
+    products: dict.nav.products,
+    categories: dict.nav.categories,
+    analytics: dict.nav.analytics,
+    team: dict.nav.team,
+    settings: dict.nav.settings,
+    new: dict.actions.new,
+    edit: dict.actions.edit,
+    finishes: "Finishes",
+  };
+  function label(seg: string) {
+    return LABELS[seg] ?? seg;
+  }
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
           {segments.length === 0 ? (
-            <BreadcrumbPage>Overview</BreadcrumbPage>
+            <BreadcrumbPage>{dict.nav.overview}</BreadcrumbPage>
           ) : (
-            <BreadcrumbLink render={<Link href="/" />}>Overview</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/" />}>{dict.nav.overview}</BreadcrumbLink>
           )}
         </BreadcrumbItem>
         {segments.map((seg, i) => {

@@ -119,6 +119,14 @@ export const zh: Dictionary = {
     range30: "30 天",
     range90: "90 天",
   },
+  digest: {
+    title: "每周摘要",
+    subtitle: "最近 7 天与之前 7 天对比。",
+    topClicked: "点击最多",
+    topViewed: "浏览最多",
+    topReferrers: "主要来源",
+    noData: "本周暂无活动。",
+  },
   form: {
     slug: "标识",
     model: "型号",

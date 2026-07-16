@@ -1,5 +1,8 @@
+"use client";
+
 import { Eye, MousePointerClick, FileText } from "lucide-react";
 import type { ActivityItem } from "@/lib/analytics";
+import { useT } from "@/lib/i18n/provider";
 
 function timeAgo(date: Date): string {
   const s = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -18,6 +21,13 @@ const ICON = {
 } as const;
 
 export function ActivityFeed({ items }: { items: ActivityItem[] }) {
+  const { dict } = useT();
+  const LABEL = {
+    page_view: dict.overview.pageViewed,
+    product_view: dict.overview.productViewed,
+    product_click: dict.overview.productClicked,
+  } as const;
+
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">No activity yet.</p>;
   }
@@ -31,7 +41,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
               <Icon className="size-3.5" />
             </span>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">{item.label}</p>
+              <p className="text-sm font-medium">{LABEL[item.kind]}</p>
               {item.detail && (
                 <p className="truncate text-xs text-muted-foreground">
                   {item.detail}

@@ -2,12 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const RANGES = [
-  { value: "7", label: "7 days" },
-  { value: "30", label: "30 days" },
-  { value: "90", label: "90 days" },
-];
+import { useT } from "@/lib/i18n/provider";
 
 export function RangeTabs({
   current,
@@ -18,6 +13,12 @@ export function RangeTabs({
 }) {
   const router = useRouter();
   const params = useSearchParams();
+  const { dict } = useT();
+  const RANGES = [
+    { value: "7", label: dict.analytics.range7 },
+    { value: "30", label: dict.analytics.range30 },
+    { value: "90", label: dict.analytics.range90 },
+  ];
 
   function set(value: string) {
     const next = new URLSearchParams(params);

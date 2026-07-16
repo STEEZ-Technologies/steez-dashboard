@@ -17,6 +17,7 @@ import {
   BarChart3,
   Eye,
   EyeOff,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -82,6 +83,7 @@ import { useT } from "@/lib/i18n/provider";
 
 export type ProductRow = {
   id: string;
+  slug: string;
   name: string;
   model: string;
   categoryLabel: string | null;
@@ -89,6 +91,8 @@ export type ProductRow = {
   published: boolean;
   imageUrl: string | null;
 };
+
+const KONLITO_SITE_BASE = "https://konlito.steez.digital";
 
 type SortKey = "name" | "model" | "category" | "status";
 
@@ -536,6 +540,17 @@ function ProductTableRow({
               render={<Link href={`/products/${p.id}/analytics`} />}
             >
               <BarChart3 className="size-4" /> {dict.actions.analytics}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={
+                <a
+                  href={`${KONLITO_SITE_BASE}/products/${p.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+            >
+              <ExternalLink className="size-4" /> {dict.actions.preview}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDuplicate}>
               <Copy className="size-4" /> {dict.actions.duplicate}

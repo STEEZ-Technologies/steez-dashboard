@@ -355,6 +355,18 @@ export async function getProductAnalytics(
   };
 }
 
+/* ── Weekly digest (in-dashboard summary — no email provider yet) ─ */
+
+export async function getWeeklyDigest(tenantId: string) {
+  const [kpis, topByClicks, topByViews, referrers] = await Promise.all([
+    getKpis(tenantId, 7),
+    getTopProductsByClicks(tenantId, 7, 5),
+    getTopProductsByViews(tenantId, 7, 5),
+    getTopReferrers(tenantId, 7, 3),
+  ]);
+  return { kpis, topByClicks, topByViews, referrers };
+}
+
 /* Kept for backward compat with any existing imports */
 export async function getUniqueVisitorCount(tenantId: string, days = 30): Promise<number> {
   const since = daysAgo(days);
