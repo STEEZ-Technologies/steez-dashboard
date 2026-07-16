@@ -30,7 +30,7 @@ export default async function CategoriesPage() {
       <PageHeader
         eyebrow={dict.pages.categories.eyebrow}
         title={dict.pages.categories.title}
-        description="Group products the way buyers browse them."
+        description={dict.categories.subtitle}
         action={
           <LinkButton href="/categories/new">
             <Plus /> {dict.actions.newCategory}

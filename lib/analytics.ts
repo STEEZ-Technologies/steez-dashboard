@@ -71,7 +71,8 @@ export async function getKpis(tenantId: string, days = 30): Promise<Kpis> {
     },
     productViews: { value: views, delta: pctDelta(views, viewsPrev) },
     productClicks: { value: clicks, delta: pctDelta(clicks, clicksPrev) },
-    ctr: { value: ctr, delta: ctr - ctrPrev },
+    // CTR delta in points, but only when there's a comparable prior period.
+    ctr: { value: ctr, delta: viewsPrev > 0 ? ctr - ctrPrev : null },
   };
 }
 

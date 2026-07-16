@@ -39,7 +39,7 @@ export default async function ProductsPage() {
       <PageHeader
         eyebrow={dict.pages.products.eyebrow}
         title={dict.pages.products.title}
-        description={`${products.length} product${products.length === 1 ? "" : "s"} in your catalog.`}
+        description={`${products.length} ${products.length === 1 ? dict.products.countOne : dict.products.countOther}`}
         action={
           <LinkButton href="/products/new">
             <Plus /> {dict.actions.newProduct}
@@ -49,8 +49,8 @@ export default async function ProductsPage() {
       {rows.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="No products yet"
-          description="Add your first product to start building the catalog buyers will browse."
+          title={dict.products.emptyTitle}
+          description={dict.products.emptyDesc}
           action={
             <LinkButton href="/products/new">
               <Plus /> {dict.actions.newProduct}

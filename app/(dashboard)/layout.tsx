@@ -35,7 +35,7 @@ export default async function DashboardLayout({
         email={user.email ?? ""}
         role={user.role}
       />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-1 h-4" />
@@ -46,8 +46,8 @@ export default async function DashboardLayout({
             <ThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-4 md:p-8">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
+        <main className="min-w-0 flex-1 p-4 md:p-8">
+          <div className="mx-auto w-full min-w-0 max-w-6xl">{children}</div>
         </main>
         <Suspense>
           <FlashToast />

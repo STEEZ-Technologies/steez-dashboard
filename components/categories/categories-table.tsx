@@ -61,6 +61,7 @@ import {
   moveCategory,
   reorderCategories,
 } from "@/app/(dashboard)/categories/actions";
+import { useT } from "@/lib/i18n/provider";
 
 export type CategoryRow = {
   id: string;
@@ -74,6 +75,8 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   const [toDelete, setToDelete] = useState<CategoryRow | null>(null);
   const [order, setOrder] = useState<CategoryRow[]>(categories);
   useEffect(() => setOrder(categories), [categories]);
+  const { dict } = useT();
+  const t = dict.categories;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -104,11 +107,11 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
     return (
       <EmptyState
         icon={FolderTree}
-        title="No categories yet"
-        description="Group products the way buyers browse them — frames, panels, accessories."
+        title={t.emptyTitle}
+        description={t.emptyDesc}
         action={
           <LinkButton href="/categories/new">
-            <Plus /> New category
+            <Plus /> {dict.actions.newCategory}
           </LinkButton>
         }
       />
@@ -126,9 +129,9 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[28px]"></TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Products</TableHead>
+              <TableHead>{t.colCategory}</TableHead>
+              <TableHead>{t.colSlug}</TableHead>
+              <TableHead>{t.colProducts}</TableHead>
               <TableHead className="w-[52px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -157,14 +160,11 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{toDelete?.label}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Products in this category won’t be deleted, but they’ll lose their
-              category assignment.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{dict.products.deleteTitle} “{toDelete?.label}”?</AlertDialogTitle>
+            <AlertDialogDescription>{t.deleteDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{dict.actions.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const target = toDelete;
@@ -172,7 +172,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
                 if (target) runAction(() => deleteCategory(target.id), "Category deleted");
               }}
             >
-              Delete
+              {dict.actions.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -196,6 +196,7 @@ function CategoryTableRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: c.id });
+  const { dict } = useT();
 
   return (
     <TableRow
@@ -232,17 +233,17 @@ function CategoryTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem render={<Link href={`/categories/${c.id}/edit`} />}>
-              <Pencil className="size-4" /> Edit
+              <Pencil className="size-4" /> {dict.actions.edit}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onMoveUp}>
-              <ArrowUp className="size-4" /> Move up
+              <ArrowUp className="size-4" /> {dict.actions.moveUp}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onMoveDown}>
-              <ArrowDown className="size-4" /> Move down
+              <ArrowDown className="size-4" /> {dict.actions.moveDown}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
-              <Trash2 className="size-4" /> Delete
+              <Trash2 className="size-4" /> {dict.actions.delete}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

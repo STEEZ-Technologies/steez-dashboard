@@ -9,8 +9,11 @@ export function daysAgo(days: number, from: Date = new Date()): Date {
   return d;
 }
 
+// Percentage change vs the previous period. Returns null when there's no
+// comparable prior data (previous === 0) — a "+100%" there is misleading, so
+// callers should render no delta badge instead.
 export function pctDelta(current: number, previous: number): number | null {
-  if (previous === 0) return current > 0 ? 100 : null;
+  if (previous === 0) return null;
   return Math.round(((current - previous) / previous) * 100);
 }
 

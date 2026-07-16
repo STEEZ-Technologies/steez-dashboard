@@ -12,10 +12,8 @@ describe("pctDelta", () => {
     expect(pctDelta(150, 100)).toBe(50);
     expect(pctDelta(50, 100)).toBe(-50);
   });
-  it("returns 100 when growing from zero", () => {
-    expect(pctDelta(5, 0)).toBe(100);
-  });
-  it("returns null when both are zero", () => {
+  it("returns null when there's no comparable prior period (previous 0)", () => {
+    expect(pctDelta(5, 0)).toBeNull();
     expect(pctDelta(0, 0)).toBeNull();
   });
 });

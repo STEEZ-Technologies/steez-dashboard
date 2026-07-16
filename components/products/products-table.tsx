@@ -78,6 +78,7 @@ import {
   bulkUpdateProducts,
   bulkDeleteProducts,
 } from "@/app/(dashboard)/products/actions";
+import { useT } from "@/lib/i18n/provider";
 
 export type ProductRow = {
   id: string;
@@ -110,6 +111,8 @@ export function ProductsTable({
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const { dict } = useT();
+  const t = dict.products;
 
   // Local ordering so drag-reorder feels instant; re-sync when server data changes.
   const [order, setOrder] = useState<ProductRow[]>(products);
@@ -233,7 +236,7 @@ export function ProductsTable({
         <div className="relative flex-1 min-w-[180px]">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search products…"
+            placeholder={t.searchPlaceholder}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             className="pl-8"
@@ -241,10 +244,10 @@ export function ProductsTable({
         </div>
         <Select value={category} onValueChange={(v) => setCategory(v ?? "all")}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t.colCategory} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All categories</SelectItem>
+            <SelectItem value="all">{t.allCategories}</SelectItem>
             {categories.map((c) => (
               <SelectItem key={c.label} value={c.label}>
                 {c.label}
@@ -254,13 +257,13 @@ export function ProductsTable({
         </Select>
         <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t.colStatus} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All status</SelectItem>
-            <SelectItem value="published">Published</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="all">{t.allStatus}</SelectItem>
+            <SelectItem value="published">{t.published}</SelectItem>
+            <SelectItem value="draft">{t.draft}</SelectItem>
+            <SelectItem value="featured">{t.featured}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -269,24 +272,24 @@ export function ProductsTable({
       {selectedIds.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
           <span className="text-sm font-medium">
-            {selectedIds.length} selected
+            {selectedIds.length} {t.selected}
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
               disabled={pending}
-              onClick={() => bulkSet({ published: true }, "Published")}
+              onClick={() => bulkSet({ published: true }, dict.actions.publish)}
             >
-              <Eye className="size-4" /> Publish
+              <Eye className="size-4" /> {dict.actions.publish}
             </Button>
             <Button
               variant="outline"
               size="sm"
               disabled={pending}
-              onClick={() => bulkSet({ published: false }, "Unpublished")}
+              onClick={() => bulkSet({ published: false }, dict.actions.unpublish)}
             >
-              <EyeOff className="size-4" /> Unpublish
+              <EyeOff className="size-4" /> {dict.actions.unpublish}
             </Button>
             <Button
               variant="destructive"
@@ -294,14 +297,14 @@ export function ProductsTable({
               disabled={pending}
               onClick={() => setBulkDeleteOpen(true)}
             >
-              <Trash2 className="size-4" /> Delete
+              <Trash2 className="size-4" /> {dict.actions.delete}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSelected(new Set())}
             >
-              Clear
+              {dict.actions.clear}
             </Button>
           </div>
         </div>
@@ -309,8 +312,7 @@ export function ProductsTable({
 
       {!reorderable && (
         <p className="mb-2 text-xs text-muted-foreground">
-          Drag-to-reorder is available when search, filters, and sorting are
-          cleared.
+          {t.reorderHint}
         </p>
       )}
 
@@ -332,10 +334,10 @@ export function ProductsTable({
                 </TableHead>
                 <TableHead className="w-[28px]"></TableHead>
                 <TableHead className="w-[52px]"></TableHead>
-                <SortHead k="name">Product</SortHead>
-                <SortHead k="model">Model</SortHead>
-                <SortHead k="category">Category</SortHead>
-                <SortHead k="status">Status</SortHead>
+                <SortHead k="name">{t.colProduct}</SortHead>
+                <SortHead k="model">{t.colModel}</SortHead>
+                <SortHead k="category">{t.colCategory}</SortHead>
+                <SortHead k="status">{t.colStatus}</SortHead>
                 <TableHead className="w-[52px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -346,7 +348,7 @@ export function ProductsTable({
                     colSpan={8}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    No products match your filters.
+                    {t.noMatch}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -384,14 +386,11 @@ export function ProductsTable({
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && setToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete “{toDelete?.name}”?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This permanently removes the product and its finishes. This cannot be
-              undone.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t.deleteTitle} “{toDelete?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>{t.deleteDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{dict.actions.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const target = toDelete;
@@ -400,7 +399,7 @@ export function ProductsTable({
                   runAction(() => deleteProduct(target.id), "Product deleted");
               }}
             >
-              Delete
+              {dict.actions.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -410,16 +409,13 @@ export function ProductsTable({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {selectedIds.length} product
+              {t.deleteTitle} {selectedIds.length} {t.colProduct.toLowerCase()}
               {selectedIds.length === 1 ? "" : "s"}?
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              This permanently removes the selected products and their finishes.
-              This cannot be undone.
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t.bulkDeleteDesc}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{dict.actions.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const ids = selectedIds;
@@ -431,7 +427,7 @@ export function ProductsTable({
                 });
               }}
             >
-              Delete
+              {dict.actions.delete}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -463,6 +459,7 @@ function ProductTableRow({
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: p.id, disabled: !reorderable });
+  const { dict } = useT();
 
   return (
     <TableRow
@@ -518,9 +515,9 @@ function ProductTableRow({
       </TableCell>
       <TableCell>
         <div className="flex gap-1.5">
-          {p.featured && <Badge variant="secondary">Featured</Badge>}
+          {p.featured && <Badge variant="secondary">{dict.products.featured}</Badge>}
           <Badge variant={p.published ? "default" : "outline"}>
-            {p.published ? "Published" : "Draft"}
+            {p.published ? dict.products.published : dict.products.draft}
           </Badge>
         </div>
       </TableCell>
@@ -533,25 +530,25 @@ function ProductTableRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem render={<Link href={`/products/${p.id}/edit`} />}>
-              <Pencil className="size-4" /> Edit
+              <Pencil className="size-4" /> {dict.actions.edit}
             </DropdownMenuItem>
             <DropdownMenuItem
               render={<Link href={`/products/${p.id}/analytics`} />}
             >
-              <BarChart3 className="size-4" /> Analytics
+              <BarChart3 className="size-4" /> {dict.actions.analytics}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDuplicate}>
-              <Copy className="size-4" /> Duplicate
+              <Copy className="size-4" /> {dict.actions.duplicate}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onMoveUp}>
-              <ArrowUp className="size-4" /> Move up
+              <ArrowUp className="size-4" /> {dict.actions.moveUp}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onMoveDown}>
-              <ArrowDown className="size-4" /> Move down
+              <ArrowDown className="size-4" /> {dict.actions.moveDown}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
-              <Trash2 className="size-4" /> Delete
+              <Trash2 className="size-4" /> {dict.actions.delete}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
