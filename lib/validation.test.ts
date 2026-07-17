@@ -5,7 +5,6 @@ import {
   finishInputSchema,
   userInviteSchema,
   passwordChangeSchema,
-  signupSchema,
 } from "./validation";
 
 describe("categoryInputSchema", () => {
@@ -109,28 +108,5 @@ describe("passwordChangeSchema", () => {
       passwordChangeSchema.safeParse({ currentPassword: "x", newPassword: "12345678" })
         .success,
     ).toBe(true);
-  });
-});
-
-describe("signupSchema", () => {
-  it("accepts a full signup payload", () => {
-    expect(
-      signupSchema.safeParse({
-        code: "ABC123",
-        tenantName: "Acme Co",
-        email: "a@b.com",
-        password: "password123",
-      }).success,
-    ).toBe(true);
-  });
-  it("rejects a missing invite code", () => {
-    expect(
-      signupSchema.safeParse({
-        code: "",
-        tenantName: "Acme",
-        email: "a@b.com",
-        password: "password123",
-      }).success,
-    ).toBe(false);
   });
 });

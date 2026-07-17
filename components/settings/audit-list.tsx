@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 
 export type AuditItem = {
   id: string;
@@ -25,10 +26,10 @@ function fmt(d: Date) {
   });
 }
 
-export function AuditList({ items }: { items: AuditItem[] }) {
+export function AuditList({ items, dict }: { items: AuditItem[]; dict: Dictionary }) {
   if (items.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+      <p className="text-sm text-muted-foreground">{dict.settings.noActivity}</p>
     );
   }
   return (
@@ -36,10 +37,10 @@ export function AuditList({ items }: { items: AuditItem[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Action</TableHead>
-            <TableHead>Detail</TableHead>
-            <TableHead>By</TableHead>
-            <TableHead>When</TableHead>
+            <TableHead>{dict.settings.colAction}</TableHead>
+            <TableHead>{dict.settings.colDetail}</TableHead>
+            <TableHead>{dict.settings.colBy}</TableHead>
+            <TableHead>{dict.settings.colWhen}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

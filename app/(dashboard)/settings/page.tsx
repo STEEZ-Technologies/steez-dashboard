@@ -6,20 +6,22 @@ import { SettingsForm } from "@/components/settings/settings-form";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function SettingsPage() {
   const session = await getTenantFromSession();
-  const [tenant, audit] = await Promise.all([
+  const [tenant, audit, dict] = await Promise.all([
     prisma.tenant.findUniqueOrThrow({ where: { id: session.tenantId } }),
     getRecentAudit(session.tenantId, 25),
+    getDictionary(),
   ]);
 
   return (
     <div>
       <PageHeader
-        eyebrow="Workspace"
-        title="Settings"
-        description="Workspace details, your account, and activity."
+        eyebrow={dict.pages.settings.eyebrow}
+        title={dict.pages.settings.title}
+        description={dict.settings.subtitle}
       />
 
       <div className="grid gap-6">
@@ -33,7 +35,7 @@ export default async function SettingsPage() {
 
         <Card className="max-w-xl">
           <CardContent className="grid gap-1 p-6">
-            <p className="eyebrow">Signed in as</p>
+            <p className="eyebrow">{dict.settings.signedInAs}</p>
             <p className="text-sm font-medium">{session.email}</p>
             <p className="text-sm text-muted-foreground capitalize">
               {session.role.toLowerCase()}
@@ -42,8 +44,8 @@ export default async function SettingsPage() {
         </Card>
 
         <div>
-          <h2 className="mb-3 text-lg font-semibold">Activity log</h2>
-          <AuditList items={audit} />
+          <h2 className="mb-3 text-lg font-semibold">{dict.settings.activityLog}</h2>
+          <AuditList items={audit} dict={dict} />
         </div>
       </div>
     </div>

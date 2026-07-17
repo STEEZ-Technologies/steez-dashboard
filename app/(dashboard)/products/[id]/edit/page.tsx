@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductImages, type GalleryImage } from "@/components/products/product-images";
+import { getDictionary } from "@/lib/i18n";
 
 export default async function EditProductPage({
   params,
@@ -28,6 +29,7 @@ export default async function EditProductPage({
     prisma.category.findMany({ where: { tenantId }, orderBy: { sortOrder: "asc" } }),
   ]);
   if (!product) notFound();
+  const dict = await getDictionary();
 
   const [finishes, galleryRows] = await Promise.all([
     prisma.productFinish.findMany({
@@ -134,7 +136,13 @@ export default async function EditProductPage({
                       <input type="hidden" name="productId" value={product.id} />
                       <input type="hidden" name="finishId" value={finish.id} />
                       <input type="hidden" name="direction" value="up" />
-                      <Button type="submit" variant="ghost" size="icon-sm" disabled={index === 0}>
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={index === 0}
+                        aria-label={dict.actions.moveUp}
+                      >
                         ↑
                       </Button>
                     </form>
@@ -147,6 +155,7 @@ export default async function EditProductPage({
                         variant="ghost"
                         size="icon-sm"
                         disabled={index === finishes.length - 1}
+                        aria-label={dict.actions.moveDown}
                       >
                         ↓
                       </Button>

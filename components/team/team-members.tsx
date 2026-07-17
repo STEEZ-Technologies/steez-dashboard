@@ -53,6 +53,7 @@ import {
   resetMemberPassword,
 } from "@/app/(dashboard)/team/actions";
 import { KeyRound } from "lucide-react";
+import { useT } from "@/lib/i18n/provider";
 
 export type Member = {
   id: string;
@@ -77,6 +78,7 @@ export function TeamMembers({
   const [toReset, setToReset] = useState<Member | null>(null);
   const [resetPw, setResetPw] = useState("");
   const [resetErr, setResetErr] = useState<string | null>(null);
+  const { dict } = useT();
 
   function handleReset() {
     const target = toReset;
@@ -87,7 +89,7 @@ export function TeamMembers({
       if (err) {
         setResetErr(err);
       } else {
-        toast.success("Password reset");
+        toast.success(dict.team.passwordReset);
         setToReset(null);
         setResetPw("");
       }
@@ -102,7 +104,7 @@ export function TeamMembers({
       if (err) {
         setError(err);
       } else {
-        toast.success("Team member added");
+        toast.success(dict.team.memberAdded);
         setOpen(false);
         setRole("STAFF");
       }
@@ -115,41 +117,40 @@ export function TeamMembers({
         <div className="mb-4 flex justify-end">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger render={<Button />}>
-              <UserPlus /> Add member
+              <UserPlus /> {dict.team.addMember}
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add team member</DialogTitle>
+                <DialogTitle>{dict.team.addMemberTitle}</DialogTitle>
                 <DialogDescription>
-                  Creates a login for a teammate. There is no email invite — share the
-                  credentials with them directly.
+                  {dict.team.addMemberDesc}
                 </DialogDescription>
               </DialogHeader>
               <form action={handleAdd} className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{dict.team.email}</Label>
                   <Input id="email" name="email" type="email" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Temporary password</Label>
+                  <Label htmlFor="password">{dict.team.tempPassword}</Label>
                   <Input id="password" name="password" type="text" minLength={8} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Role</Label>
+                  <Label>{dict.team.role}</Label>
                   <Select value={role} onValueChange={(v) => setRole(v ?? "STAFF")}>
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="STAFF">Staff</SelectItem>
-                      <SelectItem value="OWNER">Owner</SelectItem>
+                      <SelectItem value="STAFF">{dict.team.roleStaff}</SelectItem>
+                      <SelectItem value="OWNER">{dict.team.roleOwner}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <DialogFooter>
                   <Button type="submit" disabled={pending}>
-                    {pending ? "Adding…" : "Add member"}
+                    {pending ? dict.team.adding : dict.team.addMember}
                   </Button>
                 </DialogFooter>
               </form>
@@ -162,9 +163,9 @@ export function TeamMembers({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Added</TableHead>
+              <TableHead>{dict.team.colEmail}</TableHead>
+              <TableHead>{dict.team.colRole}</TableHead>
+              <TableHead>{dict.team.colAdded}</TableHead>
               {canManage && <TableHead className="w-[52px]" />}
             </TableRow>
           </TableHeader>
@@ -174,12 +175,12 @@ export function TeamMembers({
                 <TableCell className="font-medium">
                   {m.email}
                   {m.isSelf && (
-                    <span className="ml-2 text-xs text-muted-foreground">(you)</span>
+                    <span className="ml-2 text-xs text-muted-foreground">{dict.team.you}</span>
                   )}
                 </TableCell>
                 <TableCell>
                   <Badge variant={m.role === "OWNER" ? "default" : "secondary"}>
-                    {m.role === "OWNER" ? "Owner" : "Staff"}
+                    {m.role === "OWNER" ? dict.team.roleOwner : dict.team.roleStaff}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{m.createdAt}</TableCell>
@@ -194,13 +195,13 @@ export function TeamMembers({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setResetPw(""); setResetErr(null); setToReset(m); }}>
-                            <KeyRound className="size-4" /> Reset password
+                            <KeyRound className="size-4" /> {dict.team.resetPassword}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             variant="destructive"
                             onClick={() => setToRemove(m)}
                           >
-                            <Trash2 className="size-4" /> Remove
+                            <Trash2 className="size-4" /> {dict.team.remove}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -216,13 +217,15 @@ export function TeamMembers({
       <AlertDialog open={!!toRemove} onOpenChange={(o) => !o && setToRemove(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove {toRemove?.email}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {dict.team.removeConfirmTitle.replace("{email}", toRemove?.email ?? "")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              They will immediately lose access to this workspace.
+              {dict.team.removeConfirmDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{dict.team.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const target = toRemove;
@@ -230,11 +233,11 @@ export function TeamMembers({
                 if (target)
                   startTransition(async () => {
                     await removeTeamMember(target.id);
-                    toast.success("Member removed");
+                    toast.success(dict.team.memberRemoved);
                   });
               }}
             >
-              Remove
+              {dict.team.remove}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -243,13 +246,13 @@ export function TeamMembers({
       <Dialog open={!!toReset} onOpenChange={(o) => !o && setToReset(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset password</DialogTitle>
+            <DialogTitle>{dict.team.resetPasswordTitle}</DialogTitle>
             <DialogDescription>
-              Set a new password for {toReset?.email}. Share it with them directly.
+              {dict.team.resetPasswordDesc.replace("{email}", toReset?.email ?? "")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-2">
-            <Label htmlFor="resetPw">New password</Label>
+            <Label htmlFor="resetPw">{dict.team.newPassword}</Label>
             <Input
               id="resetPw"
               type="text"
@@ -261,7 +264,7 @@ export function TeamMembers({
           </div>
           <DialogFooter>
             <Button onClick={handleReset} disabled={pending || resetPw.length < 8}>
-              {pending ? "Resetting…" : "Reset password"}
+              {pending ? dict.team.resetting : dict.team.resetPassword}
             </Button>
           </DialogFooter>
         </DialogContent>

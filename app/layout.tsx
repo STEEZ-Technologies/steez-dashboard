@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Noto_Sans_SC } from "next/font/google";
+import { Inter, Noto_Sans_SC, Stack_Sans_Notch, Stack_Sans_Text } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -22,6 +22,22 @@ const notoSansSC = Noto_Sans_SC({
   display: "swap",
 });
 
+// Same type system as the STEEZ marketing site (~/Projects/steez):
+// Stack Sans Notch for headings/wordmark, Stack Sans Text for body.
+const stackSansNotch = Stack_Sans_Notch({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700"],
+  variable: "--font-stack-sans",
+  display: "swap",
+});
+
+const stackSansText = Stack_Sans_Text({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "500", "600", "700"],
+  variable: "--font-stack-text",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "STEEZ · 思智 — Dashboard",
   description: "Manage your product catalog and see how buyers engage with it.",
@@ -36,7 +52,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("h-full antialiased", inter.variable, notoSansSC.variable)}
+      className={cn(
+        "h-full antialiased",
+        inter.variable,
+        notoSansSC.variable,
+        stackSansNotch.variable,
+        stackSansText.variable,
+      )}
     >
       <body className="min-h-full">
         <ThemeProvider

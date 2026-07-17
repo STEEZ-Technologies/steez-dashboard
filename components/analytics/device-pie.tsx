@@ -1,6 +1,7 @@
 "use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { useT } from "@/lib/i18n/provider";
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
 
@@ -11,23 +12,36 @@ export function DevicePie({
   data: { device: string; count: number }[];
   height?: number;
 }) {
+  const { dict } = useT();
+  const deviceLabel = (device: string) =>
+    device === "Desktop"
+      ? dict.analytics.deviceDesktop
+      : device === "Mobile"
+        ? dict.analytics.deviceMobile
+        : device === "Tablet"
+          ? dict.analytics.deviceTablet
+          : device;
+
   if (data.length === 0) {
     return (
       <div
         className="flex items-center justify-center text-sm text-muted-foreground"
         style={{ height }}
       >
-        No data yet.
+        {dict.digest.noData}
       </div>
     );
   }
+
+  const translated = data.map((d) => ({ ...d, deviceLabel: deviceLabel(d.device) }));
+
   return (
     <ResponsiveContainer width="100%" height={height}>
       <PieChart>
         <Pie
-          data={data}
+          data={translated}
           dataKey="count"
-          nameKey="device"
+          nameKey="deviceLabel"
           innerRadius={52}
           outerRadius={82}
           paddingAngle={2}
@@ -35,7 +49,7 @@ export function DevicePie({
           strokeWidth={2}
           isAnimationActive={false}
         >
-          {data.map((_, i) => (
+          {translated.map((_, i) => (
             <Cell key={i} fill={COLORS[i % COLORS.length]} />
           ))}
         </Pie>

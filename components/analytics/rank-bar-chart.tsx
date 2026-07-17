@@ -9,25 +9,30 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useT } from "@/lib/i18n/provider";
 
 export function RankBarChart({
   data,
   dataKey,
+  seriesName,
   color = "var(--chart-1)",
   height = 260,
 }: {
   data: { name: string; [k: string]: string | number }[];
   dataKey: string;
+  seriesName?: string;
   color?: string;
   height?: number;
 }) {
+  const { dict } = useT();
+
   if (data.length === 0) {
     return (
       <div
         className="flex items-center justify-center text-sm text-muted-foreground"
         style={{ height }}
       >
-        No data yet.
+        {dict.digest.noData}
       </div>
     );
   }
@@ -58,7 +63,13 @@ export function RankBarChart({
             fontSize: 13,
           }}
         />
-        <Bar dataKey={dataKey} fill={color} radius={[0, 6, 6, 0]} isAnimationActive={false} />
+        <Bar
+          dataKey={dataKey}
+          name={seriesName}
+          fill={color}
+          radius={[0, 6, 6, 0]}
+          isAnimationActive={false}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

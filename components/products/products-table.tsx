@@ -182,7 +182,7 @@ export function ProductsTable({
     setOrder(next);
     startTransition(async () => {
       await reorderProducts(next.map((p) => p.id));
-      toast.success("Order saved");
+      toast.success(dict.products.toastOrderSaved);
     });
   }
 
@@ -369,13 +369,13 @@ export function ProductsTable({
                       selected={selected.has(p.id)}
                       onToggle={() => toggleOne(p.id)}
                       onDuplicate={() =>
-                        runAction(() => duplicateProduct(p.id), "Product duplicated")
+                        runAction(() => duplicateProduct(p.id), dict.products.toastDuplicated)
                       }
                       onMoveUp={() =>
-                        runAction(() => moveProduct(p.id, "up"), "Moved up")
+                        runAction(() => moveProduct(p.id, "up"), dict.products.toastMovedUp)
                       }
                       onMoveDown={() =>
-                        runAction(() => moveProduct(p.id, "down"), "Moved down")
+                        runAction(() => moveProduct(p.id, "down"), dict.products.toastMovedDown)
                       }
                       onDelete={() => setToDelete(p)}
                     />
@@ -400,7 +400,7 @@ export function ProductsTable({
                 const target = toDelete;
                 setToDelete(null);
                 if (target)
-                  runAction(() => deleteProduct(target.id), "Product deleted");
+                  runAction(() => deleteProduct(target.id), dict.products.toastDeleted);
               }}
             >
               {dict.actions.delete}
@@ -427,7 +427,7 @@ export function ProductsTable({
                 startTransition(async () => {
                   await bulkDeleteProducts(ids);
                   setSelected(new Set());
-                  toast.success("Products deleted");
+                  toast.success(dict.products.toastBulkDeleted);
                 });
               }}
             >

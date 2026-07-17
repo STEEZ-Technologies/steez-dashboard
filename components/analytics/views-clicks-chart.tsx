@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useT } from "@/lib/i18n/provider";
 
 export function ViewsClicksChart({
   data,
@@ -17,13 +18,15 @@ export function ViewsClicksChart({
   data: { date: string; views: number; clicks: number }[];
   height?: number;
 }) {
+  const { dict } = useT();
+
   if (data.length === 0) {
     return (
       <div
         className="flex items-center justify-center text-sm text-muted-foreground"
         style={{ height }}
       >
-        No activity yet.
+        {dict.analytics.noActivity}
       </div>
     );
   }
@@ -67,7 +70,7 @@ export function ViewsClicksChart({
         <Area
           type="monotone"
           dataKey="views"
-          name="Views"
+          name={dict.overview.productViews}
           stroke="var(--chart-1)"
           strokeWidth={2}
           fill="url(#gViews)"
@@ -76,7 +79,7 @@ export function ViewsClicksChart({
         <Area
           type="monotone"
           dataKey="clicks"
-          name="Clicks"
+          name={dict.overview.productClicks}
           stroke="var(--chart-2)"
           strokeWidth={2}
           fill="url(#gClicks)"

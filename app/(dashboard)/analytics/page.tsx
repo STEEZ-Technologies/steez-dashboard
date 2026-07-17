@@ -102,7 +102,12 @@ export default async function AnalyticsPage({
             <CardTitle>{dict.analytics.topByViews}</CardTitle>
           </CardHeader>
           <CardContent>
-            <RankBarChart data={byViews} dataKey="views" color="var(--chart-1)" />
+            <RankBarChart
+              data={byViews}
+              dataKey="views"
+              seriesName={dict.overview.productViews}
+              color="var(--chart-1)"
+            />
           </CardContent>
         </Card>
         <Card>
@@ -110,7 +115,12 @@ export default async function AnalyticsPage({
             <CardTitle>{dict.analytics.topByClicks}</CardTitle>
           </CardHeader>
           <CardContent>
-            <RankBarChart data={byClicks} dataKey="clicks" color="var(--chart-2)" />
+            <RankBarChart
+              data={byClicks}
+              dataKey="clicks"
+              seriesName={dict.overview.productClicks}
+              color="var(--chart-2)"
+            />
           </CardContent>
         </Card>
       </div>
@@ -132,7 +142,10 @@ export default async function AnalyticsPage({
             <CardTitle>{dict.analytics.topReferrers}</CardTitle>
           </CardHeader>
           <CardContent>
-            <BarList items={referrers.map((r) => ({ label: r.source, count: r.count }))} />
+            <BarList
+              items={referrers.map((r) => ({ label: r.source, count: r.count }))}
+              emptyLabel={dict.analytics.noReferrers}
+            />
           </CardContent>
         </Card>
         <Card>

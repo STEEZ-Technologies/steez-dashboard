@@ -51,13 +51,6 @@ export const passwordChangeSchema = z.object({
   newPassword: z.string().min(8, { error: "New password must be at least 8 characters" }),
 });
 
-export const signupSchema = z.object({
-  code: z.string().trim().min(1, { error: "Invite code is required" }),
-  tenantName: z.string().trim().min(1, { error: "Workspace name is required" }),
-  email: z.email({ error: "Enter a valid email" }).trim().toLowerCase(),
-  password: z.string().min(8, { error: "Password must be at least 8 characters" }),
-});
-
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;

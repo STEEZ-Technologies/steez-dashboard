@@ -6,7 +6,6 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { userInviteSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
-import { randomBytes } from "crypto";
 
 export async function addTeamMember(
   _prevState: string | undefined,
@@ -69,33 +68,4 @@ export async function resetMemberPassword(userId: string, newPassword: string) {
   await logAudit({ action: "team.reset_password", entity: "user", entityId: userId, detail: target.email });
   revalidatePath("/team");
   return undefined;
-}
-
-/* ── Invite codes (gated signup) ──────────────────────────────── */
-
-export async function createInviteCode() {
-  const session = await getTenantFromSession();
-  if (session.role !== "OWNER") return null;
-
-  const code = randomBytes(6).toString("hex").toUpperCase(); // 12-char code
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60_000); // 7 days
-  await prisma.inviteCode.create({
-    data: {
-      code,
-      createdByTenantId: session.tenantId,
-      createdByEmail: session.email,
-      expiresAt,
-    },
-  });
-  await logAudit({ action: "invite.create", entity: "invite", detail: code });
-  revalidatePath("/team");
-  return code;
-}
-
-export async function revokeInviteCode(id: string) {
-  const session = await getTenantFromSession();
-  if (session.role !== "OWNER") return;
-  // Only unused codes can be revoked.
-  await prisma.inviteCode.deleteMany({ where: { id, usedAt: null } });
-  revalidatePath("/team");
 }

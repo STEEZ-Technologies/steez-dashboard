@@ -2,6 +2,7 @@
 
 import { AuthError } from "next-auth";
 import { signIn } from "@/lib/auth";
+import { getDictionary } from "@/lib/i18n";
 
 export async function authenticate(
   _prevState: string | undefined,
@@ -15,11 +16,12 @@ export async function authenticate(
     });
   } catch (error) {
     if (error instanceof AuthError) {
+      const dict = await getDictionary();
       switch (error.type) {
         case "CredentialsSignin":
-          return "Invalid email or password.";
+          return dict.auth.errInvalidCredentials;
         default:
-          return "Something went wrong.";
+          return dict.auth.errSomethingWrong;
       }
     }
     throw error;

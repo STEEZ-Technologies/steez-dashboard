@@ -10,6 +10,7 @@ import {
   removeProductImage,
   moveProductImage,
 } from "@/app/(dashboard)/products/[id]/images/actions";
+import { useT } from "@/lib/i18n/provider";
 
 export type GalleryImage = { id: string; url: string };
 
@@ -23,6 +24,7 @@ export function ProductImages({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
+  const { dict } = useT();
 
   async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -37,9 +39,9 @@ export function ProductImages({
         const data = await res.json();
         await addProductImage(productId, data.path);
       }
-      toast.success(files.length > 1 ? "Images added" : "Image added");
+      toast.success(files.length > 1 ? dict.gallery.imagesAdded : dict.gallery.imageAdded);
     } catch {
-      toast.error("Upload failed");
+      toast.error(dict.gallery.uploadFailed);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -59,7 +61,7 @@ export function ProductImages({
 
       {images.length === 0 ? (
         <p className="mb-3 text-sm text-muted-foreground">
-          No gallery images yet. Add extra photos buyers can browse.
+          {dict.gallery.empty}
         </p>
       ) : (
         <ul className="mb-3 grid grid-cols-3 gap-3 sm:grid-cols-4">
@@ -67,7 +69,7 @@ export function ProductImages({
             <li key={img.id} className="group relative overflow-hidden rounded-lg border">
               <Image
                 src={img.url}
-                alt=""
+                alt={dict.gallery.altText.replace("{n}", String(i + 1))}
                 width={160}
                 height={160}
                 className="aspect-square w-full object-cover"
@@ -79,7 +81,7 @@ export function ProductImages({
                   size="icon-xs"
                   disabled={i === 0 || pending}
                   onClick={() => startTransition(() => moveProductImage(productId, img.id, "up"))}
-                  aria-label="Move earlier"
+                  aria-label={dict.gallery.moveEarlier}
                 >
                   <ArrowLeft className="size-3.5" />
                 </Button>
@@ -88,7 +90,7 @@ export function ProductImages({
                   size="icon-xs"
                   disabled={i === images.length - 1 || pending}
                   onClick={() => startTransition(() => moveProductImage(productId, img.id, "down"))}
-                  aria-label="Move later"
+                  aria-label={dict.gallery.moveLater}
                 >
                   <ArrowRight className="size-3.5" />
                 </Button>
@@ -99,10 +101,10 @@ export function ProductImages({
                   onClick={() =>
                     startTransition(async () => {
                       await removeProductImage(productId, img.id);
-                      toast.success("Image removed");
+                      toast.success(dict.gallery.imageRemoved);
                     })
                   }
-                  aria-label="Remove"
+                  aria-label={dict.gallery.remove}
                 >
                   <Trash2 className="size-3.5 text-destructive" />
                 </Button>
@@ -120,7 +122,7 @@ export function ProductImages({
         onClick={() => inputRef.current?.click()}
       >
         {uploading ? <Loader2 className="size-4 animate-spin" /> : <Plus />}
-        {uploading ? "Uploading…" : "Add images"}
+        {uploading ? dict.gallery.uploading : dict.gallery.addImages}
       </Button>
     </div>
   );
