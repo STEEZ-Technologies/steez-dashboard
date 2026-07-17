@@ -1,16 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useTheme } from "next-themes";
 import { authenticate } from "../actions";
 import { SignInPage } from "@/components/ui/sign-in";
 import { ShaderBackground } from "@/components/shared/shader-background";
 import { STEEZWordmark } from "@/components/shared/steez-wordmark";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { useT } from "@/lib/i18n/provider";
 
 export default function LoginPage() {
   const { dict } = useT();
   const [error, setError] = useState<string | undefined>();
   const [pending, startTransition] = useTransition();
+
+  // Same pattern as the STEEZ marketing hero: pick shader colors from the
+  // resolved theme, only after mount (avoids a light/dark hydration flash).
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = mounted && resolvedTheme === "dark";
+  const color1 = "#019d86";
+  const color2 = isDark ? "#04342C" : "#F0F9FF";
 
   function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,7 +35,10 @@ export default function LoginPage() {
 
   return (
     <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      <ShaderBackground color1="#019d86" color2="#04342C" speed={1} />
+      <ShaderBackground color1={color1} color2={color2} speed={1} />
+      <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20 }}>
+        <ThemeToggle />
+      </div>
       <div style={{ position: "relative", zIndex: 10 }}>
         <SignInPage
           logo={
