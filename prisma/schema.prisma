@@ -16,12 +16,19 @@ model Tenant {
   name      String
   createdAt DateTime @default(now())
 
+  // Publishing to the client's live static site. The public site is a static
+  // export, so catalog edits only appear after a rebuild — this hook triggers
+  // one on demand (see lib/publish.ts). Null until the owner pastes it in.
+  deployHookUrl   String?
+  lastPublishedAt DateTime?
+
   users         User[]
   categories    Category[]
   products      Product[]
   productEvents ProductEvent[]
   pageViews     PageView[]
   auditLogs     AuditLog[]
+  leads         Lead[]
 }
 
 enum Role {
@@ -51,6 +58,7 @@ model Category {
   description String?
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt // drives pending-change detection for publishing
 
   products Product[]
 
@@ -79,6 +87,7 @@ model Product {
   finishes      ProductFinish[]
   productEvents ProductEvent[]
   images        ProductImage[]
+  leads         Lead[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
@@ -146,6 +155,45 @@ model PageView {
 
   @@index([tenantId, createdAt])
   @@index([path, createdAt])
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  ARCHIVED
+}
+
+// A buyer enquiry captured from the client's public site. This is the payoff
+// of the analytics data: not "23 clicks" but "this person, this product,
+// this message — follow up". Written by the unauthenticated public endpoint
+// app/api/public/[tenantSlug]/lead/route.ts.
+model Lead {
+  id        String     @id @default(cuid())
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  // Which product they were looking at, when the site sends it. Nullable:
+  // a general contact-page enquiry has no product context.
+  productId String?
+  product   Product?   @relation(fields: [productId], references: [id])
+  name      String?
+  email     String?
+  phone     String?
+  company   String?
+  message   String?
+  status    LeadStatus @default(NEW)
+  notes     String? // internal follow-up notes, never shown publicly
+  // Same anonymous id as PageView/ProductEvent, so a lead can be tied back
+  // to what that visitor browsed before enquiring.
+  sessionId String?
+  path      String?
+  referrer  String?
+  country   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status])
+  @@index([productId])
 }
 
 model AuditLog {

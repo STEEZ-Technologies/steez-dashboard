@@ -2,6 +2,8 @@ import { Plus, Package, Download } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
+import { getPublishState } from "@/lib/publish";
+import { PublishBanner } from "@/components/shell/publish-banner";
 import { PageHeader } from "@/components/shell/page-header";
 import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/shell/empty-state";
@@ -10,8 +12,9 @@ import { ProductsTable, type ProductRow } from "@/components/products/products-t
 import { ImportDialog } from "@/components/products/import-dialog";
 
 export default async function ProductsPage() {
-  const { tenantId } = await getTenantFromSession();
+  const { tenantId, role } = await getTenantFromSession();
   const dict = await getDictionary();
+  const publishState = await getPublishState(tenantId);
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
       where: { tenantId },
@@ -38,6 +41,11 @@ export default async function ProductsPage() {
 
   return (
     <div>
+      <PublishBanner
+        pendingCount={publishState.pendingCount}
+        configured={publishState.configured}
+        canPublish={role === "OWNER"}
+      />
       <PageHeader
         eyebrow={dict.pages.products.eyebrow}
         title={dict.pages.products.title}

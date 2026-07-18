@@ -20,7 +20,10 @@ export async function updateTenantSettings(
 
   await prisma.tenant.update({
     where: { id: session.tenantId },
-    data: { name: parsed.data.name },
+    data: {
+      name: parsed.data.name,
+      deployHookUrl: parsed.data.deployHookUrl ?? null,
+    },
   });
   await logAudit({ action: "settings.update", entity: "tenant", entityId: session.tenantId, detail: parsed.data.name });
 

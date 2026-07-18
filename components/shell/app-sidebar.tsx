@@ -22,27 +22,35 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 
 const NAV_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
   "/": "overview",
+  "/leads": "leads",
   "/products": "products",
   "/categories": "categories",
   "/analytics": "analytics",
   "/team": "team",
   "/settings": "settings",
+  "/admin": "admin",
 };
 
 const GROUP_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
   Overview: "groupOverview",
   Catalog: "groupCatalog",
   Workspace: "groupWorkspace",
+  Platform: "groupPlatform",
 };
 
 export function AppSidebar({
   tenantName,
   email,
   role,
+  newLeadCount = 0,
+  isSuperAdmin = false,
 }: {
   tenantName: string;
   email: string;
   role: string;
+  /** Unread enquiries — surfaced as a badge so the inbox gets checked daily. */
+  newLeadCount?: number;
+  isSuperAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const { dict } = useT();
@@ -67,7 +75,9 @@ export function AppSidebar({
 
       <SidebarContent>
         {NAV_GROUPS.map((group) => {
-          const items = NAV_ITEMS.filter((i) => i.group === group);
+          const items = NAV_ITEMS.filter(
+            (i) => i.group === group && (!i.superAdminOnly || isSuperAdmin),
+          );
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={group}>
@@ -87,6 +97,11 @@ export function AppSidebar({
                       >
                         <item.icon />
                         <span>{label}</span>
+                        {item.href === "/leads" && newLeadCount > 0 && (
+                          <span className="ml-auto rounded-full bg-[var(--chart-2)] px-1.5 py-0.5 text-[0.65rem] font-bold leading-none text-[var(--forest)] group-data-[collapsible=icon]:hidden">
+                            {newLeadCount}
+                          </span>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );

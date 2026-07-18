@@ -25,6 +25,8 @@ export function Breadcrumbs() {
     analytics: dict.nav.analytics,
     team: dict.nav.team,
     settings: dict.nav.settings,
+    leads: dict.nav.leads,
+    admin: dict.nav.admin,
     new: dict.actions.new,
     edit: dict.actions.edit,
     finishes: "Finishes",

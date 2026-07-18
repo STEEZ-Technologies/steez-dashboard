@@ -266,15 +266,15 @@ function CategoryTableRow({
         </TableCell>
         <TableCell>
           <div className="flex items-center justify-end gap-1">
-            <Button
+            <LinkButton
               variant="ghost"
               size="icon-sm"
               aria-label={dict.actions.edit}
               title={dict.actions.edit}
-              render={<Link href={`/categories/${c.id}/edit`} />}
+              href={`/categories/${c.id}/edit`}
             >
               <Pencil className="size-4" />
-            </Button>
+            </LinkButton>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}

@@ -38,6 +38,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/link-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -527,15 +528,15 @@ function ProductTableRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center justify-end gap-1">
-          <Button
+          <LinkButton
             variant="ghost"
             size="icon-sm"
             aria-label={dict.actions.edit}
             title={dict.actions.edit}
-            render={<Link href={`/products/${p.id}/edit`} />}
+            href={`/products/${p.id}/edit`}
           >
             <Pencil className="size-4" />
-          </Button>
+          </LinkButton>
           <DropdownMenu>
             <DropdownMenuTrigger
               render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}

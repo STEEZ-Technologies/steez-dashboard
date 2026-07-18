@@ -8,6 +8,8 @@ import {
   getRecentActivity,
   getWeeklyDigest,
 } from "@/lib/analytics";
+import { getPublishState } from "@/lib/publish";
+import { PublishBanner } from "@/components/shell/publish-banner";
 import { PageHeader } from "@/components/shell/page-header";
 import { StatCard } from "@/components/overview/stat-card";
 import { WeeklyDigest } from "@/components/overview/weekly-digest";
@@ -18,9 +20,10 @@ import { LinkButton } from "@/components/ui/link-button";
 import { getDictionary } from "@/lib/i18n";
 
 export default async function OverviewPage() {
-  const { tenantId } = await getTenantFromSession();
+  const { tenantId, role } = await getTenantFromSession();
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
   const dict = await getDictionary();
+  const publishState = await getPublishState(tenantId);
 
   const [kpis, series, pv, activity, productCount, digest] = await Promise.all([
     getKpis(tenantId, 30),
@@ -37,6 +40,11 @@ export default async function OverviewPage() {
 
   return (
     <div>
+      <PublishBanner
+        pendingCount={publishState.pendingCount}
+        configured={publishState.configured}
+        canPublish={role === "OWNER"}
+      />
       <PageHeader
         eyebrow={dict.pages.overview.eyebrow}
         title={dict.pages.overview.title}

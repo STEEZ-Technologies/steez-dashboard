@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTenantFromSession } from "@/lib/tenant";
 import {
   getKpis,
@@ -9,6 +10,9 @@ import {
   getDeviceBreakdown,
   getRecentActivity,
   getTopCountries,
+  getProductPerformance,
+  zeroViewProducts,
+  viewedNotClickedProducts,
 } from "@/lib/analytics";
 import { Download } from "lucide-react";
 import { PageHeader } from "@/components/shell/page-header";
@@ -36,18 +40,32 @@ export default async function AnalyticsPage({
   const rangeStr = sp.range && ALLOWED.has(sp.range) ? sp.range : "30";
   const days = Number(rangeStr);
 
-  const [kpis, series, byViews, byClicks, finishes, referrers, devices, countries, activity] =
-    await Promise.all([
-      getKpis(tenantId, days),
-      getViewsVsClicksByDay(tenantId, days),
-      getTopProductsByViews(tenantId, days),
-      getTopProductsByClicks(tenantId, days),
-      getTopFinishes(tenantId, days),
-      getTopReferrers(tenantId, days),
-      getDeviceBreakdown(tenantId, days),
-      getTopCountries(tenantId, days),
-      getRecentActivity(tenantId, 12),
-    ]);
+  const [
+    kpis,
+    series,
+    byViews,
+    byClicks,
+    finishes,
+    referrers,
+    devices,
+    countries,
+    activity,
+    performance,
+  ] = await Promise.all([
+    getKpis(tenantId, days),
+    getViewsVsClicksByDay(tenantId, days),
+    getTopProductsByViews(tenantId, days),
+    getTopProductsByClicks(tenantId, days),
+    getTopFinishes(tenantId, days),
+    getTopReferrers(tenantId, days),
+    getDeviceBreakdown(tenantId, days),
+    getTopCountries(tenantId, days),
+    getRecentActivity(tenantId, 12),
+    getProductPerformance(tenantId, days),
+  ]);
+
+  const noViews = zeroViewProducts(performance);
+  const noClicks = viewedNotClickedProducts(performance);
 
   return (
     <div>
@@ -124,6 +142,78 @@ export default async function AnalyticsPage({
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>{dict.analytics.needsAttention}</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {dict.analytics.needsAttentionHelp}
+          </p>
+        </CardHeader>
+        <CardContent>
+          {noViews.length === 0 && noClicks.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {dict.analytics.allProductsEngaged}
+            </p>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="eyebrow">{dict.analytics.zeroViews}</p>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {dict.analytics.zeroViewsHelp}
+                </p>
+                {noViews.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">—</p>
+                ) : (
+                  <ul className="divide-y divide-border/60">
+                    {noViews.slice(0, 8).map((p) => (
+                      <li key={p.productId} className="py-1.5 text-sm">
+                        <Link
+                          href={`/products/${p.productId}/edit`}
+                          className="font-medium hover:underline"
+                        >
+                          {p.name}
+                        </Link>
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          {p.model}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div>
+                <p className="eyebrow">{dict.analytics.viewedNotClicked}</p>
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {dict.analytics.viewedNotClickedHelp}
+                </p>
+                {noClicks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">—</p>
+                ) : (
+                  <ul className="divide-y divide-border/60">
+                    {noClicks.slice(0, 8).map((p) => (
+                      <li
+                        key={p.productId}
+                        className="flex items-baseline justify-between gap-2 py-1.5 text-sm"
+                      >
+                        <Link
+                          href={`/products/${p.productId}/edit`}
+                          className="font-medium hover:underline"
+                        >
+                          {p.name}
+                        </Link>
+                        <span className="whitespace-nowrap text-xs tabular-nums text-muted-foreground">
+                          {p.views} {dict.analytics.viewsLabel}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card>

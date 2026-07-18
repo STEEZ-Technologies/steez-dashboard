@@ -44,6 +44,25 @@ export const userInviteSchema = z.object({
 
 export const tenantSettingsSchema = z.object({
   name: z.string().trim().min(1, { error: "Name is required" }),
+  // Deploy hook that rebuilds the tenant's public static site. Optional, but
+  // must be a real https URL when present — it's fetched server-side.
+  deployHookUrl: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? undefined : v))
+    .refine((v) => v === undefined || /^https:\/\/\S+$/.test(v), {
+      error: "Must be an https:// URL",
+    })
+    .optional(),
+});
+
+export const createTenantSchema = z.object({
+  name: z.string().trim().min(1, { error: "Workspace name is required" }),
+  slug: slugField,
+  ownerEmail: z.email({ error: "Enter a valid email" }).trim().toLowerCase(),
+  ownerPassword: z
+    .string()
+    .min(8, { error: "Password must be at least 8 characters" }),
 });
 
 export const passwordChangeSchema = z.object({

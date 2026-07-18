@@ -15,6 +15,7 @@ import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { FlashToast } from "@/components/shell/flash-toast";
 import { getDictionary, getLocale } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/provider";
+import { isSuperAdmin } from "@/lib/super-admin";
 
 export default async function DashboardLayout({
   children,
@@ -22,10 +23,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getTenantFromSession();
-  const tenant = await prisma.tenant.findUniqueOrThrow({
-    where: { id: user.tenantId },
-  });
-  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
+  const [tenant, dict, locale, newLeadCount] = await Promise.all([
+    prisma.tenant.findUniqueOrThrow({ where: { id: user.tenantId } }),
+    getDictionary(),
+    getLocale(),
+    prisma.lead.count({ where: { tenantId: user.tenantId, status: "NEW" } }),
+  ]);
 
   return (
     <I18nProvider dict={dict} locale={locale}>
@@ -34,6 +37,8 @@ export default async function DashboardLayout({
         tenantName={tenant.name}
         email={user.email ?? ""}
         role={user.role}
+        newLeadCount={newLeadCount}
+        isSuperAdmin={isSuperAdmin(user.email)}
       />
       <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">

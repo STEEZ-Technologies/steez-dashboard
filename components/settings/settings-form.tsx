@@ -11,10 +11,12 @@ import { useT } from "@/lib/i18n/provider";
 export function SettingsForm({
   name,
   slug,
+  deployHookUrl,
   canManage,
 }: {
   name: string;
   slug: string;
+  deployHookUrl: string | null;
   canManage: boolean;
 }) {
   const [error, formAction, pending] = useActionState(updateTenantSettings, undefined);
@@ -34,6 +36,19 @@ export function SettingsForm({
             <p className="text-xs text-muted-foreground">
               {dict.settings.slugLockedNote}
             </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="deployHookUrl">{dict.publish.hookLabel}</Label>
+            <Input
+              id="deployHookUrl"
+              name="deployHookUrl"
+              type="url"
+              inputMode="url"
+              placeholder="https://api.vercel.com/v1/integrations/deploy/…"
+              defaultValue={deployHookUrl ?? ""}
+              disabled={!canManage}
+            />
+            <p className="text-xs text-muted-foreground">{dict.publish.hookHelp}</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {canManage ? (

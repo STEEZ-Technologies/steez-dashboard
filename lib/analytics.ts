@@ -159,6 +159,81 @@ export async function getTopProductsByViews(tenantId: string, days = 30, limit =
   }));
 }
 
+/* ── Merchandising insight ────────────────────────────────────── */
+
+export type ProductPerformance = {
+  productId: string;
+  name: string;
+  model: string;
+  views: number;
+  clicks: number;
+  ctr: number | null; // null when there are no views to divide by
+};
+
+/**
+ * Per-product performance across the WHOLE published catalog — including
+ * products with zero activity, which is the point: the useful merchandising
+ * signal is what buyers *aren't* engaging with, and an events-only query can
+ * never surface those rows.
+ */
+export async function getProductPerformance(
+  tenantId: string,
+  days = 30,
+): Promise<ProductPerformance[]> {
+  const since = daysAgo(days);
+
+  const [products, grouped] = await Promise.all([
+    prisma.product.findMany({
+      where: { tenantId, published: true },
+      select: { id: true, name: true, model: true },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.productEvent.groupBy({
+      by: ["productId", "eventType"],
+      where: { tenantId, productId: { not: null }, createdAt: { gte: since } },
+      _count: { productId: true },
+    }),
+  ]);
+
+  const views = new Map<string, number>();
+  const clicks = new Map<string, number>();
+  for (const g of grouped) {
+    const id = g.productId as string;
+    const target = g.eventType === "VIEW" ? views : clicks;
+    target.set(id, (target.get(id) ?? 0) + g._count.productId);
+  }
+
+  return products.map((p) => {
+    const v = views.get(p.id) ?? 0;
+    const c = clicks.get(p.id) ?? 0;
+    return {
+      productId: p.id,
+      name: p.name,
+      model: p.model,
+      views: v,
+      clicks: c,
+      ctr: v > 0 ? Math.min(100, Math.round((c / v) * 100)) : null,
+    };
+  });
+}
+
+/** Published products nobody has viewed in the window — invisible stock. */
+export function zeroViewProducts(perf: ProductPerformance[]): ProductPerformance[] {
+  return perf.filter((p) => p.views === 0);
+}
+
+/**
+ * Viewed but never clicked through — buyers found them and weren't convinced.
+ * Usually a photo, price, or description problem rather than a traffic one.
+ */
+export function viewedNotClickedProducts(
+  perf: ProductPerformance[],
+): ProductPerformance[] {
+  return perf
+    .filter((p) => p.views > 0 && p.clicks === 0)
+    .sort((a, b) => b.views - a.views);
+}
+
 /* ── Finishes (catalog-specific) ──────────────────────────────── */
 
 export async function getTopFinishes(tenantId: string, days = 30, limit = 8) {
