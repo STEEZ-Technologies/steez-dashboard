@@ -15,7 +15,13 @@ export default async function CategoriesPage() {
   const categories = await prisma.category.findMany({
     where: { tenantId },
     orderBy: { sortOrder: "asc" },
-    include: { _count: { select: { products: true } } },
+    include: {
+      _count: { select: { products: true } },
+      products: {
+        orderBy: { sortOrder: "asc" },
+        select: { id: true, name: true, model: true, published: true },
+      },
+    },
   });
 
   const rows: CategoryRow[] = categories.map((c) => ({
@@ -23,6 +29,7 @@ export default async function CategoriesPage() {
     label: c.label,
     slug: c.slug,
     productCount: c._count.products,
+    products: c.products,
   }));
 
   return (

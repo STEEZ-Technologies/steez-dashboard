@@ -8,9 +8,12 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  ChevronDown,
+  ChevronRight,
   GripVertical,
   FolderTree,
   Plus,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,6 +32,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/shell/empty-state";
 import {
@@ -63,17 +67,26 @@ import {
 } from "@/app/(dashboard)/categories/actions";
 import { useT } from "@/lib/i18n/provider";
 
+export type CategoryProduct = {
+  id: string;
+  name: string;
+  model: string;
+  published: boolean;
+};
+
 export type CategoryRow = {
   id: string;
   label: string;
   slug: string;
   productCount: number;
+  products: CategoryProduct[];
 };
 
 export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   const [pending, startTransition] = useTransition();
   const [toDelete, setToDelete] = useState<CategoryRow | null>(null);
   const [order, setOrder] = useState<CategoryRow[]>(categories);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   useEffect(() => setOrder(categories), [categories]);
   const { dict } = useT();
   const t = dict.categories;
@@ -145,6 +158,15 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
                   key={c.id}
                   c={c}
                   pending={pending}
+                  expanded={expanded.has(c.id)}
+                  onToggleExpand={() =>
+                    setExpanded((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(c.id)) next.delete(c.id);
+                      else next.add(c.id);
+                      return next;
+                    })
+                  }
                   onMoveUp={() => runAction(() => moveCategory(c.id, "up"), "Moved up")}
                   onMoveDown={() =>
                     runAction(() => moveCategory(c.id, "down"), "Moved down")
@@ -184,12 +206,16 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
 function CategoryTableRow({
   c,
   pending,
+  expanded,
+  onToggleExpand,
   onMoveUp,
   onMoveDown,
   onDelete,
 }: {
   c: CategoryRow;
   pending: boolean;
+  expanded: boolean;
+  onToggleExpand: () => void;
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
@@ -199,55 +225,104 @@ function CategoryTableRow({
   const { dict } = useT();
 
   return (
-    <TableRow
-      ref={setNodeRef}
-      data-pending={pending || undefined}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : undefined,
-      }}
-    >
-      <TableCell>
-        <button
-          type="button"
-          className="flex size-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing"
-          aria-label="Drag to reorder"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
-      </TableCell>
-      <TableCell className="font-medium">{c.label}</TableCell>
-      <TableCell className="text-muted-foreground">{c.slug}</TableCell>
-      <TableCell className="text-muted-foreground tabular-nums">
-        {c.productCount}
-      </TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+    <>
+      <TableRow
+        ref={setNodeRef}
+        data-pending={pending || undefined}
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.5 : undefined,
+        }}
+      >
+        <TableCell>
+          <button
+            type="button"
+            className="flex size-6 cursor-grab items-center justify-center text-muted-foreground active:cursor-grabbing"
+            aria-label="Drag to reorder"
+            {...attributes}
+            {...listeners}
           >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem render={<Link href={`/categories/${c.id}/edit`} />}>
-              <Pencil className="size-4" /> {dict.actions.edit}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onMoveUp}>
-              <ArrowUp className="size-4" /> {dict.actions.moveUp}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onMoveDown}>
-              <ArrowDown className="size-4" /> {dict.actions.moveDown}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={onDelete}>
-              <Trash2 className="size-4" /> {dict.actions.delete}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
+            <GripVertical className="size-4" />
+          </button>
+        </TableCell>
+        <TableCell className="font-medium">{c.label}</TableCell>
+        <TableCell className="text-muted-foreground">{c.slug}</TableCell>
+        <TableCell className="text-muted-foreground tabular-nums">
+          <button
+            type="button"
+            onClick={onToggleExpand}
+            disabled={c.productCount === 0}
+            className="flex items-center gap-1 disabled:cursor-default"
+          >
+            {c.productCount > 0 &&
+              (expanded ? (
+                <ChevronDown className="size-3.5" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              ))}
+            {c.productCount}
+          </button>
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={dict.actions.edit}
+              title={dict.actions.edit}
+              render={<Link href={`/categories/${c.id}/edit`} />}
+            >
+              <Pencil className="size-4" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+              >
+                <MoreHorizontal className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onMoveUp}>
+                  <ArrowUp className="size-4" /> {dict.actions.moveUp}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onMoveDown}>
+                  <ArrowDown className="size-4" /> {dict.actions.moveDown}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onClick={onDelete}>
+                  <Trash2 className="size-4" /> {dict.actions.delete}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </TableCell>
+      </TableRow>
+      {expanded && c.products.length > 0 && (
+        <TableRow>
+          <TableCell colSpan={5} className="bg-muted/30 p-0">
+            <ul className="divide-y divide-border/60 px-4 py-2">
+              {c.products.map((p) => (
+                <li key={p.id} className="flex items-center gap-2 py-1.5 text-sm">
+                  <Package className="size-3.5 text-muted-foreground" />
+                  <Link
+                    href={`/products/${p.id}/edit`}
+                    className="font-medium hover:underline"
+                  >
+                    {p.name}
+                  </Link>
+                  <span className="text-muted-foreground">{p.model}</span>
+                  <Badge
+                    variant={p.published ? "default" : "outline"}
+                    className="ml-auto"
+                  >
+                    {p.published ? dict.products.published : dict.products.draft}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
   );
 }

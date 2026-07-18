@@ -526,16 +526,23 @@ function ProductTableRow({
         </div>
       </TableCell>
       <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+        <div className="flex items-center justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={dict.actions.edit}
+            title={dict.actions.edit}
+            render={<Link href={`/products/${p.id}/edit`} />}
           >
-            <MoreHorizontal className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem render={<Link href={`/products/${p.id}/edit`} />}>
-              <Pencil className="size-4" /> {dict.actions.edit}
-            </DropdownMenuItem>
+            <Pencil className="size-4" />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+            >
+              <MoreHorizontal className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
             <DropdownMenuItem
               render={<Link href={`/products/${p.id}/analytics`} />}
             >
@@ -565,8 +572,9 @@ function ProductTableRow({
             <DropdownMenuItem variant="destructive" onClick={onDelete}>
               <Trash2 className="size-4" /> {dict.actions.delete}
             </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </TableCell>
     </TableRow>
   );
