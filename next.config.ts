@@ -1,11 +1,41 @@
 import type { NextConfig } from "next";
 import path from "path";
 
-// CSP is deliberately not set here — Next.js's RSC hydration payload and
-// several chart/DnD libraries in this app need inline script/style, and
-// getting a strict policy right needs live testing against every page
-// rather than guessing blind. The rest of these are zero-risk.
+const isDev = process.env.NODE_ENV === "development";
+
+// Content Security Policy.
+//
+// Honest scope: 'unsafe-inline' on script-src is unavoidable without moving to
+// nonce-based CSP in middleware (Next's RSC hydration payload and the chart /
+// DnD libraries all inject inline script and style). So this does NOT stop an
+// injected inline <script>. What it does buy, and the reason it's worth having:
+//
+//   - script-src 'self'  → an injected <script src="//evil.com"> won't load
+//   - connect-src        → exfiltration to an attacker's host is blocked
+//   - form-action 'self' → a planted <form> can't POST credentials offsite
+//   - base-uri 'self'    → blocks <base> tag hijacking of every relative URL
+//   - object-src 'none'  → no Flash/embed vectors
+//   - frame-ancestors    → clickjacking (also covered by X-Frame-Options)
+//
+// img-src allows any https host because product photos are served from the
+// client's own domain today and will move to an OSS/CDN domain later; keeping
+// it broad avoids silently breaking catalog images on a domain change.
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  // ws: is the Turbopack HMR socket — dev only.
+  `connect-src 'self'${isDev ? " ws: http://localhost:*" : ""}`,
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+].join("; ");
+
 const SECURITY_HEADERS = [
+  { key: "Content-Security-Policy", value: CSP },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
