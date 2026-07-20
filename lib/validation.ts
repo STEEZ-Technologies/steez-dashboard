@@ -70,6 +70,14 @@ export const passwordChangeSchema = z.object({
   newPassword: z.string().min(8, { error: "New password must be at least 8 characters" }),
 });
 
+export const totpConfirmSchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, { error: "Enter the 6-digit code" }),
+});
+
+export const totpDisableSchema = z.object({
+  password: z.string().min(1, { error: "Password is required" }),
+});
+
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;

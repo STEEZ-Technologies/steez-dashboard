@@ -4,16 +4,18 @@ import { getRecentAudit } from "@/lib/audit";
 import { PageHeader } from "@/components/shell/page-header";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
+import { TwoFactorForm } from "@/components/settings/two-factor-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n";
 
 export default async function SettingsPage() {
   const session = await getTenantFromSession();
-  const [tenant, audit, dict] = await Promise.all([
+  const [tenant, audit, dict, currentUser] = await Promise.all([
     prisma.tenant.findUniqueOrThrow({ where: { id: session.tenantId } }),
     getRecentAudit(session.tenantId, 25),
     getDictionary(),
+    prisma.user.findUniqueOrThrow({ where: { id: session.id }, select: { totpEnabled: true } }),
   ]);
 
   return (
@@ -33,6 +35,8 @@ export default async function SettingsPage() {
         />
 
         <ChangePasswordForm />
+
+        <TwoFactorForm enabled={currentUser.totpEnabled} />
 
         <Card className="max-w-xl">
           <CardContent className="grid gap-1 p-6">

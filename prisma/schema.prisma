@@ -46,6 +46,14 @@ model User {
   role         Role     @default(STAFF)
   createdAt    DateTime @default(now())
 
+  // TOTP 2FA. totpSecret is set as soon as enrollment starts but totpEnabled
+  // stays false until the user confirms one valid code — so a half-finished
+  // enrollment never locks anyone out. recoveryCodes are bcrypt-hashed,
+  // single-use (consumed entries are removed from the array).
+  totpSecret    String?
+  totpEnabled   Boolean  @default(false)
+  recoveryCodes String[] @default([])
+
   @@index([tenantId])
 }
 
