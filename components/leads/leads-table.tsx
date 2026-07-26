@@ -118,6 +118,26 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
     });
   }
 
+  // Opening a lead is how you "read" it — auto-clear it from the NEW badge
+  // the same way an email client marks a message read on open, instead of
+  // requiring a separate manual status change just to make the count honest.
+  function toggleExpand(lead: LeadRow) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(lead.id)) {
+        next.delete(lead.id);
+      } else {
+        next.add(lead.id);
+        if (lead.status === "NEW") {
+          startTransition(async () => {
+            await updateLeadStatus(lead.id, "CONTACTED");
+          });
+        }
+      }
+      return next;
+    });
+  }
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -163,19 +183,19 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                 const isOpen = expanded.has(lead.id);
                 return (
                   <Fragment key={lead.id}>
-                    <TableRow data-pending={pending || undefined}>
+                    <TableRow
+                      data-pending={pending || undefined}
+                      onClick={() => toggleExpand(lead)}
+                      className="cursor-pointer"
+                    >
                       <TableCell>
                         <button
                           type="button"
                           aria-label={isOpen ? "Collapse" : "Expand"}
-                          onClick={() =>
-                            setExpanded((prev) => {
-                              const next = new Set(prev);
-                              if (next.has(lead.id)) next.delete(lead.id);
-                              else next.add(lead.id);
-                              return next;
-                            })
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpand(lead);
+                          }}
                           className="flex size-6 items-center justify-center text-muted-foreground"
                         >
                           {isOpen ? (
@@ -197,6 +217,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           {lead.email && (
                             <a
                               href={`mailto:${lead.email}`}
+                              onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center gap-1 hover:text-foreground"
                             >
                               <Mail className="size-3" />
@@ -206,6 +227,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           {lead.phone && (
                             <a
                               href={`tel:${lead.phone}`}
+                              onClick={(e) => e.stopPropagation()}
                               className="inline-flex items-center gap-1 hover:text-foreground"
                             >
                               <Phone className="size-3" />
@@ -215,7 +237,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           {lead.country && <span>{lead.country}</span>}
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground" onClick={(e) => e.stopPropagation()}>
                         {lead.productId ? (
                           <Link
                             href={`/products/${lead.productId}/edit`}
@@ -244,7 +266,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                       <TableCell className="whitespace-nowrap text-muted-foreground">
                         {relativeTime(lead.createdAt)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             render={
