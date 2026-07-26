@@ -3,6 +3,7 @@ import geoip from "geoip-lite";
 import { prisma } from "@/lib/db";
 import { corsHeadersFor, isBot } from "@/lib/cors";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { notifyNewLead } from "@/lib/leadmail";
 
 // Public, unauthenticated buyer-enquiry capture. Mirrors the track endpoint's
 // shape (tenant → bot → rate limit → validate → write) but is much more
@@ -96,21 +97,27 @@ export async function POST(
 
   const country = ip !== "unknown" ? geoip.lookup(ip)?.country ?? null : null;
 
+  const name = str(raw.name);
+  const company = str(raw.company);
+  const message = str(raw.message, MAX_MESSAGE);
+
   await prisma.lead.create({
     data: {
       tenantId: tenant.id,
       productId,
-      name: str(raw.name),
+      name,
       email,
       phone,
-      company: str(raw.company),
-      message: str(raw.message, MAX_MESSAGE),
+      company,
+      message,
       sessionId: str(raw.sessionId),
       path: str(raw.path, 500),
       referrer: str(raw.referrer, 500),
       country,
     },
   });
+
+  notifyNewLead({ tenantId: tenant.id, name, email, phone, company, message });
 
   return NextResponse.json({ ok: true }, { headers: CORS });
 }
