@@ -18,6 +18,7 @@ import { NAV_GROUPS, NAV_ITEMS, isActive } from "./nav-items";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/app/(dashboard)/actions";
 import { useT } from "@/lib/i18n/provider";
+import { STEEZWordmark } from "@/components/shared/steez-wordmark";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 
 const NAV_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
@@ -59,10 +60,8 @@ export function AppSidebar({
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex items-baseline gap-1.5 overflow-hidden">
-            <span className="text-base font-extrabold tracking-[0.14em] group-data-[collapsible=icon]:hidden">
-              STEEZ
-            </span>
+          <div className="flex items-baseline gap-1.5 overflow-hidden group-data-[collapsible=icon]:hidden">
+            <STEEZWordmark size={18} color="var(--sidebar-foreground)" />
             <span className="cn-text text-sm font-bold text-sidebar-primary">
               思智
             </span>
