@@ -15,20 +15,28 @@ export async function notifyNewLead(lead: {
   company?: string | null;
   message?: string | null;
 }) {
+  console.log("notifyNewLead: start", { tenantId: lead.tenantId });
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return; // not configured yet — skip silently
+  if (!apiKey) {
+    console.log("notifyNewLead: no RESEND_API_KEY, skipping");
+    return;
+  }
 
   const owner = await prisma.user.findFirst({
     where: { tenantId: lead.tenantId, role: "OWNER" },
     select: { email: true },
   });
-  if (!owner) return;
+  if (!owner) {
+    console.log("notifyNewLead: no OWNER user found for tenant", lead.tenantId);
+    return;
+  }
+  console.log("notifyNewLead: sending to", owner.email);
 
   const resend = new Resend(apiKey);
   const contact = lead.email ?? lead.phone ?? "no contact info";
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: FROM,
       to: owner.email,
       subject: `New enquiry: ${lead.name ?? contact}`,
@@ -43,6 +51,7 @@ export async function notifyNewLead(lead: {
         "https://dashboard.steez.digital/leads",
       ].join("\n"),
     });
+    console.log("notifyNewLead: resend result", JSON.stringify(result));
   } catch (err) {
     console.error("notifyNewLead failed", err);
   }
