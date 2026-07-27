@@ -18,7 +18,11 @@ export default function LoginPage() {
   // Password isn't held in React state (avoid it lingering in memory/devtools)
   // — the credentials form fields are just re-read from this hidden form on
   // the TOTP step, which resubmits email+password+code together.
-  const credentialsRef = useRef<{ email: string; password: string } | null>(null);
+  const credentialsRef = useRef<{
+    email: string;
+    password: string;
+    rememberMe: string;
+  } | null>(null);
 
   // Same pattern as the STEEZ marketing hero: pick shader colors from the
   // resolved theme, only after mount (avoids a light/dark hydration flash).
@@ -35,6 +39,7 @@ export default function LoginPage() {
     credentialsRef.current = {
       email: String(formData.get("email") ?? ""),
       password: String(formData.get("password") ?? ""),
+      rememberMe: String(formData.get("rememberMe") ?? ""),
     };
     setError(undefined);
     startTransition(async () => {
@@ -56,6 +61,7 @@ export default function LoginPage() {
     formData.set("email", creds.email);
     formData.set("password", creds.password);
     formData.set("code", String(code ?? ""));
+    if (creds.rememberMe) formData.set("rememberMe", creds.rememberMe);
     setError(undefined);
     startTransition(async () => {
       const result = await authenticate(undefined, formData);

@@ -18,6 +18,7 @@ export async function authenticate(
       email: formData.get("email"),
       password: formData.get("password"),
       code: formData.get("code") ?? undefined,
+      rememberMe: formData.get("rememberMe") ?? undefined,
       redirectTo: "/products",
     });
     return {};

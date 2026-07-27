@@ -16,6 +16,11 @@ export class TOTPInvalidError extends CredentialsSignin {
   static type = "TOTPInvalid";
 }
 
+// Unchecked "Keep me signed in" still gets a real session — just a short one,
+// forced by the jwt callback below rather than by cookie Max-Age (NextAuth's
+// JWT cookie duration is fixed per-deployment, not per-login).
+const SHORT_SESSION_SECONDS = 24 * 60 * 60;
+
 function clientIp(request: Request): string {
   const xff = request.headers.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
@@ -31,11 +36,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         code: { label: "2FA code", type: "text" },
+        rememberMe: { label: "Keep me signed in", type: "text" },
       },
       authorize: async (credentials, request) => {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
         const code = (credentials?.code as string | undefined)?.trim();
+        // Native checkbox: "on" when checked, absent (undefined) when not.
+        const rememberMe = credentials?.rememberMe === "on";
         if (!email || !password) return null;
 
         // Brute-force guard: 5 attempts / 5min per email, 20 / 5min per IP
@@ -76,6 +84,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           tenantId: user.tenantId,
           role: user.role,
+          rememberMe,
         };
       },
     }),
@@ -86,6 +95,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id as string;
         token.tenantId = user.tenantId;
         token.role = user.role;
+        token.rememberMe = user.rememberMe ?? false;
+        return token;
+      }
+
+      // Not a fresh sign-in — enforce the short session for anyone who
+      // didn't check "Keep me signed in" (token.iat is set by NextAuth).
+      if (!token.rememberMe && typeof token.iat === "number") {
+        const age = Date.now() / 1000 - token.iat;
+        if (age > SHORT_SESSION_SECONDS) return null;
       }
       return token;
     },

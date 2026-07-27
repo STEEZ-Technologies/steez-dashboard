@@ -5,6 +5,7 @@ declare module "next-auth" {
   interface User {
     tenantId: string;
     role: Role;
+    rememberMe?: boolean;
   }
 
   interface Session {
@@ -21,5 +22,6 @@ declare module "@auth/core/jwt" {
     id: string;
     tenantId: string;
     role: Role;
+    rememberMe: boolean;
   }
 }
