@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -27,7 +28,8 @@ const CSP = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   // ws: is the Turbopack HMR socket — dev only.
-  `connect-src 'self'${isDev ? " ws: http://localhost:*" : ""}`,
+  // *.sentry.io is Sentry's error-reporting ingest endpoint.
+  `connect-src 'self' https://*.sentry.io${isDev ? " ws: http://localhost:*" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -58,4 +60,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: "steez",
+  project: "javascript-nextjs",
+  silent: true,
+  // No source-map upload token configured yet — skip uploading to keep
+  // builds from failing; stack traces will just show minified names.
+  sourcemaps: { disable: true },
+});
