@@ -53,6 +53,32 @@ export async function removeTeamMember(userId: string) {
   revalidatePath("/team");
 }
 
+export async function updateMemberEmail(userId: string, newEmail: string) {
+  const session = await getTenantFromSession();
+  if (session.role !== "OWNER") return "Only owners can change email addresses";
+
+  const parsed = userInviteSchema.shape.email.safeParse(newEmail);
+  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid email";
+
+  const target = await prisma.user.findFirst({
+    where: { id: userId, tenantId: session.tenantId },
+  });
+  if (!target) return "User not found";
+
+  const existing = await prisma.user.findUnique({ where: { email: parsed.data } });
+  if (existing && existing.id !== target.id) return "A user with that email already exists";
+
+  await prisma.user.update({ where: { id: target.id }, data: { email: parsed.data } });
+  await logAudit({
+    action: "team.update_email",
+    entity: "user",
+    entityId: userId,
+    detail: `${target.email} -> ${parsed.data}`,
+  });
+  revalidatePath("/team");
+  return undefined;
+}
+
 export async function resetMemberPassword(userId: string, newPassword: string) {
   const session = await getTenantFromSession();
   if (session.role !== "OWNER") return "Only owners can reset passwords";

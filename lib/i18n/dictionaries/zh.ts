@@ -216,6 +216,12 @@ export const zh: Dictionary = {
     passwordReset: "密码已重置",
     memberAdded: "团队成员已添加",
     memberRemoved: "成员已移除",
+    editEmail: "编辑邮箱",
+    editEmailTitle: "更改邮箱",
+    editEmailDesc: "这将更改 {email} 的登录邮箱。",
+    newEmail: "新邮箱",
+    saving: "保存中…",
+    emailUpdated: "邮箱已更新",
   },
   settings: {
     subtitle: "工作区详情、账户与活动记录。",

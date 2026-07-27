@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { UserPlus, Trash2, MoreHorizontal } from "lucide-react";
+import { UserPlus, Trash2, MoreHorizontal, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,7 @@ import {
   addTeamMember,
   removeTeamMember,
   resetMemberPassword,
+  updateMemberEmail,
 } from "@/app/(dashboard)/team/actions";
 import { KeyRound } from "lucide-react";
 import { useT } from "@/lib/i18n/provider";
@@ -78,7 +79,26 @@ export function TeamMembers({
   const [toReset, setToReset] = useState<Member | null>(null);
   const [resetPw, setResetPw] = useState("");
   const [resetErr, setResetErr] = useState<string | null>(null);
+  const [toEditEmail, setToEditEmail] = useState<Member | null>(null);
+  const [newEmail, setNewEmail] = useState("");
+  const [editEmailErr, setEditEmailErr] = useState<string | null>(null);
   const { dict } = useT();
+
+  function handleEditEmail() {
+    const target = toEditEmail;
+    if (!target) return;
+    setEditEmailErr(null);
+    startTransition(async () => {
+      const err = await updateMemberEmail(target.id, newEmail);
+      if (err) {
+        setEditEmailErr(err);
+      } else {
+        toast.success(dict.team.emailUpdated);
+        setToEditEmail(null);
+        setNewEmail("");
+      }
+    });
+  }
 
   function handleReset() {
     const target = toReset;
@@ -186,26 +206,33 @@ export function TeamMembers({
                 <TableCell className="text-muted-foreground">{m.createdAt}</TableCell>
                 {canManage && (
                   <TableCell>
-                    {!m.isSelf && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={<Button variant="ghost" size="icon-sm" aria-label="Actions" />}
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => { setNewEmail(m.email); setEditEmailErr(null); setToEditEmail(m); }}
                         >
-                          <MoreHorizontal className="size-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => { setResetPw(""); setResetErr(null); setToReset(m); }}>
-                            <KeyRound className="size-4" /> {dict.team.resetPassword}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            variant="destructive"
-                            onClick={() => setToRemove(m)}
-                          >
-                            <Trash2 className="size-4" /> {dict.team.remove}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+                          <Pencil className="size-4" /> {dict.team.editEmail}
+                        </DropdownMenuItem>
+                        {!m.isSelf && (
+                          <>
+                            <DropdownMenuItem onClick={() => { setResetPw(""); setResetErr(null); setToReset(m); }}>
+                              <KeyRound className="size-4" /> {dict.team.resetPassword}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              variant="destructive"
+                              onClick={() => setToRemove(m)}
+                            >
+                              <Trash2 className="size-4" /> {dict.team.remove}
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 )}
               </TableRow>
@@ -265,6 +292,32 @@ export function TeamMembers({
           <DialogFooter>
             <Button onClick={handleReset} disabled={pending || resetPw.length < 8}>
               {pending ? dict.team.resetting : dict.team.resetPassword}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!toEditEmail} onOpenChange={(o) => !o && setToEditEmail(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dict.team.editEmailTitle}</DialogTitle>
+            <DialogDescription>
+              {dict.team.editEmailDesc.replace("{email}", toEditEmail?.email ?? "")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-2">
+            <Label htmlFor="newEmail">{dict.team.newEmail}</Label>
+            <Input
+              id="newEmail"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+            />
+            {editEmailErr && <p className="text-sm text-destructive">{editEmailErr}</p>}
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditEmail} disabled={pending || !newEmail}>
+              {pending ? dict.team.saving : dict.actions.save}
             </Button>
           </DialogFooter>
         </DialogContent>

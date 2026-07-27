@@ -222,6 +222,12 @@ export const en = {
     passwordReset: "Password reset",
     memberAdded: "Team member added",
     memberRemoved: "Member removed",
+    editEmail: "Edit email",
+    editEmailTitle: "Change email",
+    editEmailDesc: "This changes the login email for {email}.",
+    newEmail: "New email",
+    saving: "Saving…",
+    emailUpdated: "Email updated",
   },
   settings: {
     subtitle: "Workspace details, your account, and activity.",
