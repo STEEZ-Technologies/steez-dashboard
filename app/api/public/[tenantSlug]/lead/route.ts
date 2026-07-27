@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import geoip from "geoip-lite";
 import { prisma } from "@/lib/db";
 import { corsHeadersFor, isBot } from "@/lib/cors";
@@ -117,7 +117,7 @@ export async function POST(
     },
   });
 
-  notifyNewLead({ tenantId: tenant.id, name, email, phone, company, message });
+  after(() => notifyNewLead({ tenantId: tenant.id, name, email, phone, company, message }));
 
   return NextResponse.json({ ok: true }, { headers: CORS });
 }
