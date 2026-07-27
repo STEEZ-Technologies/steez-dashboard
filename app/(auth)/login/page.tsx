@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { authenticate } from "../actions";
 import { SignInPage } from "@/components/ui/sign-in";
@@ -12,6 +13,7 @@ import { useT } from "@/lib/i18n/provider";
 
 export default function LoginPage() {
   const { dict } = useT();
+  const router = useRouter();
   const [error, setError] = useState<string | undefined>();
   const [needsTotp, setNeedsTotp] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -108,6 +110,7 @@ export default function LoginPage() {
             pending={pending}
             errorMessage={error}
             onSignIn={handleSignIn}
+            onResetPassword={() => router.push("/forgot-password")}
           />
         )}
       </div>

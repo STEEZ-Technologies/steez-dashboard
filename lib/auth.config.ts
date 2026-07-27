@@ -12,7 +12,8 @@ export const authConfig = {
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
       const path = request.nextUrl.pathname;
-      const isPublicRoute = path === "/login";
+      const isPublicRoute =
+        path === "/login" || path === "/forgot-password" || path === "/reset-password";
 
       if (!isLoggedIn && !isPublicRoute) return false;
       if (isLoggedIn && isPublicRoute) {

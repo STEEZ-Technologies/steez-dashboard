@@ -78,6 +78,15 @@ export const totpDisableSchema = z.object({
   password: z.string().min(1, { error: "Password is required" }),
 });
 
+export const forgotPasswordSchema = z.object({
+  email: z.email({ error: "Enter a valid email" }).trim().toLowerCase(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, { error: "Missing token" }),
+  password: z.string().min(8, { error: "Password must be at least 8 characters" }),
+});
+
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;

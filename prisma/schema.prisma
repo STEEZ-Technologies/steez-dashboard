@@ -54,6 +54,12 @@ model User {
   totpEnabled   Boolean  @default(false)
   recoveryCodes String[] @default([])
 
+  // Forgot-password flow. resetTokenHash is a SHA-256 digest of the token
+  // emailed to the user (the raw token never touches the DB) — single-use,
+  // cleared on success. resetTokenExpiresAt gates a 1-hour window.
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+
   @@index([tenantId])
 }
 
