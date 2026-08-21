@@ -44,6 +44,9 @@ export function PublishBanner({
         {pendingCount === 1 ? t.pendingOne : t.pendingOther}
       </p>
       <div className="ml-auto flex items-center gap-2">
+        <Link href="/preview" className="text-sm font-medium underline">
+          {t.previewChanges}
+        </Link>
         {configured ? (
           canPublish ? (
             <Button size="sm" onClick={publish} disabled={pending}>
