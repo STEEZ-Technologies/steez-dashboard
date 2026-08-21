@@ -101,6 +101,7 @@ model Product {
   finishes      ProductFinish[]
   productEvents ProductEvent[]
   images        ProductImage[]
+  models3d      ProductModel3D[]
   leads         Lead[]
 
   @@unique([tenantId, slug])
@@ -113,6 +114,17 @@ model ProductImage {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   imagePath String // OSS key
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductModel3D {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  modelPath String // OSS key, .glb
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 

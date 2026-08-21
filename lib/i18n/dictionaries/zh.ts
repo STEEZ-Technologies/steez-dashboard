@@ -178,6 +178,18 @@ export const zh: Dictionary = {
     uploading: "上传中…",
     altText: "产品图片 {n}",
   },
+  models3d: {
+    empty: "还没有 3D 模型。添加 GLB 文件以启用可交互旋转查看器。",
+    modelAdded: "3D 模型已添加",
+    modelsAdded: "3D 模型已添加",
+    uploadFailed: "上传失败",
+    modelRemoved: "3D 模型已移除",
+    moveEarlier: "前移",
+    moveLater: "后移",
+    remove: "移除",
+    addModels: "添加 3D 模型",
+    uploading: "上传中…",
+  },
   import: {
     close: "关闭",
     import: "导入",

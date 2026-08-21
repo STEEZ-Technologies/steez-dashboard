@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductImages, type GalleryImage } from "@/components/products/product-images";
+import { ProductModels3D, type ProductModel } from "@/components/products/product-models-3d";
 import { getDictionary } from "@/lib/i18n";
 
 export default async function EditProductPage({
@@ -31,7 +32,7 @@ export default async function EditProductPage({
   if (!product) notFound();
   const dict = await getDictionary();
 
-  const [finishes, galleryRows] = await Promise.all([
+  const [finishes, galleryRows, model3dRows] = await Promise.all([
     prisma.productFinish.findMany({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
@@ -40,10 +41,18 @@ export default async function EditProductPage({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
     }),
+    prisma.productModel3D.findMany({
+      where: { productId: product.id },
+      orderBy: { sortOrder: "asc" },
+    }),
   ]);
   const gallery: GalleryImage[] = galleryRows.map((img) => ({
     id: img.id,
     url: getPublicUrl(img.imagePath),
+  }));
+  const models3d: ProductModel[] = model3dRows.map((m) => ({
+    id: m.id,
+    url: getPublicUrl(m.modelPath),
   }));
 
   return (
@@ -94,6 +103,15 @@ export default async function EditProductPage({
         </CardHeader>
         <CardContent>
           <ProductImages productId={product.id} images={gallery} />
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6 max-w-2xl">
+        <CardHeader>
+          <CardTitle>3D models</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProductModels3D productId={product.id} models={models3d} />
         </CardContent>
       </Card>
 

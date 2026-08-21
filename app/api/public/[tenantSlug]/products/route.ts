@@ -28,6 +28,7 @@ export async function GET(
       category: true,
       finishes: { orderBy: { sortOrder: "asc" } },
       images: { orderBy: { sortOrder: "asc" } },
+      models3d: { orderBy: { sortOrder: "asc" } },
     },
   });
 
@@ -38,6 +39,7 @@ export async function GET(
     const images = heroUrl
       ? [heroUrl, ...galleryUrls.filter((u) => u !== heroUrl)]
       : galleryUrls;
+    const models3d = product.models3d.map((m) => getPublicUrl(m.modelPath));
 
     return {
     id: product.slug,
@@ -46,6 +48,7 @@ export async function GET(
     description: product.description,
     image: heroUrl ?? images[0] ?? null,
     images,
+    models3d,
     specs: product.specs ?? {},
     featured: product.featured,
     category: product.category

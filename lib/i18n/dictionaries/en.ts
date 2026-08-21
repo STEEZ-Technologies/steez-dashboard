@@ -183,6 +183,18 @@ export const en = {
     uploading: "Uploading…",
     altText: "Product photo {n}",
   },
+  models3d: {
+    empty: "No 3D models yet. Add a GLB file for an interactive rotate/spin viewer.",
+    modelAdded: "3D model added",
+    modelsAdded: "3D models added",
+    uploadFailed: "Upload failed",
+    modelRemoved: "3D model removed",
+    moveEarlier: "Move earlier",
+    moveLater: "Move later",
+    remove: "Remove",
+    addModels: "Add 3D models",
+    uploading: "Uploading…",
+  },
   import: {
     close: "Close",
     import: "Import",
