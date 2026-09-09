@@ -278,8 +278,14 @@ export async function getDeviceBreakdown(tenantId: string, days = 30) {
     where: { tenantId, createdAt: { gte: since } },
     select: { userAgent: true },
   });
-  const counts = { Desktop: 0, Mobile: 0, Tablet: 0 };
-  for (const r of rows) counts[deviceOf(r.userAgent)]++;
+  // Tablets are folded into Mobile rather than shown as their own slice: the
+  // split isn't actionable for a catalog owner, and keeping the bucket means
+  // the breakdown still adds up to total page views.
+  const counts = { Desktop: 0, Mobile: 0 };
+  for (const r of rows) {
+    const device = deviceOf(r.userAgent);
+    counts[device === "Desktop" ? "Desktop" : "Mobile"]++;
+  }
   return (Object.entries(counts) as [keyof typeof counts, number][])
     .map(([device, count]) => ({ device, count }))
     .filter((d) => d.count > 0);

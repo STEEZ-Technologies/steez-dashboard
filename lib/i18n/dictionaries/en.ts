@@ -115,6 +115,9 @@ export const en = {
     pageViewed: "Page viewed",
     productViewed: "Product viewed",
     productClicked: "Product clicked",
+    pathHome: "Home page",
+    pathCategory: "Category",
+    pathProduct: "Product",
   },
   analytics: {
     lastDays: "Last {days} days.",

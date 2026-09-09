@@ -111,6 +111,9 @@ export const zh: Dictionary = {
     pageViewed: "页面被浏览",
     productViewed: "产品被浏览",
     productClicked: "产品被点击",
+    pathHome: "首页",
+    pathCategory: "分类",
+    pathProduct: "产品",
   },
   analytics: {
     lastDays: "最近 {days} 天。",
