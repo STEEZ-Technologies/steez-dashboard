@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { BarChart } from "@/components/charts/bar-chart";
+import { Bar } from "@/components/charts/bar";
+import { BarYAxis } from "@/components/charts/bar-y-axis";
+import { Grid } from "@/components/charts/grid";
+import { ChartTooltip } from "@/components/charts/tooltip";
 import { useT } from "@/lib/i18n/provider";
 
 export function RankBarChart({
@@ -36,41 +32,32 @@ export function RankBarChart({
       </div>
     );
   }
+
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 12 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-        <XAxis
-          type="number"
-          allowDecimals={false}
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          stroke="var(--border)"
-        />
-        <YAxis
-          type="category"
-          dataKey="name"
-          width={140}
-          tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
-          stroke="var(--border)"
-        />
-        <Tooltip
-          cursor={{ fill: "color-mix(in oklch, var(--chart-2), transparent 90%)" }}
-          contentStyle={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--popover)",
-            color: "var(--popover-foreground)",
-            fontSize: 13,
-          }}
-        />
-        <Bar
-          dataKey={dataKey}
-          name={seriesName}
-          fill={color}
-          radius={[0, 6, 6, 0]}
-          isAnimationActive={false}
+    // BarChart sets `aspect-ratio` inline and takes no `style`. A definite
+    // height on the wrapper (plus h-full) makes the browser ignore it.
+    <div style={{ height }}>
+      <BarChart
+        data={data}
+        xDataKey="name"
+        orientation="horizontal"
+        className="h-full"
+        margin={{ left: 140, right: 12 }}
+      >
+        <Grid vertical />
+        <Bar animate={false} dataKey={dataKey} fill={color} lineCap="round" />
+        <BarYAxis showAllLabels />
+        <ChartTooltip
+          showCrosshair={false}
+          rows={(point) => [
+            {
+              color,
+              label: seriesName ?? dataKey,
+              value: Number(point[dataKey] ?? 0),
+            },
+          ]}
         />
       </BarChart>
-    </ResponsiveContainer>
+    </div>
   );
 }

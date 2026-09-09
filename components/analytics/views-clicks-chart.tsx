@@ -1,14 +1,20 @@
 "use client";
 
+import { useMemo } from "react";
+import { curveMonotoneX } from "@visx/curve";
+import { AreaChart } from "@/components/charts/area-chart";
+import { Area } from "@/components/charts/area";
+import { Grid } from "@/components/charts/grid";
+import { XAxis } from "@/components/charts/x-axis";
+import { YAxis } from "@/components/charts/y-axis";
+import { ChartTooltip } from "@/components/charts/tooltip";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Legend,
+  LegendItem,
+  LegendMarker,
+  LegendLabel,
+  LegendValue,
+} from "@/components/charts/legend";
 import { useT } from "@/lib/i18n/provider";
 
 export function ViewsClicksChart({
@@ -19,6 +25,30 @@ export function ViewsClicksChart({
   height?: number;
 }) {
   const { dict } = useT();
+
+  // bklit's time-series scale wants real Dates on the x key.
+  const chartData = useMemo(
+    () => data.map((d) => ({ ...d, date: new Date(d.date) })),
+    [data],
+  );
+
+  // The two lines are only named in the tooltip, and there is no hover on
+  // touch devices — so the legend carries the labels and range totals.
+  const legendItems = useMemo(
+    () => [
+      {
+        label: dict.overview.productViews,
+        value: data.reduce((sum, d) => sum + d.views, 0),
+        color: "var(--chart-1)",
+      },
+      {
+        label: dict.overview.productClicks,
+        value: data.reduce((sum, d) => sum + d.clicks, 0),
+        color: "var(--chart-2)",
+      },
+    ],
+    [data, dict.overview.productViews, dict.overview.productClicks],
+  );
 
   if (data.length === 0) {
     return (
@@ -32,60 +62,54 @@ export function ViewsClicksChart({
   }
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ left: 4, right: 8, top: 8 }}>
-        <defs>
-          <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="gClicks" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.3} />
-            <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-        <XAxis
-          dataKey="date"
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          tickFormatter={(d: string) => d.slice(5)}
-          stroke="var(--border)"
-        />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          stroke="var(--border)"
-          width={28}
-        />
-        <Tooltip
-          contentStyle={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--popover)",
-            color: "var(--popover-foreground)",
-            fontSize: 13,
-          }}
-          labelStyle={{ fontWeight: 600 }}
-        />
+    <div>
+      {/* `style` wins over AreaChart's default aspectRatio, so the caller's
+          fixed `height` still drives the box. */}
+      <AreaChart data={chartData} style={{ height, aspectRatio: "auto" }}>
+        <Grid horizontal />
         <Area
-          type="monotone"
+          animate={false}
           dataKey="views"
-          name={dict.overview.productViews}
+          curve={curveMonotoneX}
           stroke="var(--chart-1)"
+          fill="var(--chart-1)"
+          fillOpacity={0.25}
           strokeWidth={2}
-          fill="url(#gViews)"
-          isAnimationActive={false}
         />
         <Area
-          type="monotone"
+          animate={false}
           dataKey="clicks"
-          name={dict.overview.productClicks}
+          curve={curveMonotoneX}
           stroke="var(--chart-2)"
+          fill="var(--chart-2)"
+          fillOpacity={0.3}
           strokeWidth={2}
-          fill="url(#gClicks)"
-          isAnimationActive={false}
+        />
+        <XAxis />
+        <YAxis />
+        <ChartTooltip
+          rows={(point) => [
+            {
+              color: "var(--chart-1)",
+              label: dict.overview.productViews,
+              value: Number(point.views ?? 0),
+            },
+            {
+              color: "var(--chart-2)",
+              label: dict.overview.productClicks,
+              value: Number(point.clicks ?? 0),
+            },
+          ]}
         />
       </AreaChart>
-    </ResponsiveContainer>
+
+      <Legend items={legendItems} className="mt-3 flex-row flex-wrap gap-x-4">
+        <LegendItem className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <LegendMarker />
+          <LegendLabel />
+          <LegendValue />
+        </LegendItem>
+      </Legend>
+    </div>
   );
 }

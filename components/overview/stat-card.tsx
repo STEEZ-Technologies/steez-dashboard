@@ -1,7 +1,9 @@
 "use client";
 
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import { curveMonotoneX } from "@visx/curve";
+import { AreaChart } from "@/components/charts/area-chart";
+import { Area } from "@/components/charts/area";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +22,6 @@ export function StatCard({
 }) {
   const up = delta != null && delta >= 0;
   const data = (spark ?? []).map((v, i) => ({ i, v }));
-  const gid = `spark-${label.replace(/[^a-z0-9]/gi, "")}`;
 
   return (
     <Card className="overflow-hidden">
@@ -50,25 +51,24 @@ export function StatCard({
           )}
         </div>
         {data.length > 1 && (
-          <div className="mt-3 h-10">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
-                <defs>
-                  <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Area
-                  type="monotone"
-                  dataKey="v"
-                  stroke="var(--chart-2)"
-                  strokeWidth={2}
-                  fill={`url(#${gid})`}
-                  isAnimationActive={false}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="mt-3">
+            <AreaChart
+              data={data}
+              xDataKey="i"
+              margin={{ top: 2, bottom: 2, left: 0, right: 0 }}
+              style={{ height: 40, aspectRatio: "auto" }}
+            >
+              <Area
+                animate={false}
+                dataKey="v"
+                curve={curveMonotoneX}
+                stroke="var(--chart-2)"
+                fill="var(--chart-2)"
+                fillOpacity={0.35}
+                strokeWidth={2}
+                showHighlight={false}
+              />
+            </AreaChart>
           </div>
         )}
       </CardContent>

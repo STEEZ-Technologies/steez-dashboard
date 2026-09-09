@@ -1,6 +1,16 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, Legend } from "recharts";
+import { useState } from "react";
+import { PieChart } from "@/components/charts/pie-chart";
+import { PieSlice } from "@/components/charts/pie-slice";
+import { PieCenter } from "@/components/charts/pie-center";
+import {
+  Legend,
+  LegendItem,
+  LegendMarker,
+  LegendLabel,
+  LegendValue,
+} from "@/components/charts/legend";
 import { useT } from "@/lib/i18n/provider";
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)"];
@@ -13,6 +23,9 @@ export function DevicePie({
   height?: number;
 }) {
   const { dict } = useT();
+  // Hover is lifted so the legend and the slices highlight together.
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
   const deviceLabel = (device: string) =>
     device === "Desktop"
       ? dict.analytics.deviceDesktop
@@ -33,40 +46,41 @@ export function DevicePie({
     );
   }
 
-  const translated = data.map((d) => ({ ...d, deviceLabel: deviceLabel(d.device) }));
+  const slices = data.map((d, i) => ({
+    label: deviceLabel(d.device),
+    value: d.count,
+    color: COLORS[i % COLORS.length],
+  }));
 
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <PieChart>
-        <Pie
-          data={translated}
-          dataKey="count"
-          nameKey="deviceLabel"
-          innerRadius={52}
-          outerRadius={82}
-          paddingAngle={2}
-          stroke="var(--card)"
-          strokeWidth={2}
-          isAnimationActive={false}
-        >
-          {translated.map((_, i) => (
-            <Cell key={i} fill={COLORS[i % COLORS.length]} />
-          ))}
-        </Pie>
-        <Tooltip
-          contentStyle={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--popover)",
-            color: "var(--popover-foreground)",
-            fontSize: 13,
-          }}
-        />
-        <Legend
-          iconType="circle"
-          formatter={(v) => <span className="text-sm text-muted-foreground">{v}</span>}
-        />
+    <div className="flex flex-col items-center gap-4">
+      <PieChart
+        data={slices}
+        size={height}
+        innerRadius={52}
+        padAngle={0.03}
+        cornerRadius={4}
+        hoveredIndex={hoveredIndex}
+        onHoverChange={setHoveredIndex}
+      >
+        {slices.map((s, i) => (
+          <PieSlice animate={false} index={i} key={s.label} color={s.color} />
+        ))}
+        <PieCenter defaultLabel={dict.analytics.devices} />
       </PieChart>
-    </ResponsiveContainer>
+
+      <Legend
+        items={slices}
+        hoveredIndex={hoveredIndex}
+        onHoverChange={setHoveredIndex}
+        className="flex-row flex-wrap justify-center gap-x-4"
+      >
+        <LegendItem className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <LegendMarker />
+          <LegendLabel />
+          <LegendValue />
+        </LegendItem>
+      </Legend>
+    </div>
   );
 }

@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored from the bklit shadcn registry (ui.bklit.com). Upstream code we
+    // re-pull on updates, so it is not held to our react-hooks rules.
+    "components/charts/**",
   ]),
 ]);
 
