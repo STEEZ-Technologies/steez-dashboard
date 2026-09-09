@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="STEEZ">
+  <rect width="64" height="64" rx="14" fill="#04342c"/>
+  <path d="M40.19 16.26A10.0 10.0 0 1 0 32.00 32.00A10.0 10.0 0 1 1 23.81 47.74"
+        fill="none" stroke="#faf9f5" stroke-width="5.5" stroke-linecap="round"/>
+</svg>
