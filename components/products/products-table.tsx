@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -97,6 +97,36 @@ const KONLITO_SITE_BASE = "https://konlito.steez.digital";
 
 type SortKey = "name" | "model" | "category" | "status";
 
+type Sort = { key: SortKey | null; dir: "asc" | "desc" };
+
+// Defined at module scope: a component created inside the render body is a new
+// type on every render, so React would unmount and remount every header cell.
+function SortHead({
+  k,
+  sort,
+  onToggle,
+  children,
+}: {
+  k: SortKey;
+  sort: Sort;
+  onToggle: (key: SortKey) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <TableHead>
+      <button
+        onClick={() => onToggle(k)}
+        className="inline-flex items-center gap-1 hover:text-foreground"
+      >
+        {children}
+        <ArrowUpDown
+          className={`size-3 ${sort.key === k ? "opacity-100 text-foreground" : "opacity-50"}`}
+        />
+      </button>
+    </TableHead>
+  );
+}
+
 export function ProductsTable({
   products,
   categories,
@@ -108,10 +138,7 @@ export function ProductsTable({
   const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("all");
   // sort.key === null => manual (drag-reorderable) order
-  const [sort, setSort] = useState<{ key: SortKey | null; dir: "asc" | "desc" }>({
-    key: null,
-    dir: "asc",
-  });
+  const [sort, setSort] = useState<Sort>({ key: null, dir: "asc" });
   const [pending, startTransition] = useTransition();
   const [toDelete, setToDelete] = useState<ProductRow | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -119,9 +146,15 @@ export function ProductsTable({
   const { dict } = useT();
   const t = dict.products;
 
-  // Local ordering so drag-reorder feels instant; re-sync when server data changes.
+  // Local ordering so drag-reorder feels instant; re-sync when server data
+  // changes. Adjusted during render rather than in an effect, so the table
+  // never paints one frame of stale order.
   const [order, setOrder] = useState<ProductRow[]>(products);
-  useEffect(() => setOrder(products), [products]);
+  const [syncedFrom, setSyncedFrom] = useState(products);
+  if (syncedFrom !== products) {
+    setSyncedFrom(products);
+    setOrder(products);
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -155,6 +188,25 @@ export function ProductsTable({
     }
     return out;
   }, [order, q, category, status, sort]);
+
+  // `items` maps value -> label so the trigger shows the label; without it
+  // <SelectValue> renders the raw value ("all", a category id, …).
+  const categoryItems = useMemo(
+    () => ({
+      all: t.allCategories,
+      ...Object.fromEntries(categories.map((c) => [c.label, c.label])),
+    }),
+    [categories, t.allCategories],
+  );
+  const statusItems = useMemo(
+    () => ({
+      all: t.allStatus,
+      published: t.published,
+      draft: t.draft,
+      featured: t.featured,
+    }),
+    [t.allStatus, t.published, t.draft, t.featured],
+  );
 
   function toggleSort(key: SortKey) {
     setSort((s) =>
@@ -221,20 +273,6 @@ export function ProductsTable({
     });
   }
 
-  const SortHead = ({ k, children }: { k: SortKey; children: React.ReactNode }) => (
-    <TableHead>
-      <button
-        onClick={() => toggleSort(k)}
-        className="inline-flex items-center gap-1 hover:text-foreground"
-      >
-        {children}
-        <ArrowUpDown
-          className={`size-3 ${sort.key === k ? "opacity-100 text-foreground" : "opacity-50"}`}
-        />
-      </button>
-    </TableHead>
-  );
-
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -247,7 +285,11 @@ export function ProductsTable({
             className="pl-8"
           />
         </div>
-        <Select value={category} onValueChange={(v) => setCategory(v ?? "all")}>
+        <Select
+          value={category}
+          onValueChange={(v) => setCategory(v ?? "all")}
+          items={categoryItems}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder={t.colCategory} />
           </SelectTrigger>
@@ -260,7 +302,11 @@ export function ProductsTable({
             ))}
           </SelectContent>
         </Select>
-        <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
+        <Select
+          value={status}
+          onValueChange={(v) => setStatus(v ?? "all")}
+          items={statusItems}
+        >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder={t.colStatus} />
           </SelectTrigger>
@@ -339,10 +385,18 @@ export function ProductsTable({
                 </TableHead>
                 <TableHead className="w-[28px]"></TableHead>
                 <TableHead className="w-[52px]"></TableHead>
-                <SortHead k="name">{t.colProduct}</SortHead>
-                <SortHead k="model">{t.colModel}</SortHead>
-                <SortHead k="category">{t.colCategory}</SortHead>
-                <SortHead k="status">{t.colStatus}</SortHead>
+                <SortHead k="name" sort={sort} onToggle={toggleSort}>
+                  {t.colProduct}
+                </SortHead>
+                <SortHead k="model" sort={sort} onToggle={toggleSort}>
+                  {t.colModel}
+                </SortHead>
+                <SortHead k="category" sort={sort} onToggle={toggleSort}>
+                  {t.colCategory}
+                </SortHead>
+                <SortHead k="status" sort={sort} onToggle={toggleSort}>
+                  {t.colStatus}
+                </SortHead>
                 <TableHead className="w-[52px]"></TableHead>
               </TableRow>
             </TableHeader>

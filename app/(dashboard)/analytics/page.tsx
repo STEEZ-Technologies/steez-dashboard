@@ -74,7 +74,7 @@ export default async function AnalyticsPage({
         title={dict.pages.analytics.title}
         description={dict.analytics.lastDays.replace("{days}", String(days))}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LinkButton
               variant="outline"
               size="sm"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { UserPlus, Trash2, MoreHorizontal, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -84,6 +84,13 @@ export function TeamMembers({
   const [editEmailErr, setEditEmailErr] = useState<string | null>(null);
   const { dict } = useT();
 
+  // `items` maps value -> label so the trigger shows the role name; without it
+  // <SelectValue> renders the raw value ("STAFF").
+  const roleItems = useMemo(
+    () => ({ STAFF: dict.team.roleStaff, OWNER: dict.team.roleOwner }),
+    [dict.team.roleStaff, dict.team.roleOwner],
+  );
+
   function handleEditEmail() {
     const target = toEditEmail;
     if (!target) return;
@@ -157,7 +164,11 @@ export function TeamMembers({
                 </div>
                 <div className="grid gap-2">
                   <Label>{dict.team.role}</Label>
-                  <Select value={role} onValueChange={(v) => setRole(v ?? "STAFF")}>
+                  <Select
+                    value={role}
+                    onValueChange={(v) => setRole(v ?? "STAFF")}
+                    items={roleItems}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>

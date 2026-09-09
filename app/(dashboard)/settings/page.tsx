@@ -26,7 +26,10 @@ export default async function SettingsPage() {
         description={dict.settings.subtitle}
       />
 
-      <div className="grid gap-6">
+      {/* grid-cols-1 (minmax(0,1fr)) — a bare `grid` sizes its column to the
+          widest child's max-content, which pushed these cards off-screen on
+          phones. */}
+      <div className="grid grid-cols-1 gap-6">
         <SettingsForm
           name={tenant.name}
           slug={tenant.slug}

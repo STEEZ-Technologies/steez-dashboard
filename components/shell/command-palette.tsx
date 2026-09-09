@@ -20,10 +20,15 @@ type SearchResult = {
   categories: { id: string; label: string }[];
 };
 
+const NO_RESULTS: SearchResult = { products: [], categories: [] };
+
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult>({ products: [], categories: [] });
+  const [fetched, setFetched] = useState<SearchResult>(NO_RESULTS);
+  // An empty query shows nothing without having to clear state in an effect,
+  // and it also hides results left over from the previous query.
+  const results = query.trim() ? fetched : NO_RESULTS;
   const router = useRouter();
   const { dict } = useT();
   const NAV_LABEL_KEY: Record<string, keyof typeof dict.nav> = {
@@ -36,15 +41,12 @@ export function CommandPalette() {
   };
 
   useEffect(() => {
-    if (!query.trim()) {
-      setResults({ products: [], categories: [] });
-      return;
-    }
+    if (!query.trim()) return;
     const id = setTimeout(() => {
       fetch(`/api/dashboard-search?q=${encodeURIComponent(query)}`)
         .then((r) => r.json())
-        .then(setResults)
-        .catch(() => setResults({ products: [], categories: [] }));
+        .then(setFetched)
+        .catch(() => setFetched(NO_RESULTS));
     }, 200);
     return () => clearTimeout(id);
   }, [query]);

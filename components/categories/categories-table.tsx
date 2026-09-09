@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
   MoreHorizontal,
@@ -87,7 +87,13 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   const [toDelete, setToDelete] = useState<CategoryRow | null>(null);
   const [order, setOrder] = useState<CategoryRow[]>(categories);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  useEffect(() => setOrder(categories), [categories]);
+  // Re-sync local drag order with server data during render rather than in an
+  // effect, so the table never paints one frame of stale order.
+  const [syncedFrom, setSyncedFrom] = useState(categories);
+  if (syncedFrom !== categories) {
+    setSyncedFrom(categories);
+    setOrder(categories);
+  }
   const { dict } = useT();
   const t = dict.categories;
 

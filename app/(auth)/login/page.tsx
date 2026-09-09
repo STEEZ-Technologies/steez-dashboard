@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { authenticate } from "../actions";
@@ -10,6 +10,10 @@ import { ShaderBackground } from "@/components/shared/shader-background";
 import { STEEZWordmark } from "@/components/shared/steez-wordmark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { useT } from "@/lib/i18n/provider";
+
+// The store never changes: the client snapshot is always true and the server
+// snapshot always false, which is exactly "have we hydrated yet".
+const subscribeToNothing = () => () => {};
 
 export default function LoginPage() {
   const { dict } = useT();
@@ -29,8 +33,11 @@ export default function LoginPage() {
   // Same pattern as the STEEZ marketing hero: pick shader colors from the
   // resolved theme, only after mount (avoids a light/dark hydration flash).
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
   const isDark = mounted && resolvedTheme === "dark";
   const color1 = "#019d86";
   const color2 = isDark ? "#04342C" : "#F0F9FF";

@@ -29,7 +29,10 @@ export default async function TeamPage() {
         title={dict.pages.team.title}
         description={dict.team.subtitle}
       />
-      <div className="grid gap-6">
+      {/* grid-cols-1 (minmax(0,1fr)) — a bare `grid` sizes its column to the
+          table's max-content, so the page scrolled sideways instead of the
+          table. */}
+      <div className="grid grid-cols-1 gap-6">
         <TeamMembers members={members} canManage={isOwner} />
       </div>
     </div>

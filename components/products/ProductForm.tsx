@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +49,16 @@ export function ProductForm({
   const [featured, setFeatured] = useState(defaultValues?.featured ?? false);
   const [published, setPublished] = useState(defaultValues?.published ?? true);
 
+  // `items` maps value -> label so the trigger shows the category name; without
+  // it <SelectValue> renders the raw value (the category id).
+  const categoryItems = useMemo(
+    () => ({
+      none: "No category",
+      ...Object.fromEntries(categories.map((c) => [c.id, c.label])),
+    }),
+    [categories],
+  );
+
   return (
     <form action={formAction} className="max-w-2xl">
       <input type="hidden" name="categoryId" value={categoryId === "none" ? "" : categoryId} />
@@ -92,7 +102,11 @@ export function ProductForm({
 
           <div className="grid gap-2">
             <Label>Category</Label>
-            <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "none")}>
+            <Select
+              value={categoryId}
+              onValueChange={(v) => setCategoryId(v ?? "none")}
+              items={categoryItems}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="No category" />
               </SelectTrigger>
