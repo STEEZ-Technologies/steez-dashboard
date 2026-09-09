@@ -40,7 +40,7 @@ export default function LoginPage() {
   );
   const isDark = mounted && resolvedTheme === "dark";
   const color1 = "#019d86";
-  const color2 = isDark ? "#04342C" : "#F0F9FF";
+  const color2 = isDark ? "#0A0A0A" : "#F0F9FF";
 
   function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

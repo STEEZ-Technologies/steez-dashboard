@@ -113,16 +113,18 @@
 }
 
 .dark {
-  /* Dark — deep forest content, off-white text */
-  --background: #04342c;
+  /* Dark — black surfaces, off-white text. The forest green stays a brand
+     accent (buttons, focus rings, charts) rather than the page ground: at
+     full-screen size it read as a tint rather than as dark mode. */
+  --background: #0a0a0a;
   --foreground: #faf9f5;
-  --card: #0a3d33;
+  --card: #151515;
   --card-foreground: #faf9f5;
-  --popover: #0a3d33;
+  --popover: #151515;
   --popover-foreground: #faf9f5;
 
   --primary: #1d9e75;
-  --primary-foreground: #04342c;
+  --primary-foreground: #0a0a0a;
   --secondary: rgba(250, 249, 245, 0.08);
   --secondary-foreground: #faf9f5;
   --muted: rgba(250, 249, 245, 0.06);
@@ -141,10 +143,10 @@
   --chart-4: #f0c674;
   --chart-5: #9fb4ad;
 
-  --sidebar: #032a24;
+  --sidebar: #000000;
   --sidebar-foreground: #faf9f5;
   --sidebar-primary: #e0a93a;
-  --sidebar-primary-foreground: #04342c;
+  --sidebar-primary-foreground: #0a0a0a;
   --sidebar-accent: rgba(250, 249, 245, 0.08);
   --sidebar-accent-foreground: #faf9f5;
   --sidebar-border: rgba(250, 249, 245, 0.1);
