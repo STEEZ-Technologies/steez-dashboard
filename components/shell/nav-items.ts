@@ -2,6 +2,8 @@ import {
   LayoutDashboard,
   Package,
   FolderTree,
+  Newspaper,
+  BookOpen,
   BarChart3,
   Users,
   Settings,
@@ -25,6 +27,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/analytics", label: "Analytics", icon: BarChart3, group: "Overview" },
   { href: "/products", label: "Products", icon: Package, group: "Catalog" },
   { href: "/categories", label: "Categories", icon: FolderTree, group: "Catalog" },
+  { href: "/news", label: "News", icon: Newspaper, group: "Catalog" },
+  { href: "/resources", label: "Resources", icon: BookOpen, group: "Catalog" },
   { href: "/team", label: "Team", icon: Users, group: "Workspace" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Workspace" },
   {
