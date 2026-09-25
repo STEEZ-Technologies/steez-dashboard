@@ -36,6 +36,45 @@ export const finishInputSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/, { error: "Must be a hex color like #474950" }),
 });
 
+export const articleInputSchema = z.object({
+  slug: slugField,
+  titleEn: z.string().trim().min(1, { error: "English title is required" }),
+  titleZh: optionalText,
+  standfirstEn: optionalText,
+  standfirstZh: optionalText,
+  bodyEn: optionalText,
+  bodyZh: optionalText,
+  metaTitleEn: optionalText,
+  metaTitleZh: optionalText,
+  metaDescriptionEn: optionalText,
+  metaDescriptionZh: optionalText,
+  primaryKeyword: optionalText,
+  secondaryKeywords: optionalText,
+  imagePath: optionalText,
+  imageAltEn: optionalText,
+  imageAltZh: optionalText,
+});
+
+export const guideInputSchema = z.object({
+  slug: slugField,
+  titleEn: z.string().trim().min(1, { error: "English title is required" }),
+  titleZh: optionalText,
+  standfirstEn: optionalText,
+  standfirstZh: optionalText,
+  imagePath: optionalText,
+  imageAltEn: optionalText,
+  imageAltZh: optionalText,
+});
+
+export const guideBlockInputSchema = z.object({
+  kind: z.enum(["P", "H", "LIST", "TABLE"]),
+  textEn: optionalText,
+  textZh: optionalText,
+  // Newline-separated in the form, split into an array before persisting.
+  itemsEnText: optionalText,
+  itemsZhText: optionalText,
+});
+
 export const userInviteSchema = z.object({
   email: z.email({ error: "Enter a valid email" }).trim().toLowerCase(),
   password: z.string().min(8, { error: "Password must be at least 8 characters" }),
@@ -90,3 +129,6 @@ export const resetPasswordSchema = z.object({
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;
+export type ArticleInput = z.infer<typeof articleInputSchema>;
+export type GuideInput = z.infer<typeof guideInputSchema>;
+export type GuideBlockInput = z.infer<typeof guideBlockInputSchema>;

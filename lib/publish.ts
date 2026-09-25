@@ -22,13 +22,15 @@ export async function getPublishState(tenantId: string): Promise<PublishState> {
   // Never published → everything counts as pending.
   const where = since ? { tenantId, updatedAt: { gt: since } } : { tenantId };
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, articles, guides] = await Promise.all([
     prisma.product.count({ where }),
     prisma.category.count({ where }),
+    prisma.article.count({ where }),
+    prisma.guide.count({ where }),
   ]);
 
   return {
-    pendingCount: products + categories,
+    pendingCount: products + categories + articles + guides,
     configured: Boolean(tenant.deployHookUrl),
     lastPublishedAt: tenant.lastPublishedAt,
   };
@@ -48,7 +50,7 @@ export async function getPendingChanges(tenantId: string) {
   const since = tenant.lastPublishedAt;
   const where = since ? { tenantId, updatedAt: { gt: since } } : { tenantId };
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, articles, guides] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy: { updatedAt: "desc" },
@@ -60,7 +62,13 @@ export async function getPendingChanges(tenantId: string) {
       },
     }),
     prisma.category.findMany({ where, orderBy: { updatedAt: "desc" } }),
+    prisma.article.findMany({ where, orderBy: { updatedAt: "desc" } }),
+    prisma.guide.findMany({
+      where,
+      orderBy: { updatedAt: "desc" },
+      include: { blocks: { orderBy: { sortOrder: "asc" } } },
+    }),
   ]);
 
-  return { products, categories, lastPublishedAt: since };
+  return { products, categories, articles, guides, lastPublishedAt: since };
 }

@@ -22,9 +22,25 @@ model Tenant {
   deployHookUrl   String?
   lastPublishedAt DateTime?
 
+  // SEO fields — in progress in a concurrent session as of 2026-09-24
+  // (migration 20260909035151_seo_fields already applied to this shared dev
+  // DB); restored here so schema.prisma matches the DB and `prisma generate`
+  // doesn't drop these from the shared generated client underneath that work.
+  baiduSiteToken          String?
+  icpNumber               String?
+  seoDefaultDescription   String?
+  seoDefaultOgImagePath   String?
+  seoOrganizationLogoPath String?
+  seoOrganizationName     String?
+  seoSiteName             String?
+  seoTitleTemplate        String?
+  siteUrl                 String?
+
   users         User[]
   categories    Category[]
   products      Product[]
+  articles      Article[]
+  guides        Guide[]
   productEvents ProductEvent[]
   pageViews     PageView[]
   auditLogs     AuditLog[]
@@ -74,6 +90,13 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt // drives pending-change detection for publishing
 
+  // SEO fields — see the matching note on Tenant above.
+  noindex        Boolean @default(false)
+  ogImagePath    String?
+  seoDescription String?
+  seoKeywords    String?
+  seoTitle       String?
+
   products Product[]
 
   @@unique([tenantId, slug])
@@ -98,6 +121,15 @@ model Product {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  // SEO fields — see the matching note on Tenant above.
+  canonicalUrl   String?
+  imageAlt       String?
+  noindex        Boolean @default(false)
+  ogImagePath    String?
+  seoDescription String?
+  seoKeywords    String?
+  seoTitle       String?
+
   finishes      ProductFinish[]
   productEvents ProductEvent[]
   images        ProductImage[]
@@ -114,6 +146,7 @@ model ProductImage {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   imagePath String // OSS key
+  alt       String? // SEO field — see the matching note on Tenant above.
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
@@ -144,6 +177,104 @@ model ProductFinish {
 
   @@unique([productId, key])
   @@index([productId])
+}
+
+enum ArticleCategory {
+  EDUCATION
+  INDUSTRY
+  COMPANY
+}
+
+// News/blog entries. bodyEn/bodyZh are Markdown prose, not structured blocks
+// like Guide — news copy is prose, and no rich-text editor exists anywhere in
+// this codebase yet, so a plain textarea authoring Markdown is the fit.
+model Article {
+  id                String          @id @default(cuid())
+  tenantId          String
+  tenant            Tenant          @relation(fields: [tenantId], references: [id])
+  slug              String
+  titleEn           String
+  titleZh           String?
+  standfirstEn      String?
+  standfirstZh      String?
+  bodyEn            String?
+  bodyZh            String?
+  metaTitleEn       String?
+  metaTitleZh       String?
+  metaDescriptionEn String?
+  metaDescriptionZh String?
+  primaryKeyword    String?
+  secondaryKeywords String? // comma-separated, matches SEO-PLAN.md's table
+  category          ArticleCategory @default(EDUCATION)
+  imagePath         String? // OSS key
+  imageAltEn        String?
+  imageAltZh        String?
+  sortOrder         Int             @default(0)
+  featured          Boolean         @default(false)
+  published         Boolean         @default(true)
+  publishedAt       DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+enum GuideReader {
+  DISTRIBUTOR
+  CUSTOMER
+  BOTH
+}
+
+// Buyer guides (komibright's /information, "Resources" in nav). Body is
+// structured blocks (see GuideBlock) rather than prose, because the site
+// renders a live capacity-figures table inline with the written blocks —
+// that table can't be authored content, only a marker for where it goes.
+model Guide {
+  id           String      @id @default(cuid())
+  tenantId     String
+  tenant       Tenant      @relation(fields: [tenantId], references: [id])
+  slug         String
+  reader       GuideReader @default(BOTH)
+  titleEn      String
+  titleZh      String?
+  standfirstEn String?
+  standfirstZh String?
+  minutes      Int         @default(5)
+  imagePath    String? // OSS key
+  imageAltEn   String?
+  imageAltZh   String?
+  sortOrder    Int         @default(0)
+  published    Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  blocks GuideBlock[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+enum GuideBlockKind {
+  P
+  H
+  LIST
+  TABLE // marker only — site renders the live capacity table here, no stored content
+}
+
+model GuideBlock {
+  id        String         @id @default(cuid())
+  guideId   String
+  guide     Guide          @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  kind      GuideBlockKind
+  textEn    String? // P/H kinds
+  textZh    String?
+  itemsEn   Json? // LIST kind only — string[]
+  itemsZh   Json?
+  sortOrder Int            @default(0)
+  createdAt DateTime       @default(now())
+
+  @@index([guideId])
 }
 
 enum ProductEventType {
