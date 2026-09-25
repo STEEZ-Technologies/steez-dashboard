@@ -9,6 +9,7 @@ import { TotpStep } from "@/components/auth/totp-step";
 import { ShaderBackground } from "@/components/shared/shader-background";
 import { STEEZWordmark } from "@/components/shared/steez-wordmark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
+import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { useT } from "@/lib/i18n/provider";
 
 // The store never changes: the client snapshot is always true and the server
@@ -82,7 +83,8 @@ export default function LoginPage() {
   return (
     <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
       <ShaderBackground color1={color1} color2={color2} speed={1} />
-      <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20 }}>
+      <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20, display: "flex", gap: 8 }}>
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
       <div style={{ position: "relative", zIndex: 10 }}>
