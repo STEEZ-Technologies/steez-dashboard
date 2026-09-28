@@ -16,6 +16,7 @@ import { LinkButton } from "@/components/ui/link-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductImages, type GalleryImage } from "@/components/products/product-images";
 import { ProductModels3D, type ProductModel } from "@/components/products/product-models-3d";
+import { ProductContent, type ProductContentRow } from "@/components/products/product-content";
 import { getDictionary } from "@/lib/i18n";
 
 export default async function EditProductPage({
@@ -26,13 +27,13 @@ export default async function EditProductPage({
   const { id } = await params;
   const { tenantId } = await getTenantFromSession();
   const [product, categories] = await Promise.all([
-    prisma.product.findFirst({ where: { id, tenantId } }),
+    prisma.product.findFirst({ where: { id, tenantId }, include: { fit: true } }),
     prisma.category.findMany({ where: { tenantId }, orderBy: { sortOrder: "asc" } }),
   ]);
   if (!product) notFound();
   const dict = await getDictionary();
 
-  const [finishes, galleryRows, model3dRows] = await Promise.all([
+  const [finishes, galleryRows, model3dRows, contentRows] = await Promise.all([
     prisma.productFinish.findMany({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
@@ -45,6 +46,10 @@ export default async function EditProductPage({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
     }),
+    prisma.productContent.findMany({
+      where: { productId: product.id },
+      orderBy: { sortOrder: "asc" },
+    }),
   ]);
   const gallery: GalleryImage[] = galleryRows.map((img) => ({
     id: img.id,
@@ -53,6 +58,11 @@ export default async function EditProductPage({
   const models3d: ProductModel[] = model3dRows.map((m) => ({
     id: m.id,
     url: getPublicUrl(m.modelPath),
+  }));
+  const contents: ProductContentRow[] = contentRows.map((c) => ({
+    id: c.id,
+    textEn: c.textEn,
+    textZh: c.textZh,
   }));
 
   return (
@@ -88,14 +98,36 @@ export default async function EditProductPage({
           slug: product.slug,
           model: product.model,
           name: product.name,
+          nameZh: product.nameZh ?? "",
           description: product.description ?? "",
+          descriptionZh: product.descriptionZh ?? "",
           imagePath: product.imagePath ?? "",
           categoryId: product.categoryId ?? "none",
           specsText: formatSpecsText(product.specs),
+          kind: product.kind,
+          useCases: product.useCases,
           featured: product.featured,
           published: product.published,
+          fit: product.fit
+            ? {
+                litresPerDay: product.fit.litresPerDay,
+                minBar: product.fit.minBar,
+                sources: product.fit.sources,
+                dispensing: product.fit.dispensing,
+                powered: product.fit.powered,
+              }
+            : null,
         }}
       />
+
+      <Card className="mt-6 max-w-2xl">
+        <CardHeader>
+          <CardTitle>Box contents</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ProductContent productId={product.id} items={contents} />
+        </CardContent>
+      </Card>
 
       <Card className="mt-6 max-w-2xl">
         <CardHeader>

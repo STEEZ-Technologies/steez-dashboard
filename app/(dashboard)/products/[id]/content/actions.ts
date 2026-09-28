@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
-import { productContentInputSchema } from "@/lib/validation";
 
 async function assertOwnership(productId: string, tenantId: string) {
   const product = await prisma.product.findFirst({
@@ -16,23 +15,39 @@ async function assertOwnership(productId: string, tenantId: string) {
 
 export async function addProductContent(
   productId: string,
-  _prevState: string | undefined,
-  formData: FormData,
+  data: { textEn: string; textZh?: string },
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
-
-  const parsed = productContentInputSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
+  if (!data.textEn.trim()) return;
 
   const max = await prisma.productContent.aggregate({
     where: { productId },
     _max: { sortOrder: true },
   });
   await prisma.productContent.create({
-    data: { productId, ...parsed.data, sortOrder: (max._max.sortOrder ?? -1) + 1 },
+    data: {
+      productId,
+      textEn: data.textEn,
+      textZh: data.textZh || null,
+      sortOrder: (max._max.sortOrder ?? -1) + 1,
+    },
   });
   await logAudit({ action: "product.content_add", entity: "product", entityId: productId });
+  revalidatePath(`/products/${productId}/edit`);
+}
+
+export async function updateProductContent(
+  productId: string,
+  contentId: string,
+  data: { textEn: string; textZh?: string },
+) {
+  const { tenantId } = await getTenantFromSession();
+  await assertOwnership(productId, tenantId);
+  await prisma.productContent.update({
+    where: { id: contentId },
+    data: { textEn: data.textEn, textZh: data.textZh || null },
+  });
   revalidatePath(`/products/${productId}/edit`);
 }
 

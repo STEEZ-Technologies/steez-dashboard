@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { productInputSchema } from "@/lib/validation";
 import { parseSpecsText } from "@/lib/specs";
 import { logAudit } from "@/lib/audit";
+import type { ProductKind, ProductUseCase } from "@/app/generated/prisma/client";
 
 function extractProductExtras(formData: FormData) {
   const categoryIdRaw = formData.get("categoryId");
@@ -18,8 +19,10 @@ function extractProductExtras(formData: FormData) {
   const published = formData.get("published") === "on";
   const specsText = (formData.get("specsText") as string | null) ?? "";
   const specs = parseSpecsText(specsText);
-  const kind = formData.get("kind") === "ACCESSORY" ? "ACCESSORY" : "MACHINE";
-  const useCases = formData.getAll("useCases").filter((v): v is string => typeof v === "string");
+  const kind: ProductKind = formData.get("kind") === "ACCESSORY" ? "ACCESSORY" : "MACHINE";
+  const useCases = formData
+    .getAll("useCases")
+    .filter((v): v is string => typeof v === "string") as ProductUseCase[];
   return { categoryId, featured, published, specs, kind, useCases };
 }
 
