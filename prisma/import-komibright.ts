@@ -1,25 +1,24 @@
 /**
- * One-off import: komibright-v2's real static content (products + buyer
- * guides) into the dashboard's komibright tenant. Idempotent (upserts by
- * slug). News is skipped — komibright-v2's /news is an intentional empty
- * state with zero articles written.
+ * One-off import: komibright-v2's real static content (products, buyer
+ * guides, articles and the two manual-fact groups) into the dashboard's
+ * komibright tenant. Idempotent (upserts by slug/key).
  *
  * kind: "machine" -> Category "Systems", "accessory" -> Category "Service Parts"
  * (matches /products/ page's own language on the site).
  *
- * Images: real product/guide photos upload through the dashboard's own
- * ImageUploadField (Aliyun OSS) once the bucket is configured — imagePath
- * is left null here rather than pointing at komibright-v2's own hosting,
- * which would bypass that pipeline.
+ * Images: real product/guide/article photos upload through the dashboard's
+ * own ImageUploadField (Aliyun OSS) once the bucket is configured —
+ * imagePath is left null here rather than pointing at komibright-v2's own
+ * hosting, which would bypass that pipeline.
  *
  * Run: npx tsx prisma/import-komibright.ts
  *
- * PRODUCTS/GUIDES are read via a subprocess (scripts/export-for-dashboard.ts
- * in komibright-v2, run from that repo's own directory) rather than a
- * direct import — resources.ts imports `@/lib/manualFacts`, and tsx
- * resolves `@/` against the entry point's tsconfig, which here is this
- * repo's, not komibright-v2's. Running the export in komibright-v2's own
- * tsx process is what makes the alias resolve.
+ * Content is read via a subprocess (scripts/export-for-dashboard.ts in
+ * komibright-v2, run from that repo's own directory) rather than a direct
+ * import — resources.ts imports `@/lib/manualFacts`, and tsx resolves `@/`
+ * against the entry point's tsconfig, which here is this repo's, not
+ * komibright-v2's. Running the export in komibright-v2's own tsx process is
+ * what makes the alias resolve.
  */
 import "dotenv/config";
 import { execFileSync } from "node:child_process";
@@ -27,6 +26,10 @@ import path from "node:path";
 import { prisma } from "../lib/db";
 import type { Product } from "../../komibright-v2/lib/products";
 import type { Block, Guide } from "../../komibright-v2/lib/resources";
+import type { Article, Block as ArticleBlockShape } from "../../komibright-v2/lib/articles";
+import type { Fact } from "../../komibright-v2/lib/manualFacts";
+import type { Dispensing, Fit, Source } from "../../komibright-v2/lib/finder";
+import type { ManualFactKey } from "../app/generated/prisma/client";
 
 const KOMIBRIGHT_DIR = path.resolve(__dirname, "../../komibright-v2");
 const raw = execFileSync("npx", ["tsx", "scripts/export-for-dashboard.ts"], {
@@ -34,9 +37,41 @@ const raw = execFileSync("npx", ["tsx", "scripts/export-for-dashboard.ts"], {
   encoding: "utf8",
   maxBuffer: 1024 * 1024 * 50,
 });
-const { products: PRODUCTS, guides: GUIDES } = JSON.parse(raw) as {
+const {
+  products: PRODUCTS,
+  guides: GUIDES,
+  articles: ARTICLES,
+  feedFacts: FEED_FACTS,
+  serviceFacts: SERVICE_FACTS,
+  fit: FIT,
+} = JSON.parse(raw) as {
   products: Product[];
   guides: Guide[];
+  articles: Article[];
+  feedFacts: Fact[];
+  serviceFacts: Fact[];
+  fit: Record<string, Fit>;
+};
+
+const SOURCE_MAP: Record<Source, "MAINS" | "OPEN"> = { mains: "MAINS", open: "OPEN" };
+const DISPENSING_MAP: Record<Dispensing, "TANK" | "JAR" | "DIRECT"> = {
+  tank: "TANK",
+  jar: "JAR",
+  direct: "DIRECT",
+};
+const USE_CASE_MAP: Record<string, "KITCHEN" | "HOSPITALITY" | "LAB" | "MOBILE"> = {
+  kitchen: "KITCHEN",
+  hospitality: "HOSPITALITY",
+  lab: "LAB",
+  mobile: "MOBILE",
+};
+const TOPIC_MAP: Record<string, "REVERSE_OSMOSIS" | "CHOOSING" | "MAINTENANCE" | "WATER_QUALITY" | "SUSTAINABILITY" | "COMPANY"> = {
+  "reverse-osmosis": "REVERSE_OSMOSIS",
+  choosing: "CHOOSING",
+  maintenance: "MAINTENANCE",
+  "water-quality": "WATER_QUALITY",
+  sustainability: "SUSTAINABILITY",
+  company: "COMPANY",
 };
 
 async function main() {
@@ -69,29 +104,56 @@ async function main() {
   for (const [index, p] of PRODUCTS.entries()) {
     const categoryId = categoryIdByKind.get(p.kind) ?? null;
     const specs = Object.fromEntries(p.specs);
+    const kind = p.kind === "machine" ? ("MACHINE" as const) : ("ACCESSORY" as const);
+    const useCases = p.useCases.map((u) => USE_CASE_MAP[u]).filter(Boolean);
+    const shared = {
+      model: p.model,
+      name: p.name.en,
+      nameZh: p.name.zh ?? null,
+      description: p.blurb.en,
+      descriptionZh: p.blurb.zh ?? null,
+      specs,
+      categoryId,
+      sortOrder: index,
+      kind,
+      useCases,
+    };
 
-    await prisma.product.upsert({
+    const product = await prisma.product.upsert({
       where: { tenantId_slug: { tenantId: tenant.id, slug: p.id } },
-      update: {
-        model: p.model,
-        name: p.name.en,
-        description: p.blurb.en,
-        specs,
-        categoryId,
-        sortOrder: index,
-      },
-      create: {
-        tenantId: tenant.id,
-        slug: p.id,
-        model: p.model,
-        name: p.name.en,
-        description: p.blurb.en,
-        specs,
-        categoryId,
-        sortOrder: index,
-        published: true,
-      },
+      update: shared,
+      create: { tenantId: tenant.id, slug: p.id, ...shared, published: true },
     });
+
+    // Box contents: idempotent by delete-and-recreate (no stable natural key).
+    await prisma.productContent.deleteMany({ where: { productId: product.id } });
+    if (p.contents?.length) {
+      await prisma.productContent.createMany({
+        data: p.contents.map((c, i) => ({
+          productId: product.id,
+          textEn: c.en,
+          textZh: c.zh ?? null,
+          sortOrder: i,
+        })),
+      });
+    }
+
+    // Capacity/pressure: only for machines with a published FIT row.
+    const fit = FIT[p.id];
+    if (fit) {
+      const fitData = {
+        litresPerDay: fit.litresPerDay,
+        minBar: fit.minBar,
+        sources: fit.sources.map((s) => SOURCE_MAP[s]),
+        dispensing: DISPENSING_MAP[fit.dispensing],
+        powered: fit.powered,
+      };
+      await prisma.productFit.upsert({
+        where: { productId: product.id },
+        update: fitData,
+        create: { productId: product.id, ...fitData },
+      });
+    }
   }
 
   const readerMap: Record<string, "DISTRIBUTOR" | "CUSTOMER" | "BOTH"> = {
@@ -157,8 +219,77 @@ async function main() {
     }
   }
 
+  for (const [index, a] of ARTICLES.entries()) {
+    const topic = TOPIC_MAP[a.topic] ?? "COMPANY";
+    const shared = {
+      topic,
+      titleEn: a.title.en,
+      titleZh: a.title.zh ?? null,
+      standfirstEn: a.dek.en,
+      standfirstZh: a.dek.zh ?? null,
+      metaTitleEn: a.metaTitle.en,
+      metaTitleZh: a.metaTitle.zh ?? null,
+      keywordsEn: a.keywords,
+      keywordsZh: a.keywordsZh ?? [],
+      imageAltEn: a.image.alt.en,
+      imageAltZh: a.image.alt.zh ?? null,
+      sortOrder: index,
+      publishedAt: new Date(a.published),
+    };
+
+    const article = await prisma.article.upsert({
+      where: { tenantId_slug: { tenantId: tenant.id, slug: a.slug } },
+      update: shared,
+      create: { tenantId: tenant.id, slug: a.slug, ...shared, published: true },
+    });
+
+    // Blocks: idempotent by delete-and-recreate (no stable natural key per block).
+    await prisma.articleBlock.deleteMany({ where: { articleId: article.id } });
+
+    const blockRows = (a.body as ArticleBlockShape[]).map((b, i) => {
+      const base = { articleId: article.id, sortOrder: i };
+      if (b.kind === "p") {
+        return { ...base, kind: "P" as const, textEn: b.text.en, textZh: b.text.zh ?? null };
+      }
+      if (b.kind === "h2") {
+        return { ...base, kind: "H" as const, textEn: b.text.en, textZh: b.text.zh ?? null };
+      }
+      return {
+        ...base,
+        kind: "LIST" as const,
+        itemsEn: b.items.map((it) => it.en),
+        itemsZh: b.items.map((it) => it.zh ?? it.en),
+      };
+    });
+
+    if (blockRows.length) {
+      await prisma.articleBlock.createMany({ data: blockRows });
+    }
+  }
+
+  const manualFacts: { key: ManualFactKey; fact: Fact }[] = [
+    { key: "FEED_TDS", fact: FEED_FACTS[0] },
+    { key: "FEED_MEMBRANE", fact: FEED_FACTS[1] },
+    { key: "SERVICE_COMBO_FILTER", fact: SERVICE_FACTS[0] },
+    { key: "SERVICE_MEMBRANE", fact: SERVICE_FACTS[1] },
+  ];
+  for (const { key, fact } of manualFacts) {
+    if (!fact) continue;
+    const data = {
+      valueEn: fact.v.en,
+      valueZh: fact.v.zh ?? null,
+      noteEn: fact.note.en,
+      noteZh: fact.note.zh ?? null,
+    };
+    await prisma.manualFact.upsert({
+      where: { tenantId_key: { tenantId: tenant.id, key } },
+      update: data,
+      create: { tenantId: tenant.id, key, ...data },
+    });
+  }
+
   console.log(
-    `Imported ${categories.length} categories, ${PRODUCTS.length} products, ${GUIDES.length} guides.`,
+    `Imported ${categories.length} categories, ${PRODUCTS.length} products, ${GUIDES.length} guides, ${ARTICLES.length} articles, ${manualFacts.length} manual facts.`,
   );
 }
 
