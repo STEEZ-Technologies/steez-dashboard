@@ -2,6 +2,20 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
 import { PUBLIC_CORS_HEADERS as CORS_HEADERS } from "@/lib/cors";
+import type { GuideReader, GuideBlockKind } from "@/app/generated/prisma/client";
+
+// Dashboard enums are uppercase; komibright-v2's lib/resources.ts types are lowercase.
+const READER: Record<GuideReader, string> = {
+  DISTRIBUTOR: "distributor",
+  CUSTOMER: "customer",
+  BOTH: "both",
+};
+const BLOCK_KIND: Record<GuideBlockKind, string> = {
+  P: "p",
+  H: "h",
+  LIST: "list",
+  TABLE: "table",
+};
 
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -44,7 +58,7 @@ export async function GET(
 
     return {
     id: g.slug,
-    reader: g.reader,
+    reader: READER[g.reader],
     title: { en: g.titleEn, zh: g.titleZh },
     standfirst: { en: g.standfirstEn, zh: g.standfirstZh },
     minutes: g.minutes,
@@ -53,9 +67,9 @@ export async function GET(
     imageFor: Object.keys(imageFor).length > 0 ? imageFor : undefined,
     body: g.blocks.map((b) =>
       b.kind === "TABLE"
-        ? { kind: b.kind }
+        ? { kind: BLOCK_KIND[b.kind] }
         : {
-            kind: b.kind,
+            kind: BLOCK_KIND[b.kind],
             text: { en: b.textEn, zh: b.textZh },
             items: { en: b.itemsEn ?? undefined, zh: b.itemsZh ?? undefined },
           },

@@ -2,6 +2,28 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
 import { PUBLIC_CORS_HEADERS as CORS_HEADERS } from "@/lib/cors";
+import type {
+  ProductKind,
+  ProductUseCase,
+  ProductWaterSource,
+  ProductDispensing,
+} from "@/app/generated/prisma/client";
+
+// Dashboard enums are uppercase; komibright-v2's lib/products.ts + lib/finder.ts
+// types are lowercase.
+const KIND: Record<ProductKind, string> = { MACHINE: "machine", ACCESSORY: "accessory" };
+const USE_CASE: Record<ProductUseCase, string> = {
+  KITCHEN: "kitchen",
+  HOSPITALITY: "hospitality",
+  LAB: "lab",
+  MOBILE: "mobile",
+};
+const SOURCE: Record<ProductWaterSource, string> = { MAINS: "mains", OPEN: "open" };
+const DISPENSING: Record<ProductDispensing, string> = {
+  TANK: "tank",
+  JAR: "jar",
+  DIRECT: "direct",
+};
 
 export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS });
@@ -50,8 +72,8 @@ export async function GET(
     nameZh: product.nameZh,
     description: product.description,
     descriptionZh: product.descriptionZh,
-    kind: product.kind,
-    useCases: product.useCases,
+    kind: KIND[product.kind],
+    useCases: product.useCases.map((u) => USE_CASE[u]),
     image: heroUrl ?? images[0] ?? null,
     images,
     models3d,
@@ -71,8 +93,8 @@ export async function GET(
       ? {
           litresPerDay: product.fit.litresPerDay,
           minBar: product.fit.minBar,
-          sources: product.fit.sources,
-          dispensing: product.fit.dispensing,
+          sources: product.fit.sources.map((s) => SOURCE[s]),
+          dispensing: DISPENSING[product.fit.dispensing],
           powered: product.fit.powered,
         }
       : null,
