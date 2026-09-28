@@ -47,6 +47,7 @@ export function AppSidebar({
   role,
   newLeadCount = 0,
   isSuperAdmin = false,
+  isPlatformWorkspace = false,
 }: {
   tenantName: string;
   email: string;
@@ -54,6 +55,8 @@ export function AppSidebar({
   /** Unread enquiries — surfaced as a badge so the inbox gets checked daily. */
   newLeadCount?: number;
   isSuperAdmin?: boolean;
+  /** STEEZ's own workspace has no catalog — only Workspace and Platform apply. */
+  isPlatformWorkspace?: boolean;
 }) {
   const pathname = usePathname();
   const { dict } = useT();
@@ -77,7 +80,10 @@ export function AppSidebar({
       <SidebarContent>
         {NAV_GROUPS.map((group) => {
           const items = NAV_ITEMS.filter(
-            (i) => i.group === group && (!i.superAdminOnly || isSuperAdmin),
+            (i) =>
+              i.group === group &&
+              (!i.superAdminOnly || isSuperAdmin) &&
+              (!isPlatformWorkspace || i.group === "Workspace" || i.group === "Platform"),
           );
           if (items.length === 0) return null;
           return (

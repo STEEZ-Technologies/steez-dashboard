@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { signIn } from "@/lib/auth";
 import { getDictionary } from "@/lib/i18n";
 import { prisma } from "@/lib/db";
+import { PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateResetToken, hashResetToken } from "@/lib/reset-token";
 import { sendPasswordResetEmail } from "@/lib/auth-email";
@@ -19,13 +20,26 @@ export async function authenticate(
   _prevState: AuthenticateResult | undefined,
   formData: FormData,
 ): Promise<AuthenticateResult> {
+  // STEEZ staff land on the tenant list; client users on their catalog.
+  // Only picks a destination — credentials are still checked by signIn.
+  const email = formData.get("email");
+  const account =
+    typeof email === "string"
+      ? await prisma.user.findUnique({
+          where: { email },
+          select: { tenant: { select: { slug: true } } },
+        })
+      : null;
+  const redirectTo =
+    account?.tenant.slug === PLATFORM_TENANT_SLUG ? "/admin" : "/products";
+
   try {
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
       code: formData.get("code") ?? undefined,
       rememberMe: formData.get("rememberMe") ?? undefined,
-      redirectTo: "/products",
+      redirectTo,
     });
     return {};
   } catch (error) {

@@ -1,4 +1,6 @@
 import { Plus } from "lucide-react";
+import { redirect } from "next/navigation";
+import { PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import {
@@ -22,6 +24,8 @@ import { getDictionary } from "@/lib/i18n";
 export default async function OverviewPage() {
   const { tenantId, role } = await getTenantFromSession();
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
+  // STEEZ's workspace has no catalog or analytics of its own.
+  if (tenant.slug === PLATFORM_TENANT_SLUG) redirect("/admin");
   const dict = await getDictionary();
   const publishState = await getPublishState(tenantId);
 

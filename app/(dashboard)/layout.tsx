@@ -15,7 +15,7 @@ import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { FlashToast } from "@/components/shell/flash-toast";
 import { getDictionary, getLocale } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/provider";
-import { isSuperAdmin } from "@/lib/super-admin";
+import { isSuperAdmin, PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 
 export default async function DashboardLayout({
   children,
@@ -39,6 +39,7 @@ export default async function DashboardLayout({
         role={user.role}
         newLeadCount={newLeadCount}
         isSuperAdmin={isSuperAdmin(user.email)}
+        isPlatformWorkspace={tenant.slug === PLATFORM_TENANT_SLUG}
       />
       <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">

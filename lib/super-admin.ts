@@ -15,6 +15,15 @@ function allowlist(): string[] {
     .filter(Boolean);
 }
 
+/**
+ * STEEZ's own workspace. Platform staff need a User row, and every User
+ * belongs to a Tenant — without this they had to live inside a client's
+ * workspace (they were Konlito's owner), so "our dashboard" was Konlito's.
+ * This tenant holds no catalog; it only exists to own STEEZ's logins and
+ * the platform audit trail. Created by prisma/seed-steez.ts.
+ */
+export const PLATFORM_TENANT_SLUG = "steez";
+
 export function isSuperAdmin(email: string | null | undefined): boolean {
   if (!email) return false;
   return allowlist().includes(email.toLowerCase());
