@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImageUploadField } from "@/components/shared/ImageUploadField";
+import { SpecRows } from "@/components/products/spec-rows";
 
 type ProductKindValue = "MACHINE" | "ACCESSORY";
 type UseCaseValue = "KITCHEN" | "HOSPITALITY" | "LAB" | "MOBILE";
@@ -120,12 +121,20 @@ export function ProductForm({
         <CardContent className="grid gap-5 p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="slug">Slug</Label>
+              <Label htmlFor="slug">Web address</Label>
               <Input id="slug" name="slug" defaultValue={defaultValues?.slug} required />
+              <p className="text-xs text-muted-foreground">
+                The end of the product&apos;s link, e.g. komibright.com/products/
+                <span className="font-medium text-foreground">your-web-address</span>. Lowercase
+                words separated by dashes, no spaces.
+              </p>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="model">Model</Label>
+              <Label htmlFor="model">Model code</Label>
               <Input id="model" name="model" defaultValue={defaultValues?.model} required />
+              <p className="text-xs text-muted-foreground">
+                The catalogue code printed on the unit, e.g. KB-C25R.
+              </p>
             </div>
           </div>
 
@@ -199,6 +208,10 @@ export function ProductForm({
             defaultValue={defaultValues?.imagePath}
             defaultUrl={defaultImageUrl}
           />
+          <p className="-mt-3 text-xs text-muted-foreground">
+            For this dashboard&apos;s own product list only — the photos on the live website are
+            fixed and verified separately, so this photo won&apos;t change anything customers see.
+          </p>
 
           <div className="grid gap-2">
             <Label>Category</Label>
@@ -221,36 +234,24 @@ export function ProductForm({
             </Select>
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="specsText">
-              Specs{" "}
-              <span className="font-normal text-muted-foreground">
-                (one “Key: Value” per line)
-              </span>
-            </Label>
-            <Textarea
-              id="specsText"
-              name="specsText"
-              rows={5}
-              className="font-mono text-sm"
-              placeholder={"Height: 1000mm\nLoad Capacity: 400kg"}
-              defaultValue={defaultValues?.specsText}
-            />
-          </div>
+          <SpecRows initialText={defaultValues?.specsText} />
 
           <div className="grid gap-3 rounded-lg border p-4">
             <label className="flex items-center gap-2 text-sm font-medium">
-              <Switch checked={hasFit} onCheckedChange={setHasFit} /> Capacity &amp; pressure
-              (finder data)
+              <Switch checked={hasFit} onCheckedChange={setHasFit} /> Water capacity &amp;
+              pressure
             </label>
             <p className="text-sm text-muted-foreground">
-              Leave off if this machine's capacity/pressure isn't in the catalogue yet — an
+              Used by the &quot;Find your system&quot; quiz on the website to match customers to
+              this product. Leave off if this machine's numbers aren't in the catalogue yet — an
               empty field means "not published," never a guess.
             </p>
             {hasFit && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
-                  <Label htmlFor="litresPerDayText">Litres per day</Label>
+                  <Label htmlFor="litresPerDayText">
+                    How much water it makes per day (litres)
+                  </Label>
                   <Input
                     id="litresPerDayText"
                     name="litresPerDayText"
@@ -259,7 +260,9 @@ export function ProductForm({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="minBarText">Minimum pressure (bar)</Label>
+                  <Label htmlFor="minBarText">
+                    Lowest water pressure it needs to work (bar)
+                  </Label>
                   <Input
                     id="minBarText"
                     name="minBarText"
@@ -305,12 +308,16 @@ export function ProductForm({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-6">
+          <div className="grid gap-3">
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={featured} onCheckedChange={setFeatured} /> Featured
+              <Switch checked={featured} onCheckedChange={setFeatured} /> Featured{" "}
+              <span className="font-normal text-muted-foreground">
+                (marks it in this dashboard&apos;s own list — not shown on the website yet)
+              </span>
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <Switch checked={published} onCheckedChange={setPublished} /> Published
+              <Switch checked={published} onCheckedChange={setPublished} /> Published (visible on
+              the website)
             </label>
           </div>
 
