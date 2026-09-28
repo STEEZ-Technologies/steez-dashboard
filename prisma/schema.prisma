@@ -41,6 +41,7 @@ model Tenant {
   products      Product[]
   articles      Article[]
   guides        Guide[]
+  manualFacts   ManualFact[]
   productEvents ProductEvent[]
   pageViews     PageView[]
   auditLogs     AuditLog[]
@@ -103,23 +104,54 @@ model Category {
   @@index([tenantId])
 }
 
+enum ProductKind {
+  MACHINE
+  ACCESSORY
+}
+
+enum ProductUseCase {
+  KITCHEN
+  HOSPITALITY
+  LAB
+  MOBILE
+}
+
+enum ProductWaterSource {
+  MAINS
+  OPEN
+}
+
+enum ProductDispensing {
+  TANK
+  JAR
+  DIRECT
+}
+
 model Product {
-  id          String    @id @default(cuid())
-  tenantId    String
-  tenant      Tenant    @relation(fields: [tenantId], references: [id])
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id])
-  slug        String // e.g. "k6602"
-  model       String // display code, e.g. "K6602"
-  name        String
-  description String?
-  imagePath   String? // OSS object key
-  specs       Json? // mirrors Record<string,string> in Konlito's lib/products.ts
-  sortOrder   Int       @default(0)
-  featured    Boolean   @default(false)
-  published   Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String           @id @default(cuid())
+  tenantId      String
+  tenant        Tenant           @relation(fields: [tenantId], references: [id])
+  categoryId    String?
+  category      Category?        @relation(fields: [categoryId], references: [id])
+  slug          String // e.g. "k6602"
+  model         String // display code, e.g. "K6602"
+  name          String
+  nameZh        String?
+  description   String?
+  descriptionZh String?
+  // kind/useCases: komibright's catalogue browser facets — machine vs
+  // accessory, and which use-case scenes a product belongs to. Optional
+  // defaults keep Konlito's existing products unaffected (kind defaults to
+  // MACHINE since Konlito has no accessory concept; useCases defaults empty).
+  kind          ProductKind      @default(MACHINE)
+  useCases      ProductUseCase[]
+  imagePath     String? // OSS object key
+  specs         Json? // mirrors Record<string,string> in Konlito's lib/products.ts
+  sortOrder     Int              @default(0)
+  featured      Boolean          @default(false)
+  published     Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // SEO fields — see the matching note on Tenant above.
   canonicalUrl   String?
@@ -134,11 +166,46 @@ model Product {
   productEvents ProductEvent[]
   images        ProductImage[]
   models3d      ProductModel3D[]
+  contents      ProductContent[]
+  fit           ProductFit?
   leads         Lead[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
   @@index([categoryId])
+}
+
+// Box contents ("what's in the box"), bilingual, ordered — mirrors
+// ProductImage's shape. Optional per product; komibright's finder/catalogue
+// only shows this list when it's non-empty.
+model ProductContent {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  textEn    String
+  textZh    String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// Structured capacity/pressure/source facts (komibright's finder.ts `FIT`).
+// Every field is nullable on purpose: null means "catalogue doesn't say,"
+// never a guessed value — the finder and product page both depend on that
+// distinction (an unpublished pressure figure says so explicitly rather than
+// implying it was checked). One row per machine; accessories never get one.
+model ProductFit {
+  id           String               @id @default(cuid())
+  productId    String               @unique
+  product      Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  litresPerDay Int?
+  minBar       Int?
+  sources      ProductWaterSource[]
+  dispensing   ProductDispensing    @default(TANK)
+  powered      Boolean              @default(false)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
 
 model ProductImage {
@@ -179,45 +246,65 @@ model ProductFinish {
   @@index([productId])
 }
 
-enum ArticleCategory {
-  EDUCATION
-  INDUSTRY
+// Matches komibright-v2's real lib/articles.ts TOPICS list (minus the
+// synthetic "all" filter, which stays a site-side UI concept). Replaces the
+// EDUCATION/INDUSTRY/COMPANY ArticleCategory this model briefly had — that
+// enum didn't match anything the real site reads.
+enum ArticleTopic {
+  REVERSE_OSMOSIS
+  CHOOSING
+  MAINTENANCE
+  WATER_QUALITY
+  SUSTAINABILITY
   COMPANY
 }
 
-// News/blog entries. bodyEn/bodyZh are Markdown prose, not structured blocks
-// like Guide — news copy is prose, and no rich-text editor exists anywhere in
-// this codebase yet, so a plain textarea authoring Markdown is the fit.
+// News/blog entries. Body is structured blocks (see ArticleBlock), not
+// Markdown prose — komibright's real articles are p/h2/ul blocks, the same
+// shape Guide already uses, so this reuses GuideBlockKind rather than
+// inventing a second near-identical enum.
 model Article {
-  id                String          @id @default(cuid())
-  tenantId          String
-  tenant            Tenant          @relation(fields: [tenantId], references: [id])
-  slug              String
-  titleEn           String
-  titleZh           String?
-  standfirstEn      String?
-  standfirstZh      String?
-  bodyEn            String?
-  bodyZh            String?
-  metaTitleEn       String?
-  metaTitleZh       String?
-  metaDescriptionEn String?
-  metaDescriptionZh String?
-  primaryKeyword    String?
-  secondaryKeywords String? // comma-separated, matches SEO-PLAN.md's table
-  category          ArticleCategory @default(EDUCATION)
-  imagePath         String? // OSS key
-  imageAltEn        String?
-  imageAltZh        String?
-  sortOrder         Int             @default(0)
-  featured          Boolean         @default(false)
-  published         Boolean         @default(true)
-  publishedAt       DateTime?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id           String       @id @default(cuid())
+  tenantId     String
+  tenant       Tenant       @relation(fields: [tenantId], references: [id])
+  slug         String
+  titleEn      String
+  titleZh      String?
+  standfirstEn String? // doubles as the meta description — komibright prints no separate one
+  standfirstZh String?
+  metaTitleEn  String?
+  metaTitleZh  String?
+  keywordsEn   String[]
+  keywordsZh   String[]
+  topic        ArticleTopic @default(COMPANY)
+  imagePath    String? // OSS key
+  imageAltEn   String?
+  imageAltZh   String?
+  sortOrder    Int          @default(0)
+  published    Boolean      @default(true)
+  publishedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  blocks ArticleBlock[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
+}
+
+model ArticleBlock {
+  id        String         @id @default(cuid())
+  articleId String
+  article   Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  kind      GuideBlockKind // P/H/LIST used; TABLE never chosen for an article
+  textEn    String? // P/H kinds
+  textZh    String?
+  itemsEn   Json? // LIST kind only — string[]
+  itemsZh   Json?
+  sortOrder Int            @default(0)
+  createdAt DateTime       @default(now())
+
+  @@index([articleId])
 }
 
 enum GuideReader {
@@ -231,23 +318,31 @@ enum GuideReader {
 // renders a live capacity-figures table inline with the written blocks —
 // that table can't be authored content, only a marker for where it goes.
 model Guide {
-  id           String      @id @default(cuid())
-  tenantId     String
-  tenant       Tenant      @relation(fields: [tenantId], references: [id])
-  slug         String
-  reader       GuideReader @default(BOTH)
-  titleEn      String
-  titleZh      String?
-  standfirstEn String?
-  standfirstZh String?
-  minutes      Int         @default(5)
-  imagePath    String? // OSS key
-  imageAltEn   String?
-  imageAltZh   String?
-  sortOrder    Int         @default(0)
-  published    Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id                    String      @id @default(cuid())
+  tenantId              String
+  tenant                Tenant      @relation(fields: [tenantId], references: [id])
+  slug                  String
+  reader                GuideReader @default(BOTH)
+  titleEn               String
+  titleZh               String?
+  standfirstEn          String?
+  standfirstZh          String?
+  minutes               Int         @default(5)
+  imagePath             String? // OSS key — fallback image when no per-reader override is set
+  imageAltEn            String?
+  imageAltZh            String?
+  // Per-reader image overrides (lib/resources.ts's `imageFor`). Optional —
+  // most guides only ever set imagePath and never these.
+  imageDistributorPath  String?
+  imageDistributorAltEn String?
+  imageDistributorAltZh String?
+  imageCustomerPath     String?
+  imageCustomerAltEn    String?
+  imageCustomerAltZh    String?
+  sortOrder             Int         @default(0)
+  published             Boolean     @default(true)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 
   blocks GuideBlock[]
 
@@ -275,6 +370,34 @@ model GuideBlock {
   createdAt DateTime       @default(now())
 
   @@index([guideId])
+}
+
+// The only two manualFacts.ts groups actually read by the live site — feed
+// TDS/membrane element, and the two service intervals. The rest of
+// manualFacts.ts (OPERATING_LIMITS, SPARE_CODES, RATED_FIGURES, WARRANTY,
+// CONSUMABLES) is confirmed dead outside prototypes and is deliberately not
+// modeled here.
+enum ManualFactKey {
+  FEED_TDS
+  FEED_MEMBRANE
+  SERVICE_COMBO_FILTER
+  SERVICE_MEMBRANE
+}
+
+model ManualFact {
+  id        String        @id @default(cuid())
+  tenantId  String
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  key       ManualFactKey
+  valueEn   String
+  valueZh   String?
+  noteEn    String?
+  noteZh    String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
 }
 
 enum ProductEventType {
