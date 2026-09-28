@@ -3,6 +3,12 @@ import { prisma } from "@/lib/db";
 import { PUBLIC_CORS_HEADERS as CORS_HEADERS } from "@/lib/cors";
 import type { ManualFactKey } from "@/app/generated/prisma/client";
 
+// This route reads live data straight off the database; without this, Next
+// statically renders the response once at build time and every subsequent
+// request (in `next start`, on Vercel, etc.) serves that stale snapshot
+// regardless of edits made in the dashboard afterward.
+export const dynamic = "force-dynamic";
+
 // Dashboard key -> the flat field name komibright-v2's lib/manualFacts.ts groups
 // (FEED_FACTS: feedTds/feedMembrane, SERVICE_FACTS: serviceComboFilter/serviceMembrane).
 const FIELD: Record<ManualFactKey, string> = {

@@ -9,6 +9,12 @@ import type {
   ProductDispensing,
 } from "@/app/generated/prisma/client";
 
+// This route reads live data straight off the database; without this, Next
+// statically renders the response once at build time and every subsequent
+// request (in `next start`, on Vercel, etc.) serves that stale snapshot
+// regardless of edits made in the dashboard afterward.
+export const dynamic = "force-dynamic";
+
 // Dashboard enums are uppercase; komibright-v2's lib/products.ts + lib/finder.ts
 // types are lowercase.
 const KIND: Record<ProductKind, string> = { MACHINE: "machine", ACCESSORY: "accessory" };

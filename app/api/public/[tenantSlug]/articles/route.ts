@@ -4,6 +4,12 @@ import { getPublicUrl } from "@/lib/oss";
 import { PUBLIC_CORS_HEADERS as CORS_HEADERS } from "@/lib/cors";
 import type { ArticleTopic, GuideBlockKind } from "@/app/generated/prisma/client";
 
+// This route reads live data straight off the database; without this, Next
+// statically renders the response once at build time and every subsequent
+// request (in `next start`, on Vercel, etc.) serves that stale snapshot
+// regardless of edits made in the dashboard afterward.
+export const dynamic = "force-dynamic";
+
 // Dashboard topic enum -> the site's own topic slugs (lib/articles.ts's TOPICS ids).
 const TOPIC_SLUG: Record<ArticleTopic, string> = {
   REVERSE_OSMOSIS: "reverse-osmosis",
