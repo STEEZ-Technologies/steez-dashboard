@@ -4,6 +4,12 @@ import { getPublicUrl } from "@/lib/oss";
 import { PUBLIC_CORS_HEADERS as CORS_HEADERS } from "@/lib/cors";
 import type { GuideReader, GuideBlockKind } from "@/app/generated/prisma/client";
 
+// This route reads live data straight off the database; without this, Next
+// statically renders the response once at build time and every subsequent
+// request (in `next start`, on Vercel, etc.) serves that stale snapshot
+// regardless of edits made in the dashboard afterward.
+export const dynamic = "force-dynamic";
+
 // Dashboard enums are uppercase; komibright-v2's lib/resources.ts types are lowercase.
 const READER: Record<GuideReader, string> = {
   DISTRIBUTOR: "distributor",
@@ -65,15 +71,18 @@ export async function GET(
     image: g.imagePath ? getPublicUrl(g.imagePath) : null,
     imageAlt: { en: g.imageAltEn, zh: g.imageAltZh },
     imageFor: Object.keys(imageFor).length > 0 ? imageFor : undefined,
-    body: g.blocks.map((b) =>
-      b.kind === "TABLE"
-        ? { kind: BLOCK_KIND[b.kind] }
-        : {
-            kind: BLOCK_KIND[b.kind],
-            text: { en: b.textEn, zh: b.textZh },
-            items: { en: b.itemsEn ?? undefined, zh: b.itemsZh ?? undefined },
-          },
-    ),
+    body: g.blocks.map((b) => {
+      if (b.kind === "TABLE") return { kind: BLOCK_KIND[b.kind] };
+      if (b.kind === "LIST") {
+        const itemsEn = (b.itemsEn as string[] | null) ?? [];
+        const itemsZh = b.itemsZh as string[] | null;
+        return {
+          kind: BLOCK_KIND[b.kind],
+          items: itemsEn.map((en, i) => ({ en, zh: itemsZh?.[i] ?? null })),
+        };
+      }
+      return { kind: BLOCK_KIND[b.kind], text: { en: b.textEn, zh: b.textZh } };
+    }),
     };
   });
 
