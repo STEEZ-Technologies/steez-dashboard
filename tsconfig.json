@@ -32,6 +32,6 @@
   ],
   "exclude": [
     "node_modules",
-    "prisma/import-konlito.ts"
+    "prisma/import-konlito.ts", "prisma/import-komibright.ts"
   ]
 }
