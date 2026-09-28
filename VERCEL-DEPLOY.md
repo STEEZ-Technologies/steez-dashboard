@@ -32,6 +32,7 @@ Project → Settings → Environment Variables, add:
 | `DATABASE_URL` | the `POSTGRES_URL_NON_POOLING` value from step 2 |
 | `AUTH_SECRET` | generate your own: run `openssl rand -base64 32` locally, paste the output (never commit this value anywhere) |
 | `PUBLIC_ALLOWED_ORIGINS` | `https://konlito.steez.digital` |
+| `SUPER_ADMIN_EMAILS` | `adam@steez.digital` — STEEZ platform staff only; never a client's login |
 | `OSS_REGION` | `oss-cn-hongkong` |
 | `OSS_ACCESS_KEY_ID` | *(leave blank for now — fill when you have real OSS creds; image upload will 500 until then, rest of the app works)* |
 | `OSS_ACCESS_KEY_SECRET` | *(same)* |
@@ -48,6 +49,9 @@ First deploy only — seed the Konlito tenant + owner. Either:
 - Vercel dashboard → project → a one-off `vercel env pull` + local
   `npx tsx prisma/seed.ts` pointed at the new `DATABASE_URL`, or
 - Add a temporary API route that calls the seed logic once, then remove it.
+
+Then create STEEZ's own workspace (separate from every client):
+`STEEZ_PASSWORD="..." npx tsx prisma/seed-steez.ts` against the same `DATABASE_URL`.
 
 ## 5. Domain
 

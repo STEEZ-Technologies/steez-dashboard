@@ -35,6 +35,7 @@ cp .env.production.example .env
 npm ci
 npx prisma migrate deploy
 npx tsx prisma/seed.ts   # only on very first setup — seeds Konlito tenant + owner
+STEEZ_PASSWORD="..." npx tsx prisma/seed-steez.ts   # STEEZ's own workspace + login; list that email in SUPER_ADMIN_EMAILS
 npm run build
 
 pm2 start deploy/ecosystem.config.js
