@@ -141,6 +141,17 @@ export const tenantSettingsSchema = z.object({
       error: "Must be an https:// URL",
     })
     .optional(),
+  // The tenant's live public site, e.g. https://komibright.com — used to
+  // build "View live" links (products, articles, guides) instead of a
+  // hardcoded domain that only ever matched one tenant.
+  siteUrl: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? undefined : v.replace(/\/+$/, "")))
+    .refine((v) => v === undefined || /^https:\/\/\S+$/.test(v), {
+      error: "Must be an https:// URL",
+    })
+    .optional(),
 });
 
 export const createTenantSchema = z.object({

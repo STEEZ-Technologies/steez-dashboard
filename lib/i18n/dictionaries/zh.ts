@@ -306,6 +306,8 @@ export const zh: Dictionary = {
     workspaceName: "工作区名称",
     publicSlug: "公开标识",
     slugLockedNote: "用于您公开产品目录 API 路径。更改会破坏正在使用的实时站点集成，因此已锁定。",
+    siteUrlLabel: "正式网站地址",
+    siteUrlHelp: "客户访问的网站，例如 https://komibright.com。用于产品页面的“查看实时页面”链接。",
     saving: "保存中…",
     saveChanges: "保存更改",
     ownerOnlyNote: "仅所有者可编辑工作区设置。",

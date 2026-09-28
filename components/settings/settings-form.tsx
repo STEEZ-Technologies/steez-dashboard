@@ -12,11 +12,13 @@ export function SettingsForm({
   name,
   slug,
   deployHookUrl,
+  siteUrl,
   canManage,
 }: {
   name: string;
   slug: string;
   deployHookUrl: string | null;
+  siteUrl: string | null;
   canManage: boolean;
 }) {
   const [error, formAction, pending] = useActionState(updateTenantSettings, undefined);
@@ -36,6 +38,19 @@ export function SettingsForm({
             <p className="text-xs text-muted-foreground">
               {dict.settings.slugLockedNote}
             </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="siteUrl">{dict.settings.siteUrlLabel}</Label>
+            <Input
+              id="siteUrl"
+              name="siteUrl"
+              type="url"
+              inputMode="url"
+              placeholder="https://komibright.com"
+              defaultValue={siteUrl ?? ""}
+              disabled={!canManage}
+            />
+            <p className="text-xs text-muted-foreground">{dict.settings.siteUrlHelp}</p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="deployHookUrl">{dict.publish.hookLabel}</Label>

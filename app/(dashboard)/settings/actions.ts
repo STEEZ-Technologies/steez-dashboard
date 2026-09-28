@@ -30,6 +30,7 @@ export async function updateTenantSettings(
     data: {
       name: parsed.data.name,
       deployHookUrl: parsed.data.deployHookUrl ?? null,
+      siteUrl: parsed.data.siteUrl ?? null,
     },
   });
   await logAudit({ action: "settings.update", entity: "tenant", entityId: session.tenantId, detail: parsed.data.name });

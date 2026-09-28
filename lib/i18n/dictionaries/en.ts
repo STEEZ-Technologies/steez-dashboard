@@ -313,6 +313,9 @@ export const en = {
     publicSlug: "Public slug",
     slugLockedNote:
       "Used in your public catalog API path. Changing it would break the live site integration, so it's locked.",
+    siteUrlLabel: "Live website address",
+    siteUrlHelp:
+      "The site customers visit, e.g. https://komibright.com. Powers the \"View live\" links on products.",
     saving: "Saving…",
     saveChanges: "Save changes",
     ownerOnlyNote: "Only owners can edit workspace settings.",

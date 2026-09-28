@@ -26,9 +26,10 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
   const { tenantId } = await getTenantFromSession();
-  const [product, categories] = await Promise.all([
+  const [product, categories, tenant] = await Promise.all([
     prisma.product.findFirst({ where: { id, tenantId }, include: { fit: true } }),
     prisma.category.findMany({ where: { tenantId }, orderBy: { sortOrder: "asc" } }),
+    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { siteUrl: true } }),
   ]);
   if (!product) notFound();
   const dict = await getDictionary();
@@ -73,15 +74,17 @@ export default async function EditProductPage({
         description={product.model}
         action={
           <div className="flex items-center gap-2">
-            <LinkButton
-              variant="outline"
-              size="sm"
-              href={`https://konlito.steez.digital/products/${product.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <ExternalLink /> Preview on site
-            </LinkButton>
+            {tenant.siteUrl && (
+              <LinkButton
+                variant="outline"
+                size="sm"
+                href={`${tenant.siteUrl}/products/${product.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink /> Preview on site
+              </LinkButton>
+            )}
             <LinkButton variant="outline" size="sm" href={`/products/${product.id}/analytics`}>
               <BarChart3 /> View analytics
             </LinkButton>

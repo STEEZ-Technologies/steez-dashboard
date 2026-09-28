@@ -15,7 +15,7 @@ export default async function ProductsPage() {
   const { tenantId, role } = await getTenantFromSession();
   const dict = await getDictionary();
   const publishState = await getPublishState(tenantId);
-  const [products, categories] = await Promise.all([
+  const [products, categories, tenant] = await Promise.all([
     prisma.product.findMany({
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
@@ -26,6 +26,7 @@ export default async function ProductsPage() {
       orderBy: { sortOrder: "asc" },
       select: { label: true },
     }),
+    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { siteUrl: true } }),
   ]);
 
   const rows: ProductRow[] = products.map((p) => ({
@@ -74,7 +75,7 @@ export default async function ProductsPage() {
           }
         />
       ) : (
-        <ProductsTable products={rows} categories={categories} />
+        <ProductsTable products={rows} categories={categories} siteUrl={tenant.siteUrl} />
       )}
     </div>
   );

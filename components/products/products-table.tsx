@@ -93,8 +93,6 @@ export type ProductRow = {
   imageUrl: string | null;
 };
 
-const KONLITO_SITE_BASE = "https://konlito.steez.digital";
-
 type SortKey = "name" | "model" | "category" | "status";
 
 type Sort = { key: SortKey | null; dir: "asc" | "desc" };
@@ -130,9 +128,11 @@ function SortHead({
 export function ProductsTable({
   products,
   categories,
+  siteUrl,
 }: {
   products: ProductRow[];
   categories: { label: string }[];
+  siteUrl: string | null;
 }) {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
@@ -433,6 +433,7 @@ export function ProductsTable({
                         runAction(() => moveProduct(p.id, "down"), dict.products.toastMovedDown)
                       }
                       onDelete={() => setToDelete(p)}
+                      siteUrl={siteUrl}
                     />
                   ))}
                 </SortableContext>
@@ -505,6 +506,7 @@ function ProductTableRow({
   onMoveUp,
   onMoveDown,
   onDelete,
+  siteUrl,
 }: {
   p: ProductRow;
   pending: boolean;
@@ -515,6 +517,7 @@ function ProductTableRow({
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
+  siteUrl: string | null;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: p.id, disabled: !reorderable });
@@ -603,17 +606,23 @@ function ProductTableRow({
             >
               <BarChart3 className="size-4" /> {dict.actions.analytics}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              render={
-                <a
-                  href={`${KONLITO_SITE_BASE}/products/${p.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
-            >
-              <ExternalLink className="size-4" /> {dict.actions.preview}
-            </DropdownMenuItem>
+            {siteUrl ? (
+              <DropdownMenuItem
+                render={
+                  <a
+                    href={`${siteUrl}/products/${p.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <ExternalLink className="size-4" /> {dict.actions.preview}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem disabled title="Set the live website address in Settings first">
+                <ExternalLink className="size-4" /> {dict.actions.preview}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={onDuplicate}>
               <Copy className="size-4" /> {dict.actions.duplicate}
             </DropdownMenuItem>
