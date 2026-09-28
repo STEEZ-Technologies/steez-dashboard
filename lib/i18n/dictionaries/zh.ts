@@ -261,7 +261,7 @@ export const zh: Dictionary = {
     import: "导入",
     importing: "导入中…",
     description:
-      "上传符合导出格式的 CSV 文件（slug、model、name、description、category、specs、featured、published）。行数据按 slug 匹配现有产品——存在则更新，不存在则创建。",
+      "上传符合导出格式的 CSV 文件（列：slug、model、name、description、category、specs、featured、published——\"slug\" 即产品的网址）。行数据按 slug 匹配现有产品——存在则更新，不存在则创建。",
     rowsReady: "{file}：{count} 行准备导入。",
     resultSummary: "已创建 {created} 项，已更新 {updated} 项",
     resultSkipped: "，跳过 {count} 项",

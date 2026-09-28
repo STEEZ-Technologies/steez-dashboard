@@ -266,7 +266,7 @@ export const en = {
     import: "Import",
     importing: "Importing…",
     description:
-      "Upload a CSV matching the export format (slug, model, name, description, category, specs, featured, published). Rows match existing products by slug — update if found, create if not.",
+      "Upload a CSV in the same format as \"Export CSV\" (columns: slug, model, name, description, category, specs, featured, published — \"slug\" is the product's web address). Each row is matched to an existing product by its slug — updated if found, added if not.",
     rowsReady: "{file}: {count} row(s) ready to import.",
     resultSummary: "{created} created, {updated} updated",
     resultSkipped: ", {count} skipped",
