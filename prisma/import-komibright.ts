@@ -7,9 +7,10 @@
  * kind: "machine" -> Category "Systems", "accessory" -> Category "Service Parts"
  * (matches /products/ page's own language on the site).
  *
- * Images: komibright-v2 is a static export with no live domain yet and no
- * OSS bucket configured. imagePath is left null here rather than guessing a
- * URL that doesn't resolve — a follow-up once hosting/OSS is decided.
+ * Images: real product/guide photos upload through the dashboard's own
+ * ImageUploadField (Aliyun OSS) once the bucket is configured — imagePath
+ * is left null here rather than pointing at komibright-v2's own hosting,
+ * which would bypass that pipeline.
  *
  * Run: npx tsx prisma/import-komibright.ts
  *
