@@ -54,10 +54,12 @@ export function PublishBanner({
               {pending ? t.publishing : t.publishNow}
             </Button>
           ) : null
-        ) : (
+        ) : canPublish ? (
           <Link href="/settings" className="text-sm font-medium underline">
             {t.notConfigured}
           </Link>
+        ) : (
+          <span className="text-sm text-muted-foreground">{t.notConfiguredStaff}</span>
         )}
       </div>
     </div>

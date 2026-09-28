@@ -381,6 +381,7 @@ export const zh: Dictionary = {
     publishing: "发布中…",
     published: "已开始发布 — 您的网站将在一两分钟内重新构建。",
     notConfigured: "未设置部署钩子。请在设置中添加，以便目录更改能够上线。",
+    notConfiguredStaff: "已保存 — 请联系工作区所有者在设置中开启发布功能。",
     hookLabel: "部署钩子 URL",
     hookHelp:
       "Vercel → 您官网的项目 → Settings → Git → Deploy Hooks。将 URL 粘贴到此处，发布功能即可重新构建官网。",

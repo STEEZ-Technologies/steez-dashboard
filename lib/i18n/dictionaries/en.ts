@@ -97,7 +97,7 @@ export const en = {
   categories: {
     subtitle: "Group products the way buyers browse them.",
     colCategory: "Category",
-    colSlug: "Slug",
+    colSlug: "Short code",
     colProducts: "Products",
     emptyTitle: "No categories yet",
     emptyDesc:
@@ -391,6 +391,7 @@ export const en = {
     published: "Publishing started — your site rebuilds in a minute or two.",
     notConfigured:
       "No deploy hook set. Add one in Settings so catalog edits can go live.",
+    notConfiguredStaff: "Saved — ask your workspace owner to turn on publishing in Settings.",
     hookLabel: "Deploy hook URL",
     hookHelp:
       "Vercel → your public site's project → Settings → Git → Deploy Hooks. Paste the URL here so Publish can rebuild the live site.",
