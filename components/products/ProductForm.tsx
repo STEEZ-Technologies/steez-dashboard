@@ -309,12 +309,14 @@ export function ProductForm({
           </div>
 
           <div className="grid gap-3">
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={featured} onCheckedChange={setFeatured} /> Featured{" "}
-              <span className="font-normal text-muted-foreground">
-                (marks it in this dashboard&apos;s own list — not shown on the website yet)
-              </span>
-            </label>
+            <div>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch checked={featured} onCheckedChange={setFeatured} /> Featured
+              </label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Marks it in this dashboard&apos;s own list — not shown on the website yet.
+              </p>
+            </div>
             <label className="flex items-center gap-2 text-sm">
               <Switch checked={published} onCheckedChange={setPublished} /> Published (visible on
               the website)
