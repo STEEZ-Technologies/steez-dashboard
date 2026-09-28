@@ -200,7 +200,10 @@ model ProductFit {
   productId    String               @unique
   product      Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
   litresPerDay Int?
-  minBar       Int?
+  // Float, not Int: the catalogue's real minimums are fractional (1.5, 1.8
+  // bar) — an Int column silently truncated them (caught 2026-09-28 via the
+  // public API returning 1 instead of KB-C25R's real 1.5).
+  minBar       Float?
   sources      ProductWaterSource[]
   dispensing   ProductDispensing    @default(TANK)
   powered      Boolean              @default(false)
