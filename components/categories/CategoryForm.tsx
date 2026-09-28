@@ -28,12 +28,18 @@ export function CategoryForm({
       <Card>
         <CardContent className="grid gap-5 p-6">
           <div className="grid gap-2">
-            <Label htmlFor="slug">Slug</Label>
-            <Input id="slug" name="slug" defaultValue={defaultValues?.slug} required />
+            <Label htmlFor="label">Name</Label>
+            <Input id="label" name="label" defaultValue={defaultValues?.label} required />
+            <p className="text-xs text-muted-foreground">
+              The group name shown to customers, e.g. &quot;Whole-home systems&quot;.
+            </p>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="label">Label</Label>
-            <Input id="label" name="label" defaultValue={defaultValues?.label} required />
+            <Label htmlFor="slug">Short code</Label>
+            <Input id="slug" name="slug" defaultValue={defaultValues?.slug} required />
+            <p className="text-xs text-muted-foreground">
+              Lowercase words separated by dashes, used internally — not shown to customers.
+            </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="description">Description</Label>
