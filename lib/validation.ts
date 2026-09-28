@@ -23,8 +23,26 @@ export const productInputSchema = z.object({
   slug: slugField,
   model: z.string().trim().min(1, { error: "Model is required" }),
   name: z.string().trim().min(1, { error: "Name is required" }),
+  nameZh: optionalText,
   description: optionalText,
+  descriptionZh: optionalText,
   imagePath: optionalText,
+});
+
+export const productContentInputSchema = z.object({
+  textEn: z.string().trim().min(1, { error: "English text is required" }),
+  textZh: optionalText,
+});
+
+// litresPerDay/minBar/sources arrive as text from the form and are parsed by
+// the caller — every field here is optional on purpose (null means "the
+// catalogue doesn't say," never a guessed value).
+export const productFitInputSchema = z.object({
+  litresPerDayText: optionalText,
+  minBarText: optionalText,
+  sources: z.array(z.enum(["MAINS", "OPEN"])).default([]),
+  dispensing: z.enum(["TANK", "JAR", "DIRECT"]),
+  powered: z.boolean().default(false),
 });
 
 export const finishInputSchema = z.object({
@@ -42,17 +60,32 @@ export const articleInputSchema = z.object({
   titleZh: optionalText,
   standfirstEn: optionalText,
   standfirstZh: optionalText,
-  bodyEn: optionalText,
-  bodyZh: optionalText,
   metaTitleEn: optionalText,
   metaTitleZh: optionalText,
-  metaDescriptionEn: optionalText,
-  metaDescriptionZh: optionalText,
-  primaryKeyword: optionalText,
-  secondaryKeywords: optionalText,
+  topic: z.enum([
+    "REVERSE_OSMOSIS",
+    "CHOOSING",
+    "MAINTENANCE",
+    "WATER_QUALITY",
+    "SUSTAINABILITY",
+    "COMPANY",
+  ]),
+  // Comma-separated in the form, split into an array before persisting —
+  // matches lib/articles.ts's `keywords: string[]` (primary first).
+  keywordsEnText: optionalText,
+  keywordsZhText: optionalText,
   imagePath: optionalText,
   imageAltEn: optionalText,
   imageAltZh: optionalText,
+});
+
+export const articleBlockInputSchema = z.object({
+  kind: z.enum(["P", "H", "LIST"]),
+  textEn: optionalText,
+  textZh: optionalText,
+  // Newline-separated in the form, split into an array before persisting.
+  itemsEnText: optionalText,
+  itemsZhText: optionalText,
 });
 
 export const guideInputSchema = z.object({
@@ -64,6 +97,13 @@ export const guideInputSchema = z.object({
   imagePath: optionalText,
   imageAltEn: optionalText,
   imageAltZh: optionalText,
+  // Optional per-reader overrides (lib/resources.ts's `imageFor`).
+  imageDistributorPath: optionalText,
+  imageDistributorAltEn: optionalText,
+  imageDistributorAltZh: optionalText,
+  imageCustomerPath: optionalText,
+  imageCustomerAltEn: optionalText,
+  imageCustomerAltZh: optionalText,
 });
 
 export const guideBlockInputSchema = z.object({
@@ -73,6 +113,14 @@ export const guideBlockInputSchema = z.object({
   // Newline-separated in the form, split into an array before persisting.
   itemsEnText: optionalText,
   itemsZhText: optionalText,
+});
+
+export const manualFactInputSchema = z.object({
+  key: z.enum(["FEED_TDS", "FEED_MEMBRANE", "SERVICE_COMBO_FILTER", "SERVICE_MEMBRANE"]),
+  valueEn: z.string().trim().min(1, { error: "English value is required" }),
+  valueZh: optionalText,
+  noteEn: optionalText,
+  noteZh: optionalText,
 });
 
 export const userInviteSchema = z.object({
@@ -128,7 +176,11 @@ export const resetPasswordSchema = z.object({
 
 export type CategoryInput = z.infer<typeof categoryInputSchema>;
 export type ProductInput = z.infer<typeof productInputSchema>;
+export type ProductContentInput = z.infer<typeof productContentInputSchema>;
+export type ProductFitInput = z.infer<typeof productFitInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;
 export type ArticleInput = z.infer<typeof articleInputSchema>;
+export type ArticleBlockInput = z.infer<typeof articleBlockInputSchema>;
 export type GuideInput = z.infer<typeof guideInputSchema>;
 export type GuideBlockInput = z.infer<typeof guideBlockInputSchema>;
+export type ManualFactInput = z.infer<typeof manualFactInputSchema>;

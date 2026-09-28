@@ -18,7 +18,42 @@ function extractProductExtras(formData: FormData) {
   const published = formData.get("published") === "on";
   const specsText = (formData.get("specsText") as string | null) ?? "";
   const specs = parseSpecsText(specsText);
-  return { categoryId, featured, published, specs };
+  const kind = formData.get("kind") === "ACCESSORY" ? "ACCESSORY" : "MACHINE";
+  const useCases = formData.getAll("useCases").filter((v): v is string => typeof v === "string");
+  return { categoryId, featured, published, specs, kind, useCases };
+}
+
+// Fit is optional per product — an empty section means "no fit data," not
+// zeroed-out values (litresPerDay/minBar stay null, matching finder.ts's
+// null-means-unpublished rule). Upserted alongside the product since it's
+// edited inline on the same form, not a separate sub-resource.
+async function upsertProductFit(productId: string, formData: FormData) {
+  const litresPerDayText = (formData.get("litresPerDayText") as string | null)?.trim();
+  const minBarText = (formData.get("minBarText") as string | null)?.trim();
+  const sources = formData.getAll("sources").filter((v): v is string => typeof v === "string");
+  const dispensingRaw = formData.get("dispensing");
+  const dispensing =
+    dispensingRaw === "JAR" || dispensingRaw === "DIRECT" ? dispensingRaw : "TANK";
+  const powered = formData.get("powered") === "on";
+  const hasFit = formData.get("hasFit") === "on";
+
+  if (!hasFit) {
+    await prisma.productFit.deleteMany({ where: { productId } });
+    return;
+  }
+
+  const data = {
+    litresPerDay: litresPerDayText ? Number(litresPerDayText) : null,
+    minBar: minBarText ? Number(minBarText) : null,
+    sources: sources as ("MAINS" | "OPEN")[],
+    dispensing: dispensing as "TANK" | "JAR" | "DIRECT",
+    powered,
+  };
+  await prisma.productFit.upsert({
+    where: { productId },
+    update: data,
+    create: { productId, ...data },
+  });
 }
 
 export async function createProduct(
@@ -29,7 +64,7 @@ export async function createProduct(
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { categoryId, featured, published, specs } =
+  const { categoryId, featured, published, specs, kind, useCases } =
     extractProductExtras(formData);
 
   if (categoryId) {
@@ -52,9 +87,12 @@ export async function createProduct(
       featured,
       published,
       specs,
+      kind,
+      useCases,
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
     },
   });
+  await upsertProductFit(created.id, formData);
 
   await logAudit({
     action: "product.create",
@@ -75,7 +113,7 @@ export async function updateProduct(
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { categoryId, featured, published, specs } =
+  const { categoryId, featured, published, specs, kind, useCases } =
     extractProductExtras(formData);
 
   if (categoryId) {
@@ -87,8 +125,9 @@ export async function updateProduct(
 
   await prisma.product.updateMany({
     where: { id, tenantId },
-    data: { ...parsed.data, categoryId, featured, published, specs },
+    data: { ...parsed.data, categoryId, featured, published, specs, kind, useCases },
   });
+  await upsertProductFit(id, formData);
 
   await logAudit({
     action: "product.update",
@@ -134,9 +173,13 @@ export async function duplicateProduct(id: string) {
       slug,
       model: src.model,
       name: `${src.name} (copy)`,
+      nameZh: src.nameZh,
       description: src.description,
+      descriptionZh: src.descriptionZh,
       imagePath: src.imagePath,
       specs: src.specs ?? undefined,
+      kind: src.kind,
+      useCases: src.useCases,
       featured: false,
       published: false,
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,

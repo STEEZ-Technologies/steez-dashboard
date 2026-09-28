@@ -3,7 +3,9 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
 import { ArticleForm } from "@/components/news/ArticleForm";
+import { ArticleBlocks, type ArticleBlockRow } from "@/components/news/article-blocks";
 import { PageHeader } from "@/components/shell/page-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateArticle } from "../../actions";
 
 export default async function EditArticlePage({
@@ -15,6 +17,19 @@ export default async function EditArticlePage({
   const { tenantId } = await getTenantFromSession();
   const article = await prisma.article.findFirst({ where: { id, tenantId } });
   if (!article) notFound();
+
+  const blockRows = await prisma.articleBlock.findMany({
+    where: { articleId: article.id },
+    orderBy: { sortOrder: "asc" },
+  });
+  const blocks: ArticleBlockRow[] = blockRows.map((b) => ({
+    id: b.id,
+    kind: b.kind as ArticleBlockRow["kind"],
+    textEn: b.textEn,
+    textZh: b.textZh,
+    itemsEn: (b.itemsEn as string[] | null) ?? null,
+    itemsZh: (b.itemsZh as string[] | null) ?? null,
+  }));
 
   return (
     <div>
@@ -29,22 +44,26 @@ export default async function EditArticlePage({
           titleZh: article.titleZh ?? "",
           standfirstEn: article.standfirstEn ?? "",
           standfirstZh: article.standfirstZh ?? "",
-          bodyEn: article.bodyEn ?? "",
-          bodyZh: article.bodyZh ?? "",
           metaTitleEn: article.metaTitleEn ?? "",
           metaTitleZh: article.metaTitleZh ?? "",
-          metaDescriptionEn: article.metaDescriptionEn ?? "",
-          metaDescriptionZh: article.metaDescriptionZh ?? "",
-          primaryKeyword: article.primaryKeyword ?? "",
-          secondaryKeywords: article.secondaryKeywords ?? "",
+          keywordsEnText: article.keywordsEn.join(", "),
+          keywordsZhText: article.keywordsZh.join(", "),
           imagePath: article.imagePath ?? "",
           imageAltEn: article.imageAltEn ?? "",
           imageAltZh: article.imageAltZh ?? "",
-          category: article.category,
-          featured: article.featured,
+          topic: article.topic,
           published: article.published,
         }}
       />
+
+      <Card className="mt-6 max-w-2xl">
+        <CardHeader>
+          <CardTitle>Article text</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ArticleBlocks articleId={article.id} blocks={blocks} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

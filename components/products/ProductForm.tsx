@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -16,16 +17,39 @@ import {
 } from "@/components/ui/select";
 import { ImageUploadField } from "@/components/shared/ImageUploadField";
 
+type ProductKindValue = "MACHINE" | "ACCESSORY";
+type UseCaseValue = "KITCHEN" | "HOSPITALITY" | "LAB" | "MOBILE";
+type DispensingValue = "TANK" | "JAR" | "DIRECT";
+type SourceValue = "MAINS" | "OPEN";
+
+const USE_CASES: { value: UseCaseValue; label: string }[] = [
+  { value: "KITCHEN", label: "Kitchen" },
+  { value: "HOSPITALITY", label: "Hospitality" },
+  { value: "LAB", label: "Lab" },
+  { value: "MOBILE", label: "Mobile" },
+];
+
 type ProductFormValues = {
   slug: string;
   model: string;
   name: string;
+  nameZh: string;
   description: string;
+  descriptionZh: string;
   imagePath: string;
   categoryId: string;
   specsText: string;
+  kind: ProductKindValue;
+  useCases: UseCaseValue[];
   featured: boolean;
   published: boolean;
+  fit?: {
+    litresPerDay: number | null;
+    minBar: number | null;
+    sources: SourceValue[];
+    dispensing: DispensingValue;
+    powered: boolean;
+  } | null;
 };
 
 export function ProductForm({
@@ -48,6 +72,23 @@ export function ProductForm({
   const [categoryId, setCategoryId] = useState(defaultValues?.categoryId ?? "none");
   const [featured, setFeatured] = useState(defaultValues?.featured ?? false);
   const [published, setPublished] = useState(defaultValues?.published ?? true);
+  const [kind, setKind] = useState<ProductKindValue>(defaultValues?.kind ?? "MACHINE");
+  const [useCases, setUseCases] = useState<UseCaseValue[]>(defaultValues?.useCases ?? []);
+  const [hasFit, setHasFit] = useState(Boolean(defaultValues?.fit));
+  const [sources, setSources] = useState<SourceValue[]>(defaultValues?.fit?.sources ?? []);
+  const [dispensing, setDispensing] = useState<DispensingValue>(
+    defaultValues?.fit?.dispensing ?? "TANK",
+  );
+  const [powered, setPowered] = useState(defaultValues?.fit?.powered ?? false);
+
+  const toggleUseCase = (value: UseCaseValue) =>
+    setUseCases((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
+  const toggleSource = (value: SourceValue) =>
+    setSources((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+    );
 
   // `items` maps value -> label so the trigger shows the category name; without
   // it <SelectValue> renders the raw value (the category id).
@@ -64,6 +105,16 @@ export function ProductForm({
       <input type="hidden" name="categoryId" value={categoryId === "none" ? "" : categoryId} />
       <input type="hidden" name="featured" value={featured ? "on" : ""} />
       <input type="hidden" name="published" value={published ? "on" : ""} />
+      <input type="hidden" name="kind" value={kind} />
+      {useCases.map((v) => (
+        <input key={v} type="hidden" name="useCases" value={v} />
+      ))}
+      <input type="hidden" name="hasFit" value={hasFit ? "on" : ""} />
+      <input type="hidden" name="dispensing" value={dispensing} />
+      <input type="hidden" name="powered" value={powered ? "on" : ""} />
+      {sources.map((v) => (
+        <input key={v} type="hidden" name="sources" value={v} />
+      ))}
 
       <Card>
         <CardContent className="grid gap-5 p-6">
@@ -78,19 +129,68 @@ export function ProductForm({
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" defaultValue={defaultValues?.name} required />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name (English)</Label>
+              <Input id="name" name="name" defaultValue={defaultValues?.name} required />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="nameZh">Name (Chinese)</Label>
+              <Input id="nameZh" name="nameZh" defaultValue={defaultValues?.nameZh} />
+            </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description (English)</Label>
+              <Textarea
+                id="description"
+                name="description"
+                rows={3}
+                defaultValue={defaultValues?.description}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="descriptionZh">Description (Chinese)</Label>
+              <Textarea
+                id="descriptionZh"
+                name="descriptionZh"
+                rows={3}
+                defaultValue={defaultValues?.descriptionZh}
+              />
+            </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              rows={3}
-              defaultValue={defaultValues?.description}
-            />
+            <Label>Kind</Label>
+            <Select
+              value={kind}
+              onValueChange={(v) => v && setKind(v as ProductKindValue)}
+              items={{ MACHINE: "Machine", ACCESSORY: "Accessory" }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MACHINE">Machine</SelectItem>
+                <SelectItem value="ACCESSORY">Accessory</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Use cases</Label>
+            <div className="flex flex-wrap gap-4">
+              {USE_CASES.map((uc) => (
+                <label key={uc.value} className="flex items-center gap-2 text-sm">
+                  <Checkbox
+                    checked={useCases.includes(uc.value)}
+                    onCheckedChange={() => toggleUseCase(uc.value)}
+                  />
+                  {uc.label}
+                </label>
+              ))}
+            </div>
           </div>
 
           <ImageUploadField
@@ -136,6 +236,73 @@ export function ProductForm({
               placeholder={"Height: 1000mm\nLoad Capacity: 400kg"}
               defaultValue={defaultValues?.specsText}
             />
+          </div>
+
+          <div className="grid gap-3 rounded-lg border p-4">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <Switch checked={hasFit} onCheckedChange={setHasFit} /> Capacity &amp; pressure
+              (finder data)
+            </label>
+            <p className="text-sm text-muted-foreground">
+              Leave off if this machine's capacity/pressure isn't in the catalogue yet — an
+              empty field means "not published," never a guess.
+            </p>
+            {hasFit && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="litresPerDayText">Litres per day</Label>
+                  <Input
+                    id="litresPerDayText"
+                    name="litresPerDayText"
+                    type="number"
+                    defaultValue={defaultValues?.fit?.litresPerDay ?? ""}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="minBarText">Minimum pressure (bar)</Label>
+                  <Input
+                    id="minBarText"
+                    name="minBarText"
+                    type="number"
+                    defaultValue={defaultValues?.fit?.minBar ?? ""}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Water sources</Label>
+                  <div className="flex flex-wrap gap-4">
+                    {(["MAINS", "OPEN"] as SourceValue[]).map((s) => (
+                      <label key={s} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={sources.includes(s)}
+                          onCheckedChange={() => toggleSource(s)}
+                        />
+                        {s === "MAINS" ? "Mains" : "Open water"}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Dispensing</Label>
+                  <Select
+                    value={dispensing}
+                    onValueChange={(v) => v && setDispensing(v as DispensingValue)}
+                    items={{ TANK: "Tank", JAR: "Jar", DIRECT: "Direct" }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TANK">Tank</SelectItem>
+                      <SelectItem value="JAR">Jar</SelectItem>
+                      <SelectItem value="DIRECT">Direct</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <Switch checked={powered} onCheckedChange={setPowered} /> Powered (pump/electricity)
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-6">

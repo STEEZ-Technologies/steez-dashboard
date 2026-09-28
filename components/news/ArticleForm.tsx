@@ -17,7 +17,13 @@ import {
 import { ImageUploadField } from "@/components/shared/ImageUploadField";
 import { useT } from "@/lib/i18n/provider";
 
-type ArticleCategoryValue = "EDUCATION" | "INDUSTRY" | "COMPANY";
+type ArticleTopicValue =
+  | "REVERSE_OSMOSIS"
+  | "CHOOSING"
+  | "MAINTENANCE"
+  | "WATER_QUALITY"
+  | "SUSTAINABILITY"
+  | "COMPANY";
 
 type ArticleFormValues = {
   slug: string;
@@ -25,19 +31,14 @@ type ArticleFormValues = {
   titleZh: string;
   standfirstEn: string;
   standfirstZh: string;
-  bodyEn: string;
-  bodyZh: string;
   metaTitleEn: string;
   metaTitleZh: string;
-  metaDescriptionEn: string;
-  metaDescriptionZh: string;
-  primaryKeyword: string;
-  secondaryKeywords: string;
+  keywordsEnText: string;
+  keywordsZhText: string;
   imagePath: string;
   imageAltEn: string;
   imageAltZh: string;
-  category: ArticleCategoryValue;
-  featured: boolean;
+  topic: ArticleTopicValue;
   published: boolean;
 };
 
@@ -58,25 +59,24 @@ export function ArticleForm({
   const [error, formAction, pending] = useActionState(action, undefined);
   const { dict } = useT();
   const t = dict.news;
-  const [category, setCategory] = useState<ArticleCategoryValue>(
-    defaultValues?.category ?? "EDUCATION",
-  );
-  const [featured, setFeatured] = useState(defaultValues?.featured ?? false);
+  const [topic, setTopic] = useState<ArticleTopicValue>(defaultValues?.topic ?? "COMPANY");
   const [published, setPublished] = useState(defaultValues?.published ?? true);
 
-  const categoryItems = useMemo(
+  const topicItems = useMemo(
     () => ({
-      EDUCATION: t.categoryEducation,
-      INDUSTRY: t.categoryIndustry,
-      COMPANY: t.categoryCompany,
+      REVERSE_OSMOSIS: t.topicReverseOsmosis,
+      CHOOSING: t.topicChoosing,
+      MAINTENANCE: t.topicMaintenance,
+      WATER_QUALITY: t.topicWaterQuality,
+      SUSTAINABILITY: t.topicSustainability,
+      COMPANY: t.topicCompany,
     }),
     [t],
   );
 
   return (
     <form action={formAction} className="max-w-2xl">
-      <input type="hidden" name="category" value={category} />
-      <input type="hidden" name="featured" value={featured ? "on" : ""} />
+      <input type="hidden" name="topic" value={topic} />
       <input type="hidden" name="published" value={published ? "on" : ""} />
 
       <Card>
@@ -130,29 +130,6 @@ export function ArticleForm({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="bodyEn">Article text (English)</Label>
-              <Textarea
-                id="bodyEn"
-                name="bodyEn"
-                rows={12}
-                placeholder="Write the article here. Leave a blank line between paragraphs."
-                defaultValue={defaultValues?.bodyEn}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="bodyZh">Article text (Chinese)</Label>
-              <Textarea
-                id="bodyZh"
-                name="bodyZh"
-                rows={12}
-                placeholder="Write the article here. Leave a blank line between paragraphs."
-                defaultValue={defaultValues?.bodyZh}
-              />
-            </div>
-          </div>
-
           <ImageUploadField
             name="imagePath"
             label="Cover photo"
@@ -186,15 +163,18 @@ export function ArticleForm({
           </p>
 
           <div className="grid gap-2">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={(v) => v && setCategory(v as ArticleCategoryValue)} items={categoryItems}>
+            <Label>Topic</Label>
+            <Select value={topic} onValueChange={(v) => v && setTopic(v as ArticleTopicValue)} items={topicItems}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="EDUCATION">{t.categoryEducation}</SelectItem>
-                <SelectItem value="INDUSTRY">{t.categoryIndustry}</SelectItem>
-                <SelectItem value="COMPANY">{t.categoryCompany}</SelectItem>
+                <SelectItem value="REVERSE_OSMOSIS">{t.topicReverseOsmosis}</SelectItem>
+                <SelectItem value="CHOOSING">{t.topicChoosing}</SelectItem>
+                <SelectItem value="MAINTENANCE">{t.topicMaintenance}</SelectItem>
+                <SelectItem value="WATER_QUALITY">{t.topicWaterQuality}</SelectItem>
+                <SelectItem value="SUSTAINABILITY">{t.topicSustainability}</SelectItem>
+                <SelectItem value="COMPANY">{t.topicCompany}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -206,23 +186,30 @@ export function ArticleForm({
             </summary>
             <div className="mt-4 grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="primaryKeyword">What would someone search for?</Label>
+                <Label htmlFor="keywordsEnText">
+                  Search terms (English){" "}
+                  <span className="font-normal text-muted-foreground">
+                    (separated by commas, most important first)
+                  </span>
+                </Label>
                 <Input
-                  id="primaryKeyword"
-                  name="primaryKeyword"
-                  placeholder="E.g. reverse osmosis water filtration"
-                  defaultValue={defaultValues?.primaryKeyword}
+                  id="keywordsEnText"
+                  name="keywordsEnText"
+                  placeholder="E.g. reverse osmosis water filtration, RO water purification"
+                  defaultValue={defaultValues?.keywordsEnText}
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="secondaryKeywords">
-                  Other related search terms{" "}
-                  <span className="font-normal text-muted-foreground">(separated by commas)</span>
+                <Label htmlFor="keywordsZhText">
+                  Search terms (Chinese){" "}
+                  <span className="font-normal text-muted-foreground">
+                    (separated by commas — leave blank to emit none on /zh/)
+                  </span>
                 </Label>
                 <Input
-                  id="secondaryKeywords"
-                  name="secondaryKeywords"
-                  defaultValue={defaultValues?.secondaryKeywords}
+                  id="keywordsZhText"
+                  name="keywordsZhText"
+                  defaultValue={defaultValues?.keywordsZhText}
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -235,37 +222,16 @@ export function ArticleForm({
                   <Input id="metaTitleZh" name="metaTitleZh" defaultValue={defaultValues?.metaTitleZh} />
                 </div>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="metaDescriptionEn">Description shown in Google (English)</Label>
-                  <Textarea
-                    id="metaDescriptionEn"
-                    name="metaDescriptionEn"
-                    rows={2}
-                    defaultValue={defaultValues?.metaDescriptionEn}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="metaDescriptionZh">Description shown in Google (Chinese)</Label>
-                  <Textarea
-                    id="metaDescriptionZh"
-                    name="metaDescriptionZh"
-                    rows={2}
-                    defaultValue={defaultValues?.metaDescriptionZh}
-                  />
-                </div>
-              </div>
+              <p className="text-xs text-muted-foreground">
+                The short summary above doubles as the description shown in Google — there's no
+                separate field for it.
+              </p>
             </div>
           </details>
 
-          <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={featured} onCheckedChange={setFeatured} /> Featured
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={published} onCheckedChange={setPublished} /> Published
-            </label>
-          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <Switch checked={published} onCheckedChange={setPublished} /> Published
+          </label>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

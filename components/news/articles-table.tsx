@@ -28,10 +28,18 @@ import {
 import { deleteArticle, moveArticle } from "@/app/(dashboard)/news/actions";
 import { useT } from "@/lib/i18n/provider";
 
+export type ArticleTopicValue =
+  | "REVERSE_OSMOSIS"
+  | "CHOOSING"
+  | "MAINTENANCE"
+  | "WATER_QUALITY"
+  | "SUSTAINABILITY"
+  | "COMPANY";
+
 export type ArticleRow = {
   id: string;
   titleEn: string;
-  category: "EDUCATION" | "INDUSTRY" | "COMPANY";
+  topic: ArticleTopicValue;
   published: boolean;
 };
 
@@ -41,10 +49,13 @@ export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
   const { dict } = useT();
   const t = dict.news;
 
-  const categoryLabel: Record<ArticleRow["category"], string> = {
-    EDUCATION: t.categoryEducation,
-    INDUSTRY: t.categoryIndustry,
-    COMPANY: t.categoryCompany,
+  const topicLabel: Record<ArticleTopicValue, string> = {
+    REVERSE_OSMOSIS: t.topicReverseOsmosis,
+    CHOOSING: t.topicChoosing,
+    MAINTENANCE: t.topicMaintenance,
+    WATER_QUALITY: t.topicWaterQuality,
+    SUSTAINABILITY: t.topicSustainability,
+    COMPANY: t.topicCompany,
   };
 
   function runAction(fn: () => Promise<void>, message: string) {
@@ -75,7 +86,7 @@ export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>{t.colArticle}</TableHead>
-            <TableHead>{t.colCategory}</TableHead>
+            <TableHead>{t.colTopic}</TableHead>
             <TableHead>{t.colStatus}</TableHead>
             <TableHead className="w-[120px]"></TableHead>
           </TableRow>
@@ -85,7 +96,7 @@ export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
             <TableRow key={a.id}>
               <TableCell className="font-medium">{a.titleEn}</TableCell>
               <TableCell className="text-muted-foreground">
-                {categoryLabel[a.category]}
+                {topicLabel[a.topic]}
               </TableCell>
               <TableCell>
                 <Badge variant={a.published ? "default" : "outline"}>

@@ -20,7 +20,7 @@ export default async function NewsPage() {
   const rows: ArticleRow[] = articles.map((a) => ({
     id: a.id,
     titleEn: a.titleEn,
-    category: a.category,
+    topic: a.topic,
     published: a.published,
   }));
 

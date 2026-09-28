@@ -7,11 +7,16 @@ import { prisma } from "@/lib/db";
 import { articleInputSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
 
+function splitKeywords(text: string | undefined) {
+  return (text ?? "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean);
+}
+
 function extractArticleExtras(formData: FormData) {
-  const category = (formData.get("category") as string | null) ?? "EDUCATION";
-  const featured = formData.get("featured") === "on";
   const published = formData.get("published") === "on";
-  return { category, featured, published };
+  return { published };
 }
 
 export async function createArticle(
@@ -22,7 +27,8 @@ export async function createArticle(
   const parsed = articleInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { category, featured, published } = extractArticleExtras(formData);
+  const { published } = extractArticleExtras(formData);
+  const { keywordsEnText, keywordsZhText, ...rest } = parsed.data;
 
   const maxSort = await prisma.article.aggregate({
     where: { tenantId },
@@ -31,10 +37,10 @@ export async function createArticle(
 
   const created = await prisma.article.create({
     data: {
-      ...parsed.data,
+      ...rest,
+      keywordsEn: splitKeywords(keywordsEnText),
+      keywordsZh: splitKeywords(keywordsZhText),
       tenantId,
-      category: category as "EDUCATION" | "INDUSTRY" | "COMPANY",
-      featured,
       published,
       publishedAt: published ? new Date() : null,
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
@@ -60,16 +66,17 @@ export async function updateArticle(
   const parsed = articleInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { category, featured, published } = extractArticleExtras(formData);
+  const { published } = extractArticleExtras(formData);
+  const { keywordsEnText, keywordsZhText, ...rest } = parsed.data;
 
   const existing = await prisma.article.findFirst({ where: { id, tenantId } });
 
   await prisma.article.updateMany({
     where: { id, tenantId },
     data: {
-      ...parsed.data,
-      category: category as "EDUCATION" | "INDUSTRY" | "COMPANY",
-      featured,
+      ...rest,
+      keywordsEn: splitKeywords(keywordsEnText),
+      keywordsZh: splitKeywords(keywordsZhText),
       published,
       // Set publishedAt the first time an article goes live; never clear it
       // just because it's unpublished again — that's a history fact.
