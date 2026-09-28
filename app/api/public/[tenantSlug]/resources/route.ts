@@ -27,7 +27,22 @@ export async function GET(
     include: { blocks: { orderBy: { sortOrder: "asc" } } },
   });
 
-  const payload = guides.map((g) => ({
+  const payload = guides.map((g) => {
+    const imageFor: Record<string, { src: string; alt: { en: string | null; zh: string | null } }> = {};
+    if (g.imageDistributorPath) {
+      imageFor.distributor = {
+        src: getPublicUrl(g.imageDistributorPath),
+        alt: { en: g.imageDistributorAltEn, zh: g.imageDistributorAltZh },
+      };
+    }
+    if (g.imageCustomerPath) {
+      imageFor.customer = {
+        src: getPublicUrl(g.imageCustomerPath),
+        alt: { en: g.imageCustomerAltEn, zh: g.imageCustomerAltZh },
+      };
+    }
+
+    return {
     id: g.slug,
     reader: g.reader,
     title: { en: g.titleEn, zh: g.titleZh },
@@ -35,6 +50,7 @@ export async function GET(
     minutes: g.minutes,
     image: g.imagePath ? getPublicUrl(g.imagePath) : null,
     imageAlt: { en: g.imageAltEn, zh: g.imageAltZh },
+    imageFor: Object.keys(imageFor).length > 0 ? imageFor : undefined,
     body: g.blocks.map((b) =>
       b.kind === "TABLE"
         ? { kind: b.kind }
@@ -44,7 +60,8 @@ export async function GET(
             items: { en: b.itemsEn ?? undefined, zh: b.itemsZh ?? undefined },
           },
     ),
-  }));
+    };
+  });
 
   return NextResponse.json(payload, { headers: CORS_HEADERS });
 }

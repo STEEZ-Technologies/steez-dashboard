@@ -30,6 +30,12 @@ type GuideFormValues = {
   imagePath: string;
   imageAltEn: string;
   imageAltZh: string;
+  imageDistributorPath: string;
+  imageDistributorAltEn: string;
+  imageDistributorAltZh: string;
+  imageCustomerPath: string;
+  imageCustomerAltEn: string;
+  imageCustomerAltZh: string;
   published: boolean;
 };
 
@@ -37,6 +43,8 @@ export function GuideForm({
   action,
   defaultValues,
   defaultImageUrl,
+  defaultDistributorImageUrl,
+  defaultCustomerImageUrl,
   submitLabel,
 }: {
   action: (
@@ -45,6 +53,8 @@ export function GuideForm({
   ) => Promise<string | undefined>;
   defaultValues?: Partial<GuideFormValues>;
   defaultImageUrl?: string;
+  defaultDistributorImageUrl?: string;
+  defaultCustomerImageUrl?: string;
   submitLabel: string;
 }) {
   const [error, formAction, pending] = useActionState(action, undefined);
@@ -149,6 +159,71 @@ export function GuideForm({
             Read aloud by screen readers and used by search engines — say what&apos;s in the
             photo, in a plain sentence.
           </p>
+
+          <details className="group rounded-lg border px-4 py-3">
+            <summary className="cursor-pointer text-sm font-medium select-none">
+              Per-reader photo overrides{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional — falls back to the cover photo above)
+              </span>
+            </summary>
+            <div className="mt-4 grid gap-5">
+              <div>
+                <p className="mb-2 text-sm font-medium">Distributor version</p>
+                <ImageUploadField
+                  name="imageDistributorPath"
+                  label="Photo"
+                  defaultValue={defaultValues?.imageDistributorPath}
+                  defaultUrl={defaultDistributorImageUrl}
+                />
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="imageDistributorAltEn">Describe the photo (English)</Label>
+                    <Input
+                      id="imageDistributorAltEn"
+                      name="imageDistributorAltEn"
+                      defaultValue={defaultValues?.imageDistributorAltEn}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="imageDistributorAltZh">Describe the photo (Chinese)</Label>
+                    <Input
+                      id="imageDistributorAltZh"
+                      name="imageDistributorAltZh"
+                      defaultValue={defaultValues?.imageDistributorAltZh}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-medium">Customer version</p>
+                <ImageUploadField
+                  name="imageCustomerPath"
+                  label="Photo"
+                  defaultValue={defaultValues?.imageCustomerPath}
+                  defaultUrl={defaultCustomerImageUrl}
+                />
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor="imageCustomerAltEn">Describe the photo (English)</Label>
+                    <Input
+                      id="imageCustomerAltEn"
+                      name="imageCustomerAltEn"
+                      defaultValue={defaultValues?.imageCustomerAltEn}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="imageCustomerAltZh">Describe the photo (Chinese)</Label>
+                    <Input
+                      id="imageCustomerAltZh"
+                      name="imageCustomerAltZh"
+                      defaultValue={defaultValues?.imageCustomerAltZh}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </details>
 
           <div className="grid gap-2">
             <Label>Who this guide is for</Label>

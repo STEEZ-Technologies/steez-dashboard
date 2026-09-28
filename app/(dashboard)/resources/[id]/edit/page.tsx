@@ -45,6 +45,12 @@ export default async function EditGuidePage({
         action={updateGuide.bind(null, guide.id)}
         submitLabel="Save changes"
         defaultImageUrl={guide.imagePath ? getPublicUrl(guide.imagePath) : undefined}
+        defaultDistributorImageUrl={
+          guide.imageDistributorPath ? getPublicUrl(guide.imageDistributorPath) : undefined
+        }
+        defaultCustomerImageUrl={
+          guide.imageCustomerPath ? getPublicUrl(guide.imageCustomerPath) : undefined
+        }
         defaultValues={{
           slug: guide.slug,
           reader: guide.reader,
@@ -56,6 +62,12 @@ export default async function EditGuidePage({
           imagePath: guide.imagePath ?? "",
           imageAltEn: guide.imageAltEn ?? "",
           imageAltZh: guide.imageAltZh ?? "",
+          imageDistributorPath: guide.imageDistributorPath ?? "",
+          imageDistributorAltEn: guide.imageDistributorAltEn ?? "",
+          imageDistributorAltZh: guide.imageDistributorAltZh ?? "",
+          imageCustomerPath: guide.imageCustomerPath ?? "",
+          imageCustomerAltEn: guide.imageCustomerAltEn ?? "",
+          imageCustomerAltZh: guide.imageCustomerAltZh ?? "",
           published: guide.published,
         }}
       />

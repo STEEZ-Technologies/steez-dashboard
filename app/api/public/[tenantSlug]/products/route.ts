@@ -29,6 +29,8 @@ export async function GET(
       finishes: { orderBy: { sortOrder: "asc" } },
       images: { orderBy: { sortOrder: "asc" } },
       models3d: { orderBy: { sortOrder: "asc" } },
+      contents: { orderBy: { sortOrder: "asc" } },
+      fit: true,
     },
   });
 
@@ -45,7 +47,11 @@ export async function GET(
     id: product.slug,
     model: product.model,
     name: product.name,
+    nameZh: product.nameZh,
     description: product.description,
+    descriptionZh: product.descriptionZh,
+    kind: product.kind,
+    useCases: product.useCases,
     image: heroUrl ?? images[0] ?? null,
     images,
     models3d,
@@ -60,6 +66,16 @@ export async function GET(
       image: getPublicUrl(finish.imagePath),
       accent: finish.accentHex,
     })),
+    contents: product.contents.map((c) => ({ en: c.textEn, zh: c.textZh })),
+    fit: product.fit
+      ? {
+          litresPerDay: product.fit.litresPerDay,
+          minBar: product.fit.minBar,
+          sources: product.fit.sources,
+          dispensing: product.fit.dispensing,
+          powered: product.fit.powered,
+        }
+      : null,
     };
   });
 
