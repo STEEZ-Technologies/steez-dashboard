@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { signOut } from "@/lib/auth";
-import { getTenantFromSession } from "@/lib/tenant";
+import { ACTING_TENANT_COOKIE, getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 
 export async function signOutAction() {
+  (await cookies()).delete(ACTING_TENANT_COOKIE);
   await signOut({ redirectTo: "/login" });
 }
 

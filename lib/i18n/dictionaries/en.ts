@@ -424,6 +424,10 @@ export const en = {
     passwordReset: "Password reset",
     emptyTitle: "No workspaces yet",
     emptyDesc: "Create the first client workspace to get started.",
+    openWorkspace: "Open workspace",
+    currentWorkspace: "Open now",
+    actingBanner: "You're in {name}'s workspace as STEEZ. Changes are logged under your email.",
+    exitWorkspace: "Back to STEEZ",
   },
   auth: {
     welcomeBack: "Welcome back",

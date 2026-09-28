@@ -16,6 +16,7 @@ import { FlashToast } from "@/components/shell/flash-toast";
 import { getDictionary, getLocale } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { isSuperAdmin, PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
+import { ActingBanner } from "@/components/shell/acting-banner";
 
 export default async function DashboardLayout({
   children,
@@ -52,6 +53,7 @@ export default async function DashboardLayout({
             <ThemeToggle />
           </div>
         </header>
+        {user.actingAs && <ActingBanner tenantName={tenant.name} />}
         <main className="min-w-0 flex-1 p-4 md:p-8">
           <div className="mx-auto w-full min-w-0 max-w-6xl">{children}</div>
         </main>

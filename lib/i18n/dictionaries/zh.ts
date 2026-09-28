@@ -415,6 +415,10 @@ export const zh: Dictionary = {
     passwordReset: "密码已重置",
     emptyTitle: "还没有工作区",
     emptyDesc: "创建第一个客户工作区以开始使用。",
+    openWorkspace: "打开工作区",
+    currentWorkspace: "当前",
+    actingBanner: "您正以 STEEZ 身份在 {name} 的工作区中。所有更改都会以您的邮箱记录。",
+    exitWorkspace: "返回 STEEZ",
   },
   auth: {
     welcomeBack: "欢迎回来",

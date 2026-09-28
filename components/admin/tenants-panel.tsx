@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { Building2, KeyRound, Plus } from "lucide-react";
+import { ArrowRight, Building2, KeyRound, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shell/empty-state";
-import { createTenant, resetTenantOwnerPassword } from "@/app/(dashboard)/admin/actions";
+import {
+  createTenant,
+  openWorkspace,
+  resetTenantOwnerPassword,
+} from "@/app/(dashboard)/admin/actions";
 import { useT } from "@/lib/i18n/provider";
 
 export type TenantRow = {
@@ -39,7 +43,14 @@ export type TenantRow = {
   ownerEmail: string | null;
 };
 
-export function TenantsPanel({ tenants }: { tenants: TenantRow[] }) {
+export function TenantsPanel({
+  tenants,
+  currentTenantId,
+}: {
+  tenants: TenantRow[];
+  /** Workspace the dashboard is showing right now (STEEZ's own or an opened client). */
+  currentTenantId: string;
+}) {
   const { dict } = useT();
   const t = dict.admin;
   const [open, setOpen] = useState(false);
@@ -48,6 +59,17 @@ export function TenantsPanel({ tenants }: { tenants: TenantRow[] }) {
   const [toReset, setToReset] = useState<TenantRow | null>(null);
   const [resetPw, setResetPw] = useState("");
   const [resetErr, setResetErr] = useState<string | null>(null);
+  const [opening, setOpening] = useState<string | null>(null);
+
+  function handleOpen(tenantId: string) {
+    setOpening(tenantId);
+    startTransition(async () => {
+      // Redirects on success; only returns when something went wrong.
+      const err = await openWorkspace(tenantId);
+      if (err) toast.error(err);
+      setOpening(null);
+    });
+  }
 
   function handleReset() {
     if (!toReset?.ownerId) return;
@@ -119,10 +141,10 @@ export function TenantsPanel({ tenants }: { tenants: TenantRow[] }) {
             <TableHeader>
               <TableRow>
                 <TableHead>{t.colWorkspace}</TableHead>
-                <TableHead>{t.colUsers}</TableHead>
-                <TableHead>{t.colProducts}</TableHead>
-                <TableHead>{t.colCreated}</TableHead>
-                <TableHead className="w-[52px]" />
+                <TableHead className="hidden sm:table-cell">{t.colUsers}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t.colProducts}</TableHead>
+                <TableHead className="hidden sm:table-cell">{t.colCreated}</TableHead>
+                <TableHead className="w-[1%]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,19 +156,38 @@ export function TenantsPanel({ tenants }: { tenants: TenantRow[] }) {
                       <Badge variant="outline" className="mr-2">
                         {tenant.slug}
                       </Badge>
-                      {tenant.ownerEmail}
+                      <span className="mt-1 block sm:mt-0 sm:inline">
+                        {tenant.ownerEmail}
+                      </span>
                     </div>
                   </TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">
+                  <TableCell className="hidden sm:table-cell tabular-nums text-muted-foreground">
                     {tenant.userCount}
                   </TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">
+                  <TableCell className="hidden sm:table-cell tabular-nums text-muted-foreground">
                     {tenant.productCount}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                  <TableCell className="hidden sm:table-cell whitespace-nowrap text-muted-foreground">
                     {tenant.createdAt}
                   </TableCell>
                   <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                    {tenant.id === currentTenantId ? (
+                      <Badge variant="secondary" className="whitespace-nowrap">
+                        {t.currentWorkspace}
+                      </Badge>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="whitespace-nowrap"
+                        disabled={pending}
+                        onClick={() => handleOpen(tenant.id)}
+                      >
+                        {opening === tenant.id ? "…" : t.openWorkspace}
+                        <ArrowRight className="size-3.5" />
+                      </Button>
+                    )}
                     {tenant.ownerId && (
                       <Button
                         variant="ghost"
@@ -162,6 +203,7 @@ export function TenantsPanel({ tenants }: { tenants: TenantRow[] }) {
                         <KeyRound className="size-4" />
                       </Button>
                     )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

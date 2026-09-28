@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/super-admin";
 import { createTenantSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
+import { ACTING_TENANT_COOKIE } from "@/lib/tenant";
 
 /**
  * Provision a new client workspace and its first OWNER.
@@ -74,4 +77,55 @@ export async function resetTenantOwnerPassword(userId: string, newPassword: stri
 
   revalidatePath("/admin");
   return undefined;
+}
+
+/**
+ * Open a client workspace as STEEZ: the dashboard then reads and edits that
+ * client's data, with every change audited under the operator's own email.
+ * The opening itself is written to the client's log, so they can see when
+ * STEEZ was in their workspace.
+ */
+export async function openWorkspace(tenantId: string) {
+  const admin = await requireSuperAdmin();
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { id: true, name: true },
+  });
+  if (!tenant) return "Workspace not found";
+
+  const jar = await cookies();
+  if (tenant.id === admin.homeTenantId) {
+    jar.delete(ACTING_TENANT_COOKIE);
+    redirect("/admin");
+  }
+
+  jar.set(ACTING_TENANT_COOKIE, tenant.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 8 * 60 * 60, // a working session, not indefinitely
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      tenantId: tenant.id,
+      userId: admin.id,
+      userEmail: admin.email ?? null,
+      action: "platform.workspace_open",
+      entity: "tenant",
+      entityId: tenant.id,
+      detail: `Opened by STEEZ (${admin.email})`,
+    },
+  });
+
+  redirect("/");
+}
+
+/** Leave a client workspace and return to STEEZ's own. */
+export async function exitWorkspace() {
+  await requireSuperAdmin();
+  (await cookies()).delete(ACTING_TENANT_COOKIE);
+  redirect("/admin");
 }

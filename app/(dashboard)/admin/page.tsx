@@ -6,7 +6,7 @@ import { TenantsPanel, type TenantRow } from "@/components/admin/tenants-panel";
 
 export default async function AdminPage() {
   // Gate first — this is the only page that reads across tenant boundaries.
-  await requireSuperAdmin();
+  const session = await requireSuperAdmin();
   const dict = await getDictionary();
 
   const tenants = await prisma.tenant.findMany({
@@ -40,7 +40,7 @@ export default async function AdminPage() {
         title={dict.pages.admin.title}
         description={dict.admin.subtitle}
       />
-      <TenantsPanel tenants={rows} />
+      <TenantsPanel tenants={rows} currentTenantId={session.tenantId} />
     </div>
   );
 }
