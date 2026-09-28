@@ -12,12 +12,31 @@
  * URL that doesn't resolve — a follow-up once hosting/OSS is decided.
  *
  * Run: npx tsx prisma/import-komibright.ts
+ *
+ * PRODUCTS/GUIDES are read via a subprocess (scripts/export-for-dashboard.ts
+ * in komibright-v2, run from that repo's own directory) rather than a
+ * direct import — resources.ts imports `@/lib/manualFacts`, and tsx
+ * resolves `@/` against the entry point's tsconfig, which here is this
+ * repo's, not komibright-v2's. Running the export in komibright-v2's own
+ * tsx process is what makes the alias resolve.
  */
 import "dotenv/config";
+import { execFileSync } from "node:child_process";
+import path from "node:path";
 import { prisma } from "../lib/db";
-import { PRODUCTS } from "../../komibright-v2/lib/products";
-import { GUIDES } from "../../komibright-v2/lib/resources";
-import type { Block } from "../../komibright-v2/lib/resources";
+import type { Product } from "../../komibright-v2/lib/products";
+import type { Block, Guide } from "../../komibright-v2/lib/resources";
+
+const KOMIBRIGHT_DIR = path.resolve(__dirname, "../../komibright-v2");
+const raw = execFileSync("npx", ["tsx", "scripts/export-for-dashboard.ts"], {
+  cwd: KOMIBRIGHT_DIR,
+  encoding: "utf8",
+  maxBuffer: 1024 * 1024 * 50,
+});
+const { products: PRODUCTS, guides: GUIDES } = JSON.parse(raw) as {
+  products: Product[];
+  guides: Guide[];
+};
 
 async function main() {
   const tenant = await prisma.tenant.upsert({
