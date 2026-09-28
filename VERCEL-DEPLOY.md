@@ -32,7 +32,7 @@ Project → Settings → Environment Variables, add:
 | `DATABASE_URL` | the `POSTGRES_URL_NON_POOLING` value from step 2 |
 | `AUTH_SECRET` | generate your own: run `openssl rand -base64 32` locally, paste the output (never commit this value anywhere) |
 | `PUBLIC_ALLOWED_ORIGINS` | `https://konlito.steez.digital` |
-| `SUPER_ADMIN_EMAILS` | `adam@steez.digital` — STEEZ platform staff only; never a client's login |
+| `SUPER_ADMIN_EMAILS` | `team@steez.digital` — STEEZ platform staff only; never a client's login |
 | `OSS_REGION` | `oss-cn-hongkong` |
 | `OSS_ACCESS_KEY_ID` | *(leave blank for now — fill when you have real OSS creds; image upload will 500 until then, rest of the app works)* |
 | `OSS_ACCESS_KEY_SECRET` | *(same)* |

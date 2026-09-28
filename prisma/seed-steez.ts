@@ -6,7 +6,7 @@
  * (lib/super-admin.ts); this script does not grant that.
  *
  * Run: STEEZ_PASSWORD="..." npx tsx prisma/seed-steez.ts
- *      (STEEZ_EMAIL defaults to adam@steez.digital)
+ *      (STEEZ_EMAIL defaults to team@steez.digital)
  */
 import "dotenv/config";
 import bcrypt from "bcryptjs";
@@ -14,7 +14,7 @@ import { prisma } from "../lib/db";
 
 const PLATFORM_TENANT_SLUG = "steez"; // mirrors lib/super-admin.ts (server-only)
 
-const email = (process.env.STEEZ_EMAIL || "adam@steez.digital").toLowerCase();
+const email = (process.env.STEEZ_EMAIL || "team@steez.digital").toLowerCase();
 const password = process.env.STEEZ_PASSWORD;
 
 async function main() {
