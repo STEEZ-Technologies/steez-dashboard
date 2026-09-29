@@ -6,10 +6,13 @@
  * kind: "machine" -> Category "Systems", "accessory" -> Category "Service Parts"
  * (matches /products/ page's own language on the site).
  *
- * Images: real product/guide/article photos upload through the dashboard's
- * own ImageUploadField (Aliyun OSS) once the bucket is configured —
- * imagePath is left null here rather than pointing at komibright-v2's own
- * hosting, which would bypass that pipeline.
+ * Images: product, guide and article photos are stored as absolute URLs on
+ * komibright-v2's own hosting (KOMIBRIGHT_SITE_URL, default
+ * https://komibright.steez.digital). getPublicUrl passes absolute URLs through
+ * unchanged, as with Konlito's pre-OSS imports, so staff see the real photos
+ * instead of empty frames; an upload through ImageUploadField later replaces
+ * the URL with an OSS key. The site never takes product photos back from the
+ * dashboard, and maps its own URLs back to local paths (lib/cmsImage.ts).
  *
  * Run: npx tsx prisma/import-komibright.ts
  *
@@ -44,6 +47,7 @@ const {
   feedFacts: FEED_FACTS,
   serviceFacts: SERVICE_FACTS,
   fit: FIT,
+  gallery: GALLERY,
 } = JSON.parse(raw) as {
   products: Product[];
   guides: Guide[];
@@ -51,7 +55,14 @@ const {
   feedFacts: Fact[];
   serviceFacts: Fact[];
   fit: Record<string, Fit>;
+  gallery: Record<string, { src: string; alt: string }[]>;
 };
+
+const SITE_URL = (process.env.KOMIBRIGHT_SITE_URL ?? "https://komibright.steez.digital").replace(/\/$/, "");
+// Site paths are root-relative and some filenames carry spaces
+// ("KB-C25R Plus.webp"), so encode each segment, not the whole path.
+const siteUrl = (src: string | undefined) =>
+  src ? SITE_URL + src.split("/").map(encodeURIComponent).join("/") : null;
 
 const SOURCE_MAP: Record<Source, "MAINS" | "OPEN"> = { mains: "MAINS", open: "OPEN" };
 const DISPENSING_MAP: Record<Dispensing, "TANK" | "JAR" | "DIRECT"> = {
@@ -117,6 +128,7 @@ async function main() {
       sortOrder: index,
       kind,
       useCases,
+      imagePath: siteUrl(p.image),
     };
 
     const product = await prisma.product.upsert({
@@ -133,6 +145,24 @@ async function main() {
           productId: product.id,
           textEn: c.en,
           textZh: c.zh ?? null,
+          sortOrder: i,
+        })),
+      });
+    }
+
+    // Gallery: the site's other photographs of this product, in its page's
+    // order. Only rows pointing at the site are replaced, so a photo staff
+    // uploaded through the dashboard survives a re-import.
+    await prisma.productImage.deleteMany({
+      where: { productId: product.id, imagePath: { startsWith: SITE_URL } },
+    });
+    const shots = GALLERY[p.id] ?? [];
+    if (shots.length) {
+      await prisma.productImage.createMany({
+        data: shots.map((shot, i) => ({
+          productId: product.id,
+          imagePath: siteUrl(shot.src)!,
+          alt: shot.alt,
           sortOrder: i,
         })),
       });
@@ -162,6 +192,16 @@ async function main() {
     both: "BOTH",
   };
 
+  const guideImages = (g: Guide) => ({
+    imagePath: siteUrl(g.image?.src),
+    imageDistributorPath: siteUrl(g.imageFor?.distributor?.src),
+    imageDistributorAltEn: g.imageFor?.distributor?.alt.en ?? null,
+    imageDistributorAltZh: g.imageFor?.distributor?.alt.zh ?? null,
+    imageCustomerPath: siteUrl(g.imageFor?.customer?.src),
+    imageCustomerAltEn: g.imageFor?.customer?.alt.en ?? null,
+    imageCustomerAltZh: g.imageFor?.customer?.alt.zh ?? null,
+  });
+
   for (const [index, g] of GUIDES.entries()) {
     const guide = await prisma.guide.upsert({
       where: { tenantId_slug: { tenantId: tenant.id, slug: g.id } },
@@ -174,6 +214,7 @@ async function main() {
         minutes: g.minutes,
         imageAltEn: g.image?.alt.en ?? null,
         imageAltZh: g.image?.alt.zh ?? null,
+        ...guideImages(g),
         sortOrder: index,
       },
       create: {
@@ -187,6 +228,7 @@ async function main() {
         minutes: g.minutes,
         imageAltEn: g.image?.alt.en ?? null,
         imageAltZh: g.image?.alt.zh ?? null,
+        ...guideImages(g),
         sortOrder: index,
         published: true,
       },
@@ -233,6 +275,7 @@ async function main() {
       keywordsZh: a.keywordsZh ?? [],
       imageAltEn: a.image.alt.en,
       imageAltZh: a.image.alt.zh ?? null,
+      imagePath: siteUrl(a.image.src),
       sortOrder: index,
       publishedAt: new Date(a.published),
     };
