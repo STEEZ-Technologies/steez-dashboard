@@ -329,6 +329,11 @@ export function ProductForm({
             <Button type="submit" disabled={pending}>
               {pending ? "Saving…" : submitLabel}
             </Button>
+            {!defaultValues?.slug && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Save this first — you&apos;ll add box contents on the next screen.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -239,6 +239,11 @@ export function ArticleForm({
             <Button type="submit" disabled={pending}>
               {pending ? "Saving…" : submitLabel}
             </Button>
+            {!defaultValues?.slug && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Save this first — you&apos;ll add the article&apos;s body text on the next screen.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
