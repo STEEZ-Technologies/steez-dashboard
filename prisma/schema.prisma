@@ -499,7 +499,7 @@ model AuditLog {
 // old ones for the same key on each check, so the table stays small.
 model RateLimitHit {
   id        String   @id @default(cuid())
-  key       String // e.g. "login:owner@konlito.com", "track:1.2.3.4"
+  key       String // "<prefix>:<hmac>" — the identifying part is hashed, see lib/rate-limit.ts
   createdAt DateTime @default(now())
 
   @@index([key, createdAt])
