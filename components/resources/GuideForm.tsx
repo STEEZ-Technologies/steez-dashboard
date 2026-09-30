@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Bilingual } from "@/components/shared/language-tabs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -99,39 +100,47 @@ export function GuideForm({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="titleEn">Title (English)</Label>
-              <Input id="titleEn" name="titleEn" defaultValue={defaultValues?.titleEn} required />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="titleZh">Title (Chinese)</Label>
-              <Input id="titleZh" name="titleZh" defaultValue={defaultValues?.titleZh} />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="titleEn">Title (English)</Label>
+                <Input id="titleEn" name="titleEn" defaultValue={defaultValues?.titleEn} required />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="titleZh">Title (Chinese)</Label>
+                <Input id="titleZh" name="titleZh" defaultValue={defaultValues?.titleZh} />
+              </>
+            }
+          />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="standfirstEn">Short summary (English)</Label>
-              <Textarea
-                id="standfirstEn"
-                name="standfirstEn"
-                rows={2}
-                placeholder="One or two sentences shown under the title"
-                defaultValue={defaultValues?.standfirstEn}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="standfirstZh">Short summary (Chinese)</Label>
-              <Textarea
-                id="standfirstZh"
-                name="standfirstZh"
-                rows={2}
-                placeholder="One or two sentences shown under the title"
-                defaultValue={defaultValues?.standfirstZh}
-              />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="standfirstEn">Short summary (English)</Label>
+                <Textarea
+                  id="standfirstEn"
+                  name="standfirstEn"
+                  rows={2}
+                  placeholder="One or two sentences shown under the title"
+                  defaultValue={defaultValues?.standfirstEn}
+                />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="standfirstZh">Short summary (Chinese)</Label>
+                <Textarea
+                  id="standfirstZh"
+                  name="standfirstZh"
+                  rows={2}
+                  placeholder="One or two sentences shown under the title"
+                  defaultValue={defaultValues?.standfirstZh}
+                />
+              </>
+            }
+          />
 
           <ImageUploadField
             name="imagePath"
@@ -140,21 +149,25 @@ export function GuideForm({
             defaultUrl={defaultImageUrl}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="imageAltEn">Describe the photo (English)</Label>
-              <Input
-                id="imageAltEn"
-                name="imageAltEn"
-                placeholder="E.g. A distributor inspecting a commercial RO system"
-                defaultValue={defaultValues?.imageAltEn}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="imageAltZh">Describe the photo (Chinese)</Label>
-              <Input id="imageAltZh" name="imageAltZh" defaultValue={defaultValues?.imageAltZh} />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="imageAltEn">Describe the photo (English)</Label>
+                <Input
+                  id="imageAltEn"
+                  name="imageAltEn"
+                  placeholder="E.g. A distributor inspecting a commercial RO system"
+                  defaultValue={defaultValues?.imageAltEn}
+                />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="imageAltZh">Describe the photo (Chinese)</Label>
+                <Input id="imageAltZh" name="imageAltZh" defaultValue={defaultValues?.imageAltZh} />
+              </>
+            }
+          />
           <p className="-mt-3 text-xs text-muted-foreground">
             Read aloud by screen readers and used by search engines — say what&apos;s in the
             photo, in a plain sentence.
@@ -176,24 +189,30 @@ export function GuideForm({
                   defaultValue={defaultValues?.imageDistributorPath}
                   defaultUrl={defaultDistributorImageUrl}
                 />
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="imageDistributorAltEn">Describe the photo (English)</Label>
-                    <Input
-                      id="imageDistributorAltEn"
-                      name="imageDistributorAltEn"
-                      defaultValue={defaultValues?.imageDistributorAltEn}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="imageDistributorAltZh">Describe the photo (Chinese)</Label>
-                    <Input
-                      id="imageDistributorAltZh"
-                      name="imageDistributorAltZh"
-                      defaultValue={defaultValues?.imageDistributorAltZh}
-                    />
-                  </div>
-                </div>
+                <Bilingual
+                  className="mt-3"
+                  optional
+                  en={
+                    <>
+                      <Label htmlFor="imageDistributorAltEn">Describe the photo (English)</Label>
+                      <Input
+                        id="imageDistributorAltEn"
+                        name="imageDistributorAltEn"
+                        defaultValue={defaultValues?.imageDistributorAltEn}
+                      />
+                    </>
+                  }
+                  zh={
+                    <>
+                      <Label htmlFor="imageDistributorAltZh">Describe the photo (Chinese)</Label>
+                      <Input
+                        id="imageDistributorAltZh"
+                        name="imageDistributorAltZh"
+                        defaultValue={defaultValues?.imageDistributorAltZh}
+                      />
+                    </>
+                  }
+                />
               </div>
               <div>
                 <p className="mb-2 text-sm font-medium">Customer version</p>
@@ -203,24 +222,30 @@ export function GuideForm({
                   defaultValue={defaultValues?.imageCustomerPath}
                   defaultUrl={defaultCustomerImageUrl}
                 />
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="grid gap-2">
-                    <Label htmlFor="imageCustomerAltEn">Describe the photo (English)</Label>
-                    <Input
-                      id="imageCustomerAltEn"
-                      name="imageCustomerAltEn"
-                      defaultValue={defaultValues?.imageCustomerAltEn}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="imageCustomerAltZh">Describe the photo (Chinese)</Label>
-                    <Input
-                      id="imageCustomerAltZh"
-                      name="imageCustomerAltZh"
-                      defaultValue={defaultValues?.imageCustomerAltZh}
-                    />
-                  </div>
-                </div>
+                <Bilingual
+                  className="mt-3"
+                  optional
+                  en={
+                    <>
+                      <Label htmlFor="imageCustomerAltEn">Describe the photo (English)</Label>
+                      <Input
+                        id="imageCustomerAltEn"
+                        name="imageCustomerAltEn"
+                        defaultValue={defaultValues?.imageCustomerAltEn}
+                      />
+                    </>
+                  }
+                  zh={
+                    <>
+                      <Label htmlFor="imageCustomerAltZh">Describe the photo (Chinese)</Label>
+                      <Input
+                        id="imageCustomerAltZh"
+                        name="imageCustomerAltZh"
+                        defaultValue={defaultValues?.imageCustomerAltZh}
+                      />
+                    </>
+                  }
+                />
               </div>
             </div>
           </details>

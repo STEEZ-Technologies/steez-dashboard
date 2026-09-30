@@ -5,6 +5,7 @@ import { getPublicUrl } from "@/lib/oss";
 import { GuideForm } from "@/components/resources/GuideForm";
 import { GuideBlocks, type GuideBlockRow } from "@/components/resources/guide-blocks";
 import { PageHeader } from "@/components/shell/page-header";
+import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n";
 import { updateGuide } from "../../actions";
@@ -40,46 +41,49 @@ export default async function EditGuidePage({
   return (
     <div>
       <PageHeader eyebrow="Catalog" title="Edit guide" description={guide.titleEn} />
+      <LanguageScope>
+        <LanguageTabs />
 
-      <GuideForm
-        action={updateGuide.bind(null, guide.id)}
-        submitLabel="Save changes"
-        defaultImageUrl={guide.imagePath ? getPublicUrl(guide.imagePath) : undefined}
-        defaultDistributorImageUrl={
-          guide.imageDistributorPath ? getPublicUrl(guide.imageDistributorPath) : undefined
-        }
-        defaultCustomerImageUrl={
-          guide.imageCustomerPath ? getPublicUrl(guide.imageCustomerPath) : undefined
-        }
-        defaultValues={{
-          slug: guide.slug,
-          reader: guide.reader,
-          titleEn: guide.titleEn,
-          titleZh: guide.titleZh ?? "",
-          standfirstEn: guide.standfirstEn ?? "",
-          standfirstZh: guide.standfirstZh ?? "",
-          minutes: guide.minutes,
-          imagePath: guide.imagePath ?? "",
-          imageAltEn: guide.imageAltEn ?? "",
-          imageAltZh: guide.imageAltZh ?? "",
-          imageDistributorPath: guide.imageDistributorPath ?? "",
-          imageDistributorAltEn: guide.imageDistributorAltEn ?? "",
-          imageDistributorAltZh: guide.imageDistributorAltZh ?? "",
-          imageCustomerPath: guide.imageCustomerPath ?? "",
-          imageCustomerAltEn: guide.imageCustomerAltEn ?? "",
-          imageCustomerAltZh: guide.imageCustomerAltZh ?? "",
-          published: guide.published,
-        }}
-      />
+        <GuideForm
+          action={updateGuide.bind(null, guide.id)}
+          submitLabel="Save changes"
+          defaultImageUrl={guide.imagePath ? getPublicUrl(guide.imagePath) : undefined}
+          defaultDistributorImageUrl={
+            guide.imageDistributorPath ? getPublicUrl(guide.imageDistributorPath) : undefined
+          }
+          defaultCustomerImageUrl={
+            guide.imageCustomerPath ? getPublicUrl(guide.imageCustomerPath) : undefined
+          }
+          defaultValues={{
+            slug: guide.slug,
+            reader: guide.reader,
+            titleEn: guide.titleEn,
+            titleZh: guide.titleZh ?? "",
+            standfirstEn: guide.standfirstEn ?? "",
+            standfirstZh: guide.standfirstZh ?? "",
+            minutes: guide.minutes,
+            imagePath: guide.imagePath ?? "",
+            imageAltEn: guide.imageAltEn ?? "",
+            imageAltZh: guide.imageAltZh ?? "",
+            imageDistributorPath: guide.imageDistributorPath ?? "",
+            imageDistributorAltEn: guide.imageDistributorAltEn ?? "",
+            imageDistributorAltZh: guide.imageDistributorAltZh ?? "",
+            imageCustomerPath: guide.imageCustomerPath ?? "",
+            imageCustomerAltEn: guide.imageCustomerAltEn ?? "",
+            imageCustomerAltZh: guide.imageCustomerAltZh ?? "",
+            published: guide.published,
+          }}
+        />
 
-      <Card className="mt-6 max-w-2xl">
-        <CardHeader>
-          <CardTitle>{dict.resources.blocksTitle}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <GuideBlocks guideId={guide.id} blocks={blocks} />
-        </CardContent>
-      </Card>
+        <Card className="mt-6 max-w-2xl">
+          <CardHeader>
+            <CardTitle>{dict.resources.blocksTitle}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GuideBlocks guideId={guide.id} blocks={blocks} />
+          </CardContent>
+        </Card>
+      </LanguageScope>
     </div>
   );
 }
