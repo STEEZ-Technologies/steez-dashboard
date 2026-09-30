@@ -1,22 +1,16 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
 
-export function ThemeToggle() {
-  const { setTheme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label="Toggle theme"
-    >
-      <Sun className="size-4 scale-100 dark:scale-0" />
-      <Moon className="absolute size-4 scale-0 dark:scale-100" />
-    </Button>
-  );
-}
+// The 21st.dev AnimatedThemeToggler (components/ui/animated-theme-toggler.tsx,
+// kept verbatim) reads the <html> class in its first render, so server HTML
+// can never match in dark mode and hydration fails. Rendering it client-only
+// avoids that without editing the component. The placeholder is its size
+// (p-2 around a 24px icon) so the header doesn't shift when it arrives.
+export const ThemeToggle = dynamic(
+  () =>
+    import("@/components/ui/animated-theme-toggler").then(
+      (m) => m.AnimatedThemeToggler,
+    ),
+  { ssr: false, loading: () => <span className="size-10" /> },
+);
