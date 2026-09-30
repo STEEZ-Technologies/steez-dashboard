@@ -89,8 +89,8 @@
 :root {
   --radius: 0.75rem;
 
-  /* Light — off-white content, forest text */
-  --background: #faf9f5;
+  /* Light — tinted ground so borderless white cards read by contrast alone */
+  --background: #f3f2ee;
   --foreground: #04342c;
   --card: #ffffff;
   --card-foreground: #04342c;
@@ -118,14 +118,25 @@
   --chart-4: #0f6e56;
   --chart-5: #8a9a95;
 
-  /* Forest sidebar */
-  --sidebar: #04342c;
-  --sidebar-foreground: #faf9f5;
-  --sidebar-primary: #e0a93a;
-  --sidebar-primary-foreground: #04342c;
-  --sidebar-accent: rgba(250, 249, 245, 0.08);
-  --sidebar-accent-foreground: #faf9f5;
-  --sidebar-border: rgba(250, 249, 245, 0.12);
+  /* Glass sidebar — translucent white over the ambient ground */
+  --sidebar: rgba(255, 255, 255, 0.55);
+  --sidebar-foreground: #04342c;
+  --sidebar-primary: #0f6e56;
+  --sidebar-primary-foreground: #faf9f5;
+  --sidebar-accent: rgba(29, 158, 117, 0.12);
+  --sidebar-accent-foreground: #04342c;
+  --sidebar-border: rgba(4, 52, 44, 0.08);
+
+  /* Liquid glass — see .glass below */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.82);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-sheen: rgba(255, 255, 255, 0.45);
+  --glass-shadow: rgba(4, 52, 44, 0.1);
+  --card-shadow: 0 1px 2px rgba(4, 52, 44, 0.04), 0 6px 20px -8px rgba(4, 52, 44, 0.1);
+  --ambient-a: rgba(29, 158, 117, 0.16);
+  --ambient-b: rgba(224, 169, 58, 0.12);
   --sidebar-ring: #1d9e75;
 
   /* brand refs kept for a few bespoke helpers below */
@@ -192,13 +203,23 @@
   --chart-4: #f0c674;
   --chart-5: #9fb4ad;
 
-  --sidebar: #000000;
+  --sidebar: rgba(24, 24, 24, 0.5);
   --sidebar-foreground: #faf9f5;
-  --sidebar-primary: #e0a93a;
+  --sidebar-primary: #1d9e75;
   --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: rgba(250, 249, 245, 0.08);
+  --sidebar-accent: rgba(29, 158, 117, 0.18);
   --sidebar-accent-foreground: #faf9f5;
-  --sidebar-border: rgba(250, 249, 245, 0.1);
+  --sidebar-border: rgba(250, 249, 245, 0.08);
+
+  --glass-bg: rgba(28, 28, 28, 0.5);
+  --glass-bg-strong: rgba(28, 28, 28, 0.82);
+  --glass-edge: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+  --glass-sheen: rgba(255, 255, 255, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 0 0 1px rgba(250, 249, 245, 0.06);
+  --ambient-a: rgba(29, 158, 117, 0.14);
+  --ambient-b: rgba(224, 169, 58, 0.07);
   --sidebar-ring: #1d9e75;
   --chart-background: oklch(0.145 0 0);
   --chart-foreground: oklch(0.45 0 0);
@@ -241,13 +262,50 @@
   letter-spacing: 0.04em;
 }
 
-/* Gold uppercase eyebrow — a STEEZ signature kept as a helper */
+/* Small quiet label. Was a gold uppercase eyebrow; toned down so the numbers
+   and titles carry the page, not the labels above them. */
 .eyebrow {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+/* Ambient ground: two soft, static colour fields fixed behind everything, so
+   the glass surfaces have something to refract. No animation — it costs one
+   composited layer. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60vmax 45vmax at 0% 0%, var(--ambient-a), transparent 70%),
+    radial-gradient(50vmax 40vmax at 100% 100%, var(--ambient-b), transparent 70%);
+}
+
+/* Liquid glass: translucent fill, backdrop blur + saturation, a bright top
+   edge and a diagonal sheen. Used on chrome only (header, sidebar, menus,
+   dialogs, the publish banner) — content cards stay solid for legibility. */
+@utility glass {
+  background-color: var(--glass-bg);
+  background-image: linear-gradient(135deg, var(--glass-sheen), transparent 45%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 8px 32px -12px var(--glass-shadow);
+}
+@utility glass-strong {
+  background-color: var(--glass-bg-strong);
+  background-image: linear-gradient(135deg, var(--glass-sheen), transparent 45%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 8px 32px -12px var(--glass-shadow);
 }
 
 ::selection {

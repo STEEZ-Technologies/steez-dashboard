@@ -1,5 +1,4 @@
 export function PageHeader({
-  eyebrow,
   title,
   description,
   action,
@@ -15,8 +14,9 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight md:text-3xl">
+        {/* `eyebrow` is still accepted but not drawn: the breadcrumbs in the
+            header already say where you are. */}
+        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           {title}
         </h1>
         {description && (
