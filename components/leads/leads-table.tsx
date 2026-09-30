@@ -63,7 +63,7 @@ export type LeadRow = {
   phone: string | null;
   company: string | null;
   message: string | null;
-  status: "NEW" | "CONTACTED" | "ARCHIVED";
+  status: "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
   notes: string | null;
   country: string | null;
   productId: string | null;

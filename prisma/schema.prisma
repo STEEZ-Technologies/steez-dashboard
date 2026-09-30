@@ -425,6 +425,7 @@ model ProductEvent {
 
   @@index([tenantId, createdAt])
   @@index([productId, createdAt])
+  @@index([tenantId, sessionId])
 }
 
 model PageView {
@@ -440,12 +441,16 @@ model PageView {
 
   @@index([tenantId, createdAt])
   @@index([path, createdAt])
+  @@index([tenantId, sessionId])
 }
 
 enum LeadStatus {
   NEW
   CONTACTED
-  ARCHIVED
+  QUOTED
+  WON
+  LOST
+  ARCHIVED // spam / not a real enquiry — kept out of win-rate maths
 }
 
 // A buyer enquiry captured from the client's public site. This is the payoff
@@ -467,6 +472,12 @@ model Lead {
   message   String?
   status    LeadStatus @default(NEW)
   notes     String? // internal follow-up notes, never shown publicly
+  // Pipeline outcome. dealValue/dealCurrency are what the order is worth,
+  // entered by staff; totals are summed per currency (no FX conversion).
+  // closedAt is stamped when the lead moves to WON/LOST, cleared on reopen.
+  dealValue    Decimal?  @db.Decimal(14, 2)
+  dealCurrency String?
+  closedAt     DateTime?
   // Same anonymous id as PageView/ProductEvent, so a lead can be tied back
   // to what that visitor browsed before enquiring.
   sessionId String?

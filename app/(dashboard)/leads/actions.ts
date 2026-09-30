@@ -5,9 +5,11 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 
-type LeadStatus = "NEW" | "CONTACTED" | "ARCHIVED";
+type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
 
-const STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "ARCHIVED"];
+const STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "QUOTED", "WON", "LOST", "ARCHIVED"];
+const CLOSED: LeadStatus[] = ["WON", "LOST"];
+const CURRENCIES = ["USD", "EUR", "CNY"];
 
 export async function updateLeadStatus(id: string, status: string) {
   const session = await getTenantFromSession();
@@ -16,7 +18,11 @@ export async function updateLeadStatus(id: string, status: string) {
   // Tenant-scoped: a crafted id from another tenant matches zero rows.
   const result = await prisma.lead.updateMany({
     where: { id, tenantId: session.tenantId },
-    data: { status: status as LeadStatus },
+    data: {
+      status: status as LeadStatus,
+      // Stamp the close date for win-rate-over-time; reopening clears it.
+      closedAt: CLOSED.includes(status as LeadStatus) ? new Date() : null,
+    },
   });
   if (result.count === 0) return "Lead not found";
 
@@ -42,6 +48,36 @@ export async function updateLeadNotes(id: string, notes: string) {
 
   await logAudit({ action: "lead.notes", entity: "lead", entityId: id });
   revalidatePath("/leads");
+  return undefined;
+}
+
+export async function updateLeadDeal(id: string, value: string, currency: string) {
+  const session = await getTenantFromSession();
+
+  const trimmed = value.replace(/[,\s]/g, "");
+  const amount = trimmed === "" ? null : Number(trimmed);
+  if (amount !== null && (!Number.isFinite(amount) || amount < 0 || amount >= 1e12)) {
+    return "Enter a valid amount";
+  }
+  if (!CURRENCIES.includes(currency)) return "Invalid currency";
+
+  const result = await prisma.lead.updateMany({
+    where: { id, tenantId: session.tenantId },
+    data: {
+      dealValue: amount === null ? null : amount.toFixed(2),
+      dealCurrency: amount === null ? null : currency,
+    },
+  });
+  if (result.count === 0) return "Lead not found";
+
+  await logAudit({
+    action: "lead.deal",
+    entity: "lead",
+    entityId: id,
+    detail: amount === null ? "cleared" : `${currency} ${amount.toFixed(2)}`,
+  });
+  revalidatePath("/leads");
+  revalidatePath("/");
   return undefined;
 }
 
