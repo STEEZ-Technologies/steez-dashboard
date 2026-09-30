@@ -8,14 +8,18 @@ import { TwoFactorForm } from "@/components/settings/two-factor-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n";
+import { getRecentlyDeleted } from "@/lib/revisions";
+import { DELETED_WINDOW_DAYS } from "@/lib/revisions-core";
+import { RecentlyDeleted } from "@/components/shared/recently-deleted";
 
 export default async function SettingsPage() {
   const session = await getTenantFromSession();
-  const [tenant, audit, dict, currentUser] = await Promise.all([
+  const [tenant, audit, dict, currentUser, deleted] = await Promise.all([
     prisma.tenant.findUniqueOrThrow({ where: { id: session.tenantId } }),
     getRecentAudit(session.tenantId, 25),
     getDictionary(),
     prisma.user.findUniqueOrThrow({ where: { id: session.id }, select: { totpEnabled: true } }),
+    getRecentlyDeleted(session.tenantId),
   ]);
 
   return (
@@ -56,6 +60,17 @@ export default async function SettingsPage() {
           <h2 className="mb-3 text-lg font-semibold">{dict.settings.activityLog}</h2>
           <AuditList items={audit} dict={dict} />
         </div>
+
+        <RecentlyDeleted
+          days={DELETED_WINDOW_DAYS}
+          rows={deleted.map((d) => ({
+            id: d.id,
+            entity: d.entity,
+            label: d.label,
+            who: d.userEmail,
+            deletedAt: d.createdAt.toISOString(),
+          }))}
+        />
       </div>
     </div>
   );
