@@ -123,11 +123,19 @@ export async function captureRevisions(
 // live". Touching it here is what makes the publish banner — and Discard —
 // see those edits.
 export async function touchParent(entity: RevisionEntity, id: string, tenantId: string) {
+  await setUpdatedAt(entity, id, tenantId, new Date());
+}
+
+// updatedAt is what the publish banner counts, so setting it back to the
+// last publish time is how an item that matches the live site again (after
+// Discard) stops counting as "not yet live".
+export async function setUpdatedAt(entity: RevisionEntity, id: string, tenantId: string, at: Date) {
   const where = { id, tenantId };
-  const data = { updatedAt: new Date() };
+  const data = { updatedAt: at };
   if (entity === "product") await prisma.product.updateMany({ where, data });
   if (entity === "article") await prisma.article.updateMany({ where, data });
   if (entity === "guide") await prisma.guide.updateMany({ where, data });
+  if (entity === "category") await prisma.category.updateMany({ where, data });
 }
 
 // ---- restore -------------------------------------------------------------

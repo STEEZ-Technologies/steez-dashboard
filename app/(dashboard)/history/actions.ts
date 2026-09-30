@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { logAudit } from "@/lib/audit";
-import { getLiveVersion, restoreRevision } from "@/lib/revisions";
+import { prisma } from "@/lib/db";
+import { getLiveVersion, restoreRevision, setUpdatedAt } from "@/lib/revisions";
 import { isRevisionEntity } from "@/lib/revisions-core";
 
 export type HistoryActionResult = { ok: true } | { ok: false; error: string };
@@ -36,5 +37,14 @@ export async function discardChanges(entity: string, entityId: string): Promise<
   if (live.kind !== "revision") {
     return { ok: false, error: "There's no saved live version of this item to go back to." };
   }
-  return restoreAndRecord(live.id, "discard");
+  const result = await restoreAndRecord(live.id, "discard");
+  if (result.ok) {
+    // The item now matches the live site; stop counting it as a pending change.
+    const { lastPublishedAt } = await prisma.tenant.findUniqueOrThrow({
+      where: { id: tenantId },
+      select: { lastPublishedAt: true },
+    });
+    if (lastPublishedAt) await setUpdatedAt(entity, entityId, tenantId, lastPublishedAt);
+  }
+  return result;
 }
