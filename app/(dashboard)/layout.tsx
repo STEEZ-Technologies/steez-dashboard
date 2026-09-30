@@ -40,7 +40,16 @@ export default async function DashboardLayout({
         tenantName={tenant.name}
         email={user.email ?? ""}
         displayName={profile?.name ?? null}
-        avatarUrl={profile?.avatarPath ? getPublicUrl(profile.avatarPath) : null}
+        avatarUrl={
+          profile?.avatarPath
+            ? getPublicUrl(profile.avatarPath)
+            : // No picture uploaded: the workspace's own site icon (Next's
+              // app/icon.png convention). If the site has none, the image
+              // fails and the avatar falls back to initials.
+              tenant.siteUrl
+              ? `${tenant.siteUrl.replace(/\/$/, "")}/icon.png`
+              : null
+        }
         role={user.role}
         newLeadCount={newLeadCount}
         isSuperAdmin={isSuperAdmin(user.email)}
