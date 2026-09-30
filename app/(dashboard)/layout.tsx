@@ -6,7 +6,6 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { Suspense } from "react";
 import { AppSidebar } from "@/components/shell/app-sidebar";
 import { Breadcrumbs } from "@/components/shell/breadcrumbs";
@@ -59,8 +58,7 @@ export default async function DashboardLayout({
         {/* Floating glass bar: inset from the edges so page content visibly
             slides under it and through the blur. */}
         <header className="glass sticky top-2 z-10 mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-3 md:mx-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-1 h-4" />
+          <SidebarTrigger />
           <Breadcrumbs />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
