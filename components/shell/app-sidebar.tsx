@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,6 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { NAV_GROUPS, NAV_ITEMS, isActive } from "./nav-items";
 import { UserMenu } from "./user-menu";
@@ -64,6 +66,20 @@ export function AppSidebar({
 }) {
   const pathname = usePathname();
   const { dict } = useT();
+  // Going to another page closes the sidebar: the phone drawer shuts, and on
+  // desktop it collapses to its icon rail, so the page gets the room. Reopen
+  // it with the toggle in the header. Keyed off the path changing rather than
+  // the link's onClick — collapsing mid-click re-renders the menu (it gains
+  // tooltips when collapsed) and swallowed the navigation itself. The first
+  // render is skipped, so a page load keeps whatever state was saved.
+  const { setOpen, setOpenMobile } = useSidebar();
+  const lastPath = useRef(pathname);
+  useEffect(() => {
+    if (lastPath.current === pathname) return;
+    lastPath.current = pathname;
+    setOpenMobile(false);
+    setOpen(false);
+  }, [pathname, setOpen, setOpenMobile]);
 
   return (
     <Sidebar collapsible="icon">
