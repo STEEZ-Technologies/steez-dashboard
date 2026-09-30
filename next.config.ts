@@ -21,6 +21,26 @@ const isDev = process.env.NODE_ENV === "development";
 // img-src allows any https host because product photos are served from the
 // client's own domain today and will move to an OSS/CDN domain later; keeping
 // it broad avoids silently breaking catalog images on a domain change.
+// 3D model previews (<model-viewer>) fetch .glb files, which is connect-src,
+// not img-src. Allowed: the OSS/CDN bucket that dashboard uploads land in, and
+// komibright's own site, where its imported scans live. Named hosts rather
+// than `https:`, so connect-src still blocks exfiltration.
+const assetOrigin = (() => {
+  try {
+    return process.env.ASSET_BASE_URL ? new URL(process.env.ASSET_BASE_URL).origin : "";
+  } catch {
+    return "";
+  }
+})();
+const MODEL_HOSTS = [
+  assetOrigin,
+  "https://komibright.steez.digital",
+  "https://komibright.com",
+  "https://www.komibright.com",
+]
+  .filter(Boolean)
+  .join(" ");
+
 const CSP = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
@@ -29,7 +49,7 @@ const CSP = [
   "font-src 'self' data:",
   // ws: is the Turbopack HMR socket — dev only.
   // *.sentry.io is Sentry's error-reporting ingest endpoint.
-  `connect-src 'self' https://*.sentry.io${isDev ? " ws: http://localhost:*" : ""}`,
+  `connect-src 'self' https://*.sentry.io ${MODEL_HOSTS}${isDev ? " ws: http://localhost:*" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
