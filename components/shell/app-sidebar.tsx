@@ -16,7 +16,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NAV_GROUPS, NAV_ITEMS, isActive } from "./nav-items";
+import { NAV_GROUPS, NAV_ITEMS, isItemActive } from "./nav-items";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/app/(dashboard)/actions";
 import { useT } from "@/lib/i18n/provider";
@@ -82,7 +82,7 @@ export function AppSidebar({
   }, [pathname, setOpen, setOpenMobile]);
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
           <div className="flex items-baseline gap-1.5 overflow-hidden group-data-[collapsible=icon]:hidden">
@@ -102,6 +102,7 @@ export function AppSidebar({
           const items = NAV_ITEMS.filter(
             (i) =>
               i.group === group &&
+              i.inSidebar !== false &&
               (!i.superAdminOnly || isSuperAdmin) &&
               (!isPlatformWorkspace || i.group === "Workspace" || i.group === "Platform"),
           );
@@ -113,13 +114,14 @@ export function AppSidebar({
               </SidebarGroupLabel>
               <SidebarMenu>
                 {items.map((item) => {
-                  const active = isActive(pathname, item.href);
+                  const active = isItemActive(pathname, item);
                   const label = dict.nav[NAV_LABEL_KEY[item.href]] ?? item.label;
                   return (
                     <SidebarMenuItem key={item.href}>
                       <SidebarMenuButton
                         isActive={active}
                         tooltip={label}
+                        className="rounded-full data-active:font-semibold"
                         render={<Link href={item.href} />}
                       >
                         <item.icon />

@@ -43,6 +43,7 @@ export const zh: Dictionary = {
     analytics: "数据分析",
     preview: "在网站预览",
     back: "返回",
+    more: "更多",
   },
   command: {
     placeholder: "输入命令或搜索…",

@@ -41,6 +41,7 @@ export const en = {
     analytics: "Analytics",
     preview: "Preview on site",
     back: "Back",
+    more: "More",
   },
   command: {
     placeholder: "Type a command or search…",
