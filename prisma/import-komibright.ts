@@ -48,6 +48,7 @@ const {
   serviceFacts: SERVICE_FACTS,
   fit: FIT,
   gallery: GALLERY,
+  models: MODELS,
 } = JSON.parse(raw) as {
   products: Product[];
   guides: Guide[];
@@ -56,6 +57,7 @@ const {
   serviceFacts: Fact[];
   fit: Record<string, Fit>;
   gallery: Record<string, { src: string; alt: string }[]>;
+  models: Record<string, string>;
 };
 
 const SITE_URL = (process.env.KOMIBRIGHT_SITE_URL ?? "https://komibright.steez.digital").replace(/\/$/, "");
@@ -165,6 +167,19 @@ async function main() {
           alt: shot.alt,
           sortOrder: i,
         })),
+      });
+    }
+
+    // 3D model: the one the site's product page turns (komibright-v2's
+    // lib/cardModels.ts). Same rule as the gallery — only a row pointing at
+    // the site is replaced, so a model staff uploaded survives a re-import.
+    await prisma.productModel3D.deleteMany({
+      where: { productId: product.id, modelPath: { startsWith: SITE_URL } },
+    });
+    const model = MODELS[p.id];
+    if (model) {
+      await prisma.productModel3D.create({
+        data: { productId: product.id, modelPath: siteUrl(model)!, sortOrder: 0 },
       });
     }
 

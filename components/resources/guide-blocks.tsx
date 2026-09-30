@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Bilingual } from "@/components/shared/language-tabs";
 import {
   Select,
   SelectContent,
@@ -194,65 +195,73 @@ function GuideBlockItem({
       )}
 
       {(block.kind === "P" || block.kind === "H") && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="grid gap-1.5">
-            <Label>{t.blockTextEn}</Label>
-            {block.kind === "H" ? (
-              <Input
-                value={textEn}
-                onChange={(e) => setTextEn(e.target.value)}
-                onBlur={() => onSave({ textEn, textZh })}
-              />
-            ) : (
-              <Textarea
-                rows={3}
-                value={textEn}
-                onChange={(e) => setTextEn(e.target.value)}
-                onBlur={() => onSave({ textEn, textZh })}
-              />
-            )}
-          </div>
-          <div className="grid gap-1.5">
-            <Label>{t.blockTextZh}</Label>
-            {block.kind === "H" ? (
-              <Input
-                value={textZh}
-                onChange={(e) => setTextZh(e.target.value)}
-                onBlur={() => onSave({ textEn, textZh })}
-              />
-            ) : (
-              <Textarea
-                rows={3}
-                value={textZh}
-                onChange={(e) => setTextZh(e.target.value)}
-                onBlur={() => onSave({ textEn, textZh })}
-              />
-            )}
-          </div>
-        </div>
+        <Bilingual
+          en={
+            <>
+              <Label>{t.blockTextEn}</Label>
+              {block.kind === "H" ? (
+                <Input
+                  value={textEn}
+                  onChange={(e) => setTextEn(e.target.value)}
+                  onBlur={() => onSave({ textEn, textZh })}
+                />
+              ) : (
+                <Textarea
+                  rows={3}
+                  value={textEn}
+                  onChange={(e) => setTextEn(e.target.value)}
+                  onBlur={() => onSave({ textEn, textZh })}
+                />
+              )}
+            </>
+          }
+          zh={
+            <>
+              <Label>{t.blockTextZh}</Label>
+              {block.kind === "H" ? (
+                <Input
+                  value={textZh}
+                  onChange={(e) => setTextZh(e.target.value)}
+                  onBlur={() => onSave({ textEn, textZh })}
+                />
+              ) : (
+                <Textarea
+                  rows={3}
+                  value={textZh}
+                  onChange={(e) => setTextZh(e.target.value)}
+                  onBlur={() => onSave({ textEn, textZh })}
+                />
+              )}
+            </>
+          }
+        />
       )}
 
       {block.kind === "LIST" && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="grid gap-1.5">
-            <Label>{t.blockItemsEn}</Label>
-            <Textarea
-              rows={4}
-              value={itemsEnText}
-              onChange={(e) => setItemsEnText(e.target.value)}
-              onBlur={() => onSave({ itemsEnText, itemsZhText })}
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label>{t.blockItemsZh}</Label>
-            <Textarea
-              rows={4}
-              value={itemsZhText}
-              onChange={(e) => setItemsZhText(e.target.value)}
-              onBlur={() => onSave({ itemsEnText, itemsZhText })}
-            />
-          </div>
-        </div>
+        <Bilingual
+          en={
+            <>
+              <Label>{t.blockItemsEn}</Label>
+              <Textarea
+                rows={4}
+                value={itemsEnText}
+                onChange={(e) => setItemsEnText(e.target.value)}
+                onBlur={() => onSave({ itemsEnText, itemsZhText })}
+              />
+            </>
+          }
+          zh={
+            <>
+              <Label>{t.blockItemsZh}</Label>
+              <Textarea
+                rows={4}
+                value={itemsZhText}
+                onChange={(e) => setItemsZhText(e.target.value)}
+                onBlur={() => onSave({ itemsEnText, itemsZhText })}
+              />
+            </>
+          }
+        />
       )}
     </li>
   );

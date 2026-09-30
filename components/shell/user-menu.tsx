@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -19,14 +19,19 @@ import { useT } from "@/lib/i18n/provider";
 
 export function UserMenu({
   email,
+  displayName = null,
+  avatarUrl = null,
   role,
   onSignOut,
 }: {
   email: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
   role: string;
   onSignOut: () => void;
 }) {
-  const initials = email.slice(0, 2).toUpperCase();
+  const label = displayName || email;
+  const initials = label.slice(0, 2).toUpperCase();
   const { dict } = useT();
 
   return (
@@ -35,12 +40,13 @@ export function UserMenu({
         <DropdownMenu>
           <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
             <Avatar className="size-8 rounded-lg">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt="" className="rounded-lg object-cover" />}
               <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{email}</span>
+              <span className="truncate font-medium">{label}</span>
               <span className="truncate text-xs opacity-60 capitalize">
                 {role.toLowerCase()}
               </span>

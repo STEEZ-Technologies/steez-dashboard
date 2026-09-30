@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { ProductForm } from "@/components/products/ProductForm";
 import { PageHeader } from "@/components/shell/page-header";
 import { createProduct } from "../actions";
+import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 
 export default async function NewProductPage() {
   const { tenantId } = await getTenantFromSession();
@@ -14,12 +15,15 @@ export default async function NewProductPage() {
   return (
     <div>
       <PageHeader eyebrow="Catalog" title="New product" />
-      <ProductForm
-        action={createProduct}
-        categories={categories}
-        submitLabel="Create product"
-        defaultValues={{ published: true }}
-      />
+      <LanguageScope>
+        <LanguageTabs />
+        <ProductForm
+          action={createProduct}
+          categories={categories}
+          submitLabel="Create product"
+          defaultValues={{ published: true }}
+        />
+      </LanguageScope>
     </div>
   );
 }

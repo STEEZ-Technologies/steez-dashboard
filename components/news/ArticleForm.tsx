@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { ImageUploadField } from "@/components/shared/ImageUploadField";
 import { useT } from "@/lib/i18n/provider";
+import { Bilingual } from "@/components/shared/language-tabs";
 
 type ArticleTopicValue =
   | "REVERSE_OSMOSIS"
@@ -91,44 +92,52 @@ export function ArticleForm({
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="titleEn">Headline (English)</Label>
-              <Input
-                id="titleEn"
-                name="titleEn"
-                defaultValue={defaultValues?.titleEn}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="titleZh">Headline (Chinese)</Label>
-              <Input id="titleZh" name="titleZh" defaultValue={defaultValues?.titleZh} />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="titleEn">Headline (English)</Label>
+                <Input
+                  id="titleEn"
+                  name="titleEn"
+                  defaultValue={defaultValues?.titleEn}
+                  required
+                />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="titleZh">Headline (Chinese)</Label>
+                <Input id="titleZh" name="titleZh" defaultValue={defaultValues?.titleZh} />
+              </>
+            }
+          />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="standfirstEn">Short summary (English)</Label>
-              <Textarea
-                id="standfirstEn"
-                name="standfirstEn"
-                rows={2}
-                placeholder="One or two sentences shown under the headline"
-                defaultValue={defaultValues?.standfirstEn}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="standfirstZh">Short summary (Chinese)</Label>
-              <Textarea
-                id="standfirstZh"
-                name="standfirstZh"
-                rows={2}
-                placeholder="One or two sentences shown under the headline"
-                defaultValue={defaultValues?.standfirstZh}
-              />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="standfirstEn">Short summary (English)</Label>
+                <Textarea
+                  id="standfirstEn"
+                  name="standfirstEn"
+                  rows={2}
+                  placeholder="One or two sentences shown under the headline"
+                  defaultValue={defaultValues?.standfirstEn}
+                />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="standfirstZh">Short summary (Chinese)</Label>
+                <Textarea
+                  id="standfirstZh"
+                  name="standfirstZh"
+                  rows={2}
+                  placeholder="One or two sentences shown under the headline"
+                  defaultValue={defaultValues?.standfirstZh}
+                />
+              </>
+            }
+          />
 
           <ImageUploadField
             name="imagePath"
@@ -137,26 +146,30 @@ export function ArticleForm({
             defaultUrl={defaultImageUrl}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="imageAltEn">Describe the photo (English)</Label>
-              <Input
-                id="imageAltEn"
-                name="imageAltEn"
-                placeholder="E.g. A KomiBright system installed under a kitchen sink"
-                defaultValue={defaultValues?.imageAltEn}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="imageAltZh">Describe the photo (Chinese)</Label>
-              <Input
-                id="imageAltZh"
-                name="imageAltZh"
-                placeholder="E.g. 安装在厨房水槽下的康米佳净水系统"
-                defaultValue={defaultValues?.imageAltZh}
-              />
-            </div>
-          </div>
+          <Bilingual
+            en={
+              <>
+                <Label htmlFor="imageAltEn">Describe the photo (English)</Label>
+                <Input
+                  id="imageAltEn"
+                  name="imageAltEn"
+                  placeholder="E.g. A KomiBright system installed under a kitchen sink"
+                  defaultValue={defaultValues?.imageAltEn}
+                />
+              </>
+            }
+            zh={
+              <>
+                <Label htmlFor="imageAltZh">Describe the photo (Chinese)</Label>
+                <Input
+                  id="imageAltZh"
+                  name="imageAltZh"
+                  placeholder="E.g. 安装在厨房水槽下的康米佳净水系统"
+                  defaultValue={defaultValues?.imageAltZh}
+                />
+              </>
+            }
+          />
           <p className="-mt-3 text-xs text-muted-foreground">
             Read aloud by screen readers and used by search engines — say what&apos;s in the
             photo, in a plain sentence.
@@ -185,43 +198,55 @@ export function ArticleForm({
               <span className="font-normal text-muted-foreground">(optional — safe to skip)</span>
             </summary>
             <div className="mt-4 grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="keywordsEnText">
-                  Search terms (English){" "}
-                  <span className="font-normal text-muted-foreground">
-                    (separated by commas, most important first)
-                  </span>
-                </Label>
-                <Input
-                  id="keywordsEnText"
-                  name="keywordsEnText"
-                  placeholder="E.g. reverse osmosis water filtration, RO water purification"
-                  defaultValue={defaultValues?.keywordsEnText}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="keywordsZhText">
-                  Search terms (Chinese){" "}
-                  <span className="font-normal text-muted-foreground">
-                    (separated by commas — leave blank to emit none on /zh/)
-                  </span>
-                </Label>
-                <Input
-                  id="keywordsZhText"
-                  name="keywordsZhText"
-                  defaultValue={defaultValues?.keywordsZhText}
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="grid gap-2">
-                  <Label htmlFor="metaTitleEn">Title shown in Google (English)</Label>
-                  <Input id="metaTitleEn" name="metaTitleEn" defaultValue={defaultValues?.metaTitleEn} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="metaTitleZh">Title shown in Google (Chinese)</Label>
-                  <Input id="metaTitleZh" name="metaTitleZh" defaultValue={defaultValues?.metaTitleZh} />
-                </div>
-              </div>
+              <Bilingual
+                optional
+                en={
+                  <>
+                    <Label htmlFor="keywordsEnText">
+                      Search terms (English){" "}
+                      <span className="font-normal text-muted-foreground">
+                        (separated by commas, most important first)
+                      </span>
+                    </Label>
+                    <Input
+                      id="keywordsEnText"
+                      name="keywordsEnText"
+                      placeholder="E.g. reverse osmosis water filtration, RO water purification"
+                      defaultValue={defaultValues?.keywordsEnText}
+                    />
+                  </>
+                }
+                zh={
+                  <>
+                    <Label htmlFor="keywordsZhText">
+                      Search terms (Chinese){" "}
+                      <span className="font-normal text-muted-foreground">
+                        (separated by commas — leave blank to emit none on /zh/)
+                      </span>
+                    </Label>
+                    <Input
+                      id="keywordsZhText"
+                      name="keywordsZhText"
+                      defaultValue={defaultValues?.keywordsZhText}
+                    />
+                  </>
+                }
+              />
+              <Bilingual
+                optional
+                en={
+                  <>
+                    <Label htmlFor="metaTitleEn">Title shown in Google (English)</Label>
+                    <Input id="metaTitleEn" name="metaTitleEn" defaultValue={defaultValues?.metaTitleEn} />
+                  </>
+                }
+                zh={
+                  <>
+                    <Label htmlFor="metaTitleZh">Title shown in Google (Chinese)</Label>
+                    <Input id="metaTitleZh" name="metaTitleZh" defaultValue={defaultValues?.metaTitleZh} />
+                  </>
+                }
+              />
               <p className="text-xs text-muted-foreground">
                 The short summary above doubles as the description shown in Google — there's no
                 separate field for it.
