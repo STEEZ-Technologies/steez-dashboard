@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/provider";
 
 export function RangeTabs({
   current,
-  basePath = "/analytics",
+  basePath = "/",
 }: {
   current: string;
   basePath?: string;

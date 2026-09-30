@@ -4,7 +4,6 @@ import {
   FolderTree,
   Newspaper,
   BookOpen,
-  BarChart3,
   Users,
   Settings,
   Inbox,
@@ -29,9 +28,8 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "Overview", icon: LayoutDashboard, group: "Overview", activeFor: ["/analytics"] },
+  { href: "/", label: "Overview", icon: LayoutDashboard, group: "Overview" },
   { href: "/leads", label: "Enquiries", icon: Inbox, group: "Overview" },
-  { href: "/analytics", label: "Analytics", icon: BarChart3, group: "Overview", inSidebar: false },
   { href: "/products", label: "Products", icon: Package, group: "Catalog", activeFor: ["/categories"] },
   { href: "/categories", label: "Categories", icon: FolderTree, group: "Catalog", inSidebar: false },
   { href: "/news", label: "News", icon: Newspaper, group: "Catalog" },
