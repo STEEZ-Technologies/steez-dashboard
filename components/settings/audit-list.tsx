@@ -38,19 +38,25 @@ export function AuditList({ items, dict }: { items: AuditItem[]; dict: Dictionar
         <TableHeader>
           <TableRow>
             <TableHead>{dict.settings.colAction}</TableHead>
-            <TableHead>{dict.settings.colDetail}</TableHead>
-            <TableHead>{dict.settings.colBy}</TableHead>
+            <TableHead className="hidden sm:table-cell">{dict.settings.colDetail}</TableHead>
+            <TableHead className="hidden sm:table-cell">{dict.settings.colBy}</TableHead>
             <TableHead>{dict.settings.colWhen}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((a) => (
             <TableRow key={a.id}>
-              <TableCell className="font-mono text-xs">{a.action}</TableCell>
-              <TableCell className="max-w-[220px] truncate text-muted-foreground">
+              <TableCell className="whitespace-normal">
+                <span className="font-mono text-xs">{a.action}</span>
+                {/* Detail and who, which have their own columns from sm up. */}
+                <p className="mt-0.5 line-clamp-2 break-all text-xs text-muted-foreground sm:hidden">
+                  {a.detail ?? "—"} · {a.userEmail ?? "—"}
+                </p>
+              </TableCell>
+              <TableCell className="hidden sm:table-cell max-w-[220px] truncate text-muted-foreground">
                 {a.detail ?? "—"}
               </TableCell>
-              <TableCell className="text-muted-foreground">{a.userEmail ?? "—"}</TableCell>
+              <TableCell className="hidden sm:table-cell text-muted-foreground">{a.userEmail ?? "—"}</TableCell>
               <TableCell className="text-muted-foreground">{fmt(a.createdAt)}</TableCell>
             </TableRow>
           ))}

@@ -86,19 +86,27 @@ export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>{t.colArticle}</TableHead>
-            <TableHead>{t.colTopic}</TableHead>
-            <TableHead>{t.colStatus}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t.colTopic}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t.colStatus}</TableHead>
             <TableHead className="w-[120px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {articles.map((a, index) => (
             <TableRow key={a.id}>
-              <TableCell className="font-medium">{a.titleEn}</TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell className="whitespace-normal font-medium">
+                {a.titleEn}
+                {/* Status, which has its own column from sm up. */}
+                <div className="mt-1 sm:hidden">
+                  <Badge variant={a.published ? "default" : "outline"}>
+                  {a.published ? t.published : t.draft}
+                </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="hidden sm:table-cell text-muted-foreground">
                 {topicLabel[a.topic]}
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <Badge variant={a.published ? "default" : "outline"}>
                   {a.published ? t.published : t.draft}
                 </Badge>

@@ -149,7 +149,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
             <TableRow>
               <TableHead className="w-[28px]"></TableHead>
               <TableHead>{t.colCategory}</TableHead>
-              <TableHead>{t.colSlug}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t.colSlug}</TableHead>
               <TableHead>{t.colProducts}</TableHead>
               <TableHead className="w-[52px]"></TableHead>
             </TableRow>
@@ -253,7 +253,7 @@ function CategoryTableRow({
           </button>
         </TableCell>
         <TableCell className="font-medium">{c.label}</TableCell>
-        <TableCell className="text-muted-foreground">{c.slug}</TableCell>
+        <TableCell className="hidden sm:table-cell text-muted-foreground">{c.slug}</TableCell>
         <TableCell className="text-muted-foreground tabular-nums">
           <button
             type="button"

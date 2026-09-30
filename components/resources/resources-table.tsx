@@ -75,17 +75,25 @@ export function ResourcesTable({ guides }: { guides: GuideRow[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>{t.colGuide}</TableHead>
-            <TableHead>{t.colReader}</TableHead>
-            <TableHead>{t.colStatus}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t.colReader}</TableHead>
+            <TableHead className="hidden sm:table-cell">{t.colStatus}</TableHead>
             <TableHead className="w-[120px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {guides.map((g, index) => (
             <TableRow key={g.id}>
-              <TableCell className="font-medium">{g.titleEn}</TableCell>
-              <TableCell className="text-muted-foreground">{readerLabel[g.reader]}</TableCell>
-              <TableCell>
+              <TableCell className="whitespace-normal font-medium">
+                {g.titleEn}
+                {/* Status, which has its own column from sm up. */}
+                <div className="mt-1 sm:hidden">
+                  <Badge variant={g.published ? "default" : "outline"}>
+                  {g.published ? t.published : t.draft}
+                </Badge>
+                </div>
+              </TableCell>
+              <TableCell className="hidden sm:table-cell text-muted-foreground">{readerLabel[g.reader]}</TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <Badge variant={g.published ? "default" : "outline"}>
                   {g.published ? t.published : t.draft}
                 </Badge>

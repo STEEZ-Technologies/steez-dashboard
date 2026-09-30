@@ -196,14 +196,14 @@ export function TeamMembers({
             <TableRow>
               <TableHead>{dict.team.colEmail}</TableHead>
               <TableHead>{dict.team.colRole}</TableHead>
-              <TableHead>{dict.team.colAdded}</TableHead>
+              <TableHead className="hidden sm:table-cell">{dict.team.colAdded}</TableHead>
               {canManage && <TableHead className="w-[52px]" />}
             </TableRow>
           </TableHeader>
           <TableBody>
             {members.map((m) => (
               <TableRow key={m.id}>
-                <TableCell className="font-medium">
+                <TableCell className="whitespace-normal break-all font-medium">
                   {m.email}
                   {m.isSelf && (
                     <span className="ml-2 text-xs text-muted-foreground">{dict.team.you}</span>
@@ -214,7 +214,7 @@ export function TeamMembers({
                     {m.role === "OWNER" ? dict.team.roleOwner : dict.team.roleStaff}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">{m.createdAt}</TableCell>
+                <TableCell className="hidden sm:table-cell text-muted-foreground">{m.createdAt}</TableCell>
                 {canManage && (
                   <TableCell>
                     <DropdownMenu>
