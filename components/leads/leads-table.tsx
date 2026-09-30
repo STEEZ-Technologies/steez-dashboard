@@ -165,9 +165,9 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
             <TableRow>
               <TableHead className="w-[28px]" />
               <TableHead>{t.colContact}</TableHead>
-              <TableHead>{t.colProduct}</TableHead>
-              <TableHead>{t.colStatus}</TableHead>
-              <TableHead>{t.colReceived}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t.colProduct}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t.colStatus}</TableHead>
+              <TableHead className="hidden sm:table-cell">{t.colReceived}</TableHead>
               <TableHead className="w-[52px]" />
             </TableRow>
           </TableHeader>
@@ -205,7 +205,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           )}
                         </button>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="whitespace-normal">
                         <div className="font-medium">
                           {lead.name ?? lead.email ?? lead.phone}
                           {lead.status === "NEW" && (
@@ -218,7 +218,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                             <a
                               href={`mailto:${lead.email}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 hover:text-foreground"
+                              className="inline-flex min-w-0 items-center gap-1 break-all hover:text-foreground"
                             >
                               <Mail className="size-3" />
                               {lead.email}
@@ -236,8 +236,24 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           )}
                           {lead.country && <span>{lead.country}</span>}
                         </div>
+                        {/* Product, status and time, which have their own columns from sm up. */}
+                        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:hidden">
+                          <Badge
+                            variant={
+                              lead.status === "NEW"
+                                ? "default"
+                                : lead.status === "CONTACTED"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                          >
+                            {statusLabel(lead.status)}
+                          </Badge>
+                          <span>{lead.productId ? lead.productName : t.noProduct}</span>
+                          <span>{relativeTime(lead.createdAt)}</span>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground" onClick={(e) => e.stopPropagation()}>
                         {lead.productId ? (
                           <Link
                             href={`/products/${lead.productId}/edit`}
@@ -250,7 +266,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           <span className="text-xs">{t.noProduct}</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell">
                         <Badge
                           variant={
                             lead.status === "NEW"
@@ -263,7 +279,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                           {statusLabel(lead.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-muted-foreground">
+                      <TableCell className="hidden sm:table-cell whitespace-nowrap text-muted-foreground">
                         {relativeTime(lead.createdAt)}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>

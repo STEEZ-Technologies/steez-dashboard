@@ -253,7 +253,7 @@ function CategoryTableRow({
             <GripVertical className="size-4" />
           </button>
         </TableCell>
-        <TableCell className="font-medium">{c.label}</TableCell>
+        <TableCell className="whitespace-normal font-medium">{c.label}</TableCell>
         <TableCell className="hidden sm:table-cell text-muted-foreground">{c.slug}</TableCell>
         <TableCell className="text-muted-foreground tabular-nums">
           <button
