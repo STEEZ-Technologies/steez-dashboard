@@ -5,6 +5,7 @@ import { getPublicUrl } from "@/lib/oss";
 import { ArticleForm } from "@/components/news/ArticleForm";
 import { ArticleBlocks, type ArticleBlockRow } from "@/components/news/article-blocks";
 import { PageHeader } from "@/components/shell/page-header";
+import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateArticle } from "../../actions";
 
@@ -34,36 +35,39 @@ export default async function EditArticlePage({
   return (
     <div>
       <PageHeader eyebrow="Catalog" title="Edit article" description={article.titleEn} />
-      <ArticleForm
-        action={updateArticle.bind(null, article.id)}
-        submitLabel="Save changes"
-        defaultImageUrl={article.imagePath ? getPublicUrl(article.imagePath) : undefined}
-        defaultValues={{
-          slug: article.slug,
-          titleEn: article.titleEn,
-          titleZh: article.titleZh ?? "",
-          standfirstEn: article.standfirstEn ?? "",
-          standfirstZh: article.standfirstZh ?? "",
-          metaTitleEn: article.metaTitleEn ?? "",
-          metaTitleZh: article.metaTitleZh ?? "",
-          keywordsEnText: article.keywordsEn.join(", "),
-          keywordsZhText: article.keywordsZh.join(", "),
-          imagePath: article.imagePath ?? "",
-          imageAltEn: article.imageAltEn ?? "",
-          imageAltZh: article.imageAltZh ?? "",
-          topic: article.topic,
-          published: article.published,
-        }}
-      />
+      <LanguageScope>
+        <LanguageTabs />
+        <ArticleForm
+          action={updateArticle.bind(null, article.id)}
+          submitLabel="Save changes"
+          defaultImageUrl={article.imagePath ? getPublicUrl(article.imagePath) : undefined}
+          defaultValues={{
+            slug: article.slug,
+            titleEn: article.titleEn,
+            titleZh: article.titleZh ?? "",
+            standfirstEn: article.standfirstEn ?? "",
+            standfirstZh: article.standfirstZh ?? "",
+            metaTitleEn: article.metaTitleEn ?? "",
+            metaTitleZh: article.metaTitleZh ?? "",
+            keywordsEnText: article.keywordsEn.join(", "),
+            keywordsZhText: article.keywordsZh.join(", "),
+            imagePath: article.imagePath ?? "",
+            imageAltEn: article.imageAltEn ?? "",
+            imageAltZh: article.imageAltZh ?? "",
+            topic: article.topic,
+            published: article.published,
+          }}
+        />
 
-      <Card className="mt-6 max-w-2xl">
-        <CardHeader>
-          <CardTitle>Article text</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ArticleBlocks articleId={article.id} blocks={blocks} />
-        </CardContent>
-      </Card>
+        <Card className="mt-6 max-w-2xl">
+          <CardHeader>
+            <CardTitle>Article text</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ArticleBlocks articleId={article.id} blocks={blocks} />
+          </CardContent>
+        </Card>
+      </LanguageScope>
     </div>
   );
 }
