@@ -10,6 +10,10 @@ export default defineConfig({
     seed: "tsx prisma/seed.ts",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // CLI only (migrate deploy on Vercel): use Neon's direct connection.
+    // Through the pooler, migrate's pg_advisory_lock can be taken on one
+    // backend and "released" on another, leaving it held and timing out
+    // every later deploy (P1002). The app itself (lib/db.ts) stays pooled.
+    url: process.env["DATABASE_URL_UNPOOLED"] ?? process.env["DATABASE_URL"],
   },
 });
