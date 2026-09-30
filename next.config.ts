@@ -24,7 +24,10 @@ const isDev = process.env.NODE_ENV === "development";
 // 3D model previews (<model-viewer>) fetch .glb files, which is connect-src,
 // not img-src. Allowed: the OSS/CDN bucket that dashboard uploads land in, and
 // komibright's own site, where its imported scans live. Named hosts rather
-// than `https:`, so connect-src still blocks exfiltration.
+// than `https:`, so connect-src still blocks exfiltration. blob: because
+// three.js unpacks a .glb's embedded textures into blob: URLs and fetches
+// them — without it every model renders untextured white. A blob: URL is
+// created by the page itself, so it opens no route offsite.
 const assetOrigin = (() => {
   try {
     return process.env.ASSET_BASE_URL ? new URL(process.env.ASSET_BASE_URL).origin : "";
@@ -49,7 +52,7 @@ const CSP = [
   "font-src 'self' data:",
   // ws: is the Turbopack HMR socket — dev only.
   // *.sentry.io is Sentry's error-reporting ingest endpoint.
-  `connect-src 'self' https://*.sentry.io ${MODEL_HOSTS}${isDev ? " ws: http://localhost:*" : ""}`,
+  `connect-src 'self' blob: https://*.sentry.io ${MODEL_HOSTS}${isDev ? " ws: http://localhost:*" : ""}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
