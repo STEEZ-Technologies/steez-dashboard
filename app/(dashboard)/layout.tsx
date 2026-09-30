@@ -1,4 +1,5 @@
 import { getTenantFromSession } from "@/lib/tenant";
+import { siteIconUrls } from "@/lib/site-icon";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
 import {
@@ -39,15 +40,12 @@ export default async function DashboardLayout({
         tenantName={tenant.name}
         email={user.email ?? ""}
         displayName={profile?.name ?? null}
-        avatarUrl={
+        avatarUrls={
           profile?.avatarPath
-            ? getPublicUrl(profile.avatarPath)
-            : // No picture uploaded: the workspace's own site icon (Next's
-              // app/icon.png convention). If the site has none, the image
-              // fails and the avatar falls back to initials.
-              tenant.siteUrl
-              ? `${tenant.siteUrl.replace(/\/$/, "")}/icon.png`
-              : null
+            ? [getPublicUrl(profile.avatarPath)]
+            : // No picture uploaded: the workspace's own site icon. Each URL
+              // is tried in turn; if none loads, the avatar shows initials.
+              siteIconUrls(tenant)
         }
         role={user.role}
         newLeadCount={newLeadCount}

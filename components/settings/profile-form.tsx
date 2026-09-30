@@ -13,10 +13,13 @@ export function ProfileForm({
   name,
   avatarPath,
   avatarUrl,
+  placeholderUrls,
 }: {
   name: string;
   avatarPath: string;
   avatarUrl?: string;
+  /** The site icon the sidebar shows while no picture is uploaded. */
+  placeholderUrls?: string[];
 }) {
   const [error, formAction, pending] = useActionState(updateProfile, undefined);
   const { dict } = useT();
@@ -44,6 +47,7 @@ export function ProfileForm({
             label={dict.settings.profilePicture}
             defaultValue={avatarPath}
             defaultUrl={avatarUrl}
+            placeholderUrls={placeholderUrls}
           />
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div>

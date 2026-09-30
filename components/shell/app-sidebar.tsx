@@ -46,7 +46,7 @@ export function AppSidebar({
   tenantName,
   email,
   displayName = null,
-  avatarUrl = null,
+  avatarUrls = [],
   role,
   newLeadCount = 0,
   isSuperAdmin = false,
@@ -55,7 +55,7 @@ export function AppSidebar({
   tenantName: string;
   email: string;
   displayName?: string | null;
-  avatarUrl?: string | null;
+  avatarUrls?: string[];
   role: string;
   /** Unread enquiries — surfaced as a badge so the inbox gets checked daily. */
   newLeadCount?: number;
@@ -144,7 +144,7 @@ export function AppSidebar({
         <UserMenu
           email={email}
           displayName={displayName}
-          avatarUrl={avatarUrl}
+          avatarUrls={avatarUrls}
           role={role}
           onSignOut={() => signOutAction()}
         />

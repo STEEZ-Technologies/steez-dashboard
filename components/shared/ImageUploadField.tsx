@@ -11,15 +11,21 @@ export function ImageUploadField({
   label,
   defaultValue,
   defaultUrl,
+  placeholderUrls = [],
 }: {
   name: string;
   label: string;
   defaultValue?: string;
   defaultUrl?: string;
+  /** Shown, in order of preference, while nothing is uploaded — e.g. the
+   *  site icon a profile picture defaults to. Not a value: nothing is saved. */
+  placeholderUrls?: string[];
 }) {
   const [path, setPath] = useState(defaultValue ?? "");
   const [previewUrl, setPreviewUrl] = useState(defaultUrl ?? "");
   const [status, setStatus] = useState<"idle" | "uploading" | "error">("idle");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const placeholderUrl = placeholderUrls[placeholderIndex];
   const inputRef = useRef<HTMLInputElement>(null);
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -69,6 +75,16 @@ export function ImageUploadField({
               height={80}
               className="size-20 object-cover"
               unoptimized
+            />
+          ) : placeholderUrl ? (
+            // Plain <img>: a failed load advances to the next candidate.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              key={placeholderUrl}
+              src={placeholderUrl}
+              alt=""
+              className="size-20 object-cover"
+              onError={() => setPlaceholderIndex((i) => i + 1)}
             />
           ) : (
             <ImagePlus className="size-5 text-muted-foreground" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ChevronsUpDown, LogOut, User as UserIcon } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,18 +21,21 @@ import { useT } from "@/lib/i18n/provider";
 export function UserMenu({
   email,
   displayName = null,
-  avatarUrl = null,
+  avatarUrls = [],
   role,
   onSignOut,
 }: {
   email: string;
   displayName?: string | null;
-  avatarUrl?: string | null;
+  avatarUrls?: string[];
   role: string;
   onSignOut: () => void;
 }) {
   const label = displayName || email;
   const initials = label.slice(0, 2).toUpperCase();
+  // Next candidate on a failed load; past the last one, initials show.
+  const [urlIndex, setUrlIndex] = useState(0);
+  const avatarUrl = avatarUrls[urlIndex];
   const { dict } = useT();
 
   return (
@@ -40,7 +44,15 @@ export function UserMenu({
         <DropdownMenu>
           <DropdownMenuTrigger render={<SidebarMenuButton size="lg" />}>
             <Avatar className="size-8 rounded-lg">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt="" className="rounded-lg object-cover" />}
+              {avatarUrl && (
+                <AvatarImage
+                  key={avatarUrl}
+                  src={avatarUrl}
+                  alt=""
+                  className="rounded-lg object-cover"
+                  onLoadingStatusChange={(s) => s === "error" && setUrlIndex((i) => i + 1)}
+                />
+              )}
               <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
                 {initials}
               </AvatarFallback>

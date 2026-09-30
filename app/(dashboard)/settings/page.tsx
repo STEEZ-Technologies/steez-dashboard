@@ -6,6 +6,7 @@ import { SettingsForm } from "@/components/settings/settings-form";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { getPublicUrl } from "@/lib/oss";
+import { siteIconUrls } from "@/lib/site-icon";
 import { TwoFactorForm } from "@/components/settings/two-factor-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,12 +43,15 @@ export default async function SettingsPage() {
 
       {/* grid-cols-1 (minmax(0,1fr)) — a bare `grid` sizes its column to the
           widest child's max-content, which pushed these cards off-screen on
-          phones. */}
+          phones. On wide screens: your account on the left, the workspace's
+          history (activity, recently deleted) filling the right. */}
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,36rem)_minmax(0,1fr)]">
       <div className="grid grid-cols-1 gap-6">
         <ProfileForm
           name={currentUser.name ?? ""}
           avatarPath={currentUser.avatarPath ?? ""}
           avatarUrl={currentUser.avatarPath ? getPublicUrl(currentUser.avatarPath) : undefined}
+          placeholderUrls={siteIconUrls(tenant)}
         />
 
         <SettingsForm
@@ -68,7 +72,9 @@ export default async function SettingsPage() {
             </p>
           </CardContent>
         </Card>
+      </div>
 
+      <div className="grid grid-cols-1 gap-6">
         <div>
           <h2 className="mb-3 text-lg font-semibold">{dict.settings.activityLog}</h2>
           <AuditList items={audit} dict={dict} />
@@ -84,6 +90,7 @@ export default async function SettingsPage() {
             deletedAt: d.createdAt.toISOString(),
           }))}
         />
+      </div>
       </div>
     </div>
   );
