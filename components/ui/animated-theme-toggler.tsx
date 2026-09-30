@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { flushSync } from "react-dom"
 
 import { Moon, Sun } from "lucide-react"
 
@@ -33,39 +32,11 @@ export const AnimatedThemeToggler = ({ className }: AnimatedThemeTogglerProps) =
     return () => observer.disconnect()
   }, [])
 
-  const onToggle = useCallback(async () => {
-    if (!buttonRef.current) return
-
-    await document.startViewTransition(() => {
-      flushSync(() => {
-        const toggled = !darkMode
-        setDarkMode(toggled)
-        document.documentElement.classList.toggle("dark", toggled)
-        localStorage.setItem("theme", toggled ? "dark" : "light")
-      })
-    }).ready
-
-    const { left, top, width, height } = buttonRef.current.getBoundingClientRect()
-    const centerX = left + width / 2
-    const centerY = top + height / 2
-    const maxDistance = Math.hypot(
-      Math.max(centerX, window.innerWidth - centerX),
-      Math.max(centerY, window.innerHeight - centerY)
-    )
-
-    document.documentElement.animate(
-      {
-        clipPath: [
-          `circle(0px at ${centerX}px ${centerY}px)`,
-          `circle(${maxDistance}px at ${centerX}px ${centerY}px)`,
-        ],
-      },
-      {
-        duration: 700,
-        easing: "ease-in-out",
-        pseudoElement: "::view-transition-new(root)",
-      }
-    )
+  const onToggle = useCallback(() => {
+    const toggled = !darkMode
+    setDarkMode(toggled)
+    document.documentElement.classList.toggle("dark", toggled)
+    localStorage.setItem("theme", toggled ? "dark" : "light")
   }, [darkMode])
 
   return (
