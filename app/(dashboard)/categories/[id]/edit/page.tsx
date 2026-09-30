@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { CategoryForm } from "@/components/categories/CategoryForm";
 import { PageHeader } from "@/components/shell/page-header";
 import { updateCategory } from "../../actions";
+import { HistoryCard } from "@/components/shared/HistoryCard";
 
 export default async function EditCategoryPage({
   params,
@@ -27,6 +28,8 @@ export default async function EditCategoryPage({
         }}
         submitLabel="Save changes"
       />
+
+      <HistoryCard entity="category" id={category.id} />
     </div>
   );
 }

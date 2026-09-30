@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   COALESCE_MS,
   diffSnapshots,
+  fieldLabel,
   formatValue,
   liveVersion,
   sameSnapshot,
@@ -130,5 +131,14 @@ describe("formatValue", () => {
   });
   it("truncates long text", () => {
     expect(formatValue("x".repeat(200), 10)).toBe("xxxxxxxxx…");
+  });
+});
+
+describe("fieldLabel", () => {
+  it("names known fields and spells out the rest with their language", () => {
+    expect(fieldLabel("blocks")).toBe("Body text");
+    expect(fieldLabel("standfirstZh")).toBe("Standfirst (ZH)");
+    expect(fieldLabel("imageDistributorAltEn")).toBe("Image distributor alt (EN)");
+    expect(fieldLabel("published")).toBe("Published");
   });
 });

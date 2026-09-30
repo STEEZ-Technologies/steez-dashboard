@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n";
 import { updateGuide } from "../../actions";
+import { HistoryCard } from "@/components/shared/HistoryCard";
 
 function toStringArray(value: unknown): string[] | null {
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : null;
@@ -80,6 +81,8 @@ export default async function EditGuidePage({
           <GuideBlocks guideId={guide.id} blocks={blocks} />
         </CardContent>
       </Card>
+
+      <HistoryCard entity="guide" id={guide.id} />
     </div>
   );
 }

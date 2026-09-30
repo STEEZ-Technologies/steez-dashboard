@@ -7,6 +7,7 @@ import { ArticleBlocks, type ArticleBlockRow } from "@/components/news/article-b
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateArticle } from "../../actions";
+import { HistoryCard } from "@/components/shared/HistoryCard";
 
 export default async function EditArticlePage({
   params,
@@ -64,6 +65,8 @@ export default async function EditArticlePage({
           <ArticleBlocks articleId={article.id} blocks={blocks} />
         </CardContent>
       </Card>
+
+      <HistoryCard entity="article" id={article.id} />
     </div>
   );
 }

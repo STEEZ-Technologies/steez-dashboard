@@ -190,3 +190,36 @@ export function formatValue(v: unknown, max = 140): string {
   }
   return formatValue(JSON.stringify(v), max);
 }
+
+// Names for the "what changed" list. Anything not listed is spelled out
+// from its column name ("imageDistributorAltZh" → "Image distributor alt (ZH)").
+const LABELS: Record<string, string> = {
+  nameZh: "Name (ZH)",
+  descriptionZh: "Description (ZH)",
+  categoryId: "Category",
+  useCases: "Use cases",
+  specs: "Specs",
+  imagePath: "Main image",
+  imageAlt: "Image alt text",
+  seoTitle: "SEO title",
+  seoDescription: "SEO description",
+  seoKeywords: "SEO keywords",
+  canonicalUrl: "Canonical URL",
+  ogImagePath: "Social share image",
+  noindex: "Hidden from search",
+  slug: "Address (slug)",
+  fit: "Finder facts",
+  images: "Gallery",
+  contents: "Box contents",
+  finishes: "Finishes",
+  models3d: "3D models",
+  blocks: "Body text",
+};
+
+export function fieldLabel(field: string) {
+  if (LABELS[field]) return LABELS[field];
+  const lang = field.endsWith("En") ? " (EN)" : field.endsWith("Zh") ? " (ZH)" : "";
+  const base = lang ? field.slice(0, -2) : field;
+  const words = base.replace(/([A-Z])/g, " $1").toLowerCase().trim();
+  return words.charAt(0).toUpperCase() + words.slice(1) + lang;
+}
