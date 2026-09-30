@@ -2,6 +2,7 @@
 
 import { Eye, MousePointerClick, FileText } from "lucide-react";
 import type { ActivityItem } from "@/lib/analytics";
+import { humanizePath } from "@/lib/analytics-helpers";
 import { useT } from "@/lib/i18n/provider";
 
 function timeAgo(date: Date): string {
@@ -14,31 +15,6 @@ function timeAgo(date: Date): string {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
-}
-
-// The public site's raw URLs mean nothing to a non-technical owner, so "/"
-// and "/category/rectangle-panels/" read as "Home page" and
-// "Category · Rectangle panels".
-function humanizePath(
-  path: string,
-  labels: { home: string; category: string; product: string },
-): string {
-  const segments = path.split("/").filter(Boolean);
-  if (segments.length === 0) return labels.home;
-
-  const titleize = (s: string) =>
-    s.replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
-
-  const [first, ...rest] = segments;
-  const prefix =
-    first === "category" || first === "categories"
-      ? labels.category
-      : first === "product" || first === "products"
-        ? labels.product
-        : null;
-
-  if (prefix && rest.length > 0) return `${prefix} · ${titleize(rest.join(" "))}`;
-  return titleize(segments[segments.length - 1]);
 }
 
 const ICON = {

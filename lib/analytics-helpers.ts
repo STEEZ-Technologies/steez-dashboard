@@ -54,3 +54,28 @@ export function bucketByDay(rows: { createdAt: Date }[]): {
     .map(([date, count]) => ({ date, count }))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
+
+// The public site's raw URLs mean nothing to a non-technical owner, so "/"
+// and "/category/rectangle-panels/" read as "Home page" and
+// "Category · Rectangle panels".
+export function humanizePath(
+  path: string,
+  labels: { home: string; category: string; product: string },
+): string {
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length === 0) return labels.home;
+
+  const titleize = (s: string) =>
+    s.replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+  const [first, ...rest] = segments;
+  const prefix =
+    first === "category" || first === "categories"
+      ? labels.category
+      : first === "product" || first === "products"
+        ? labels.product
+        : null;
+
+  if (prefix && rest.length > 0) return `${prefix} · ${titleize(rest.join(" "))}`;
+  return titleize(segments[segments.length - 1]);
+}

@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { hostOf } from "@/lib/analytics-helpers";
+import { buildJourney, type RawStep } from "@/lib/lead-journey-helpers";
 
 type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
 
@@ -101,4 +103,97 @@ export async function deleteLead(id: string) {
   revalidatePath("/leads");
   revalidatePath("/", "layout");
   return undefined;
+}
+
+export type LeadJourney = {
+  steps: {
+    kind: RawStep["kind"];
+    detail: string;
+    productId: string | null;
+    at: string; // ISO
+    count: number;
+  }[];
+  visits: number;
+  productsViewed: number;
+  firstSeen: string | null;
+  /** External source host of their first visit, e.g. "google.com". */
+  source: string | null;
+};
+
+const JOURNEY_LOOKBACK_MS = 90 * 24 * 60 * 60_000;
+const JOURNEY_ROWS = 200;
+
+/** What this enquiry's visitor browsed before sending it — loaded when the
+ *  row is opened rather than for every lead on the page. */
+export async function getLeadJourney(id: string): Promise<LeadJourney | null> {
+  const session = await getTenantFromSession();
+  const lead = await prisma.lead.findFirst({
+    where: { id, tenantId: session.tenantId },
+    select: { sessionId: true, createdAt: true, tenant: { select: { siteUrl: true } } },
+  });
+  if (!lead?.sessionId) return null;
+
+  const range = {
+    gte: new Date(lead.createdAt.getTime() - JOURNEY_LOOKBACK_MS),
+    // The form's own page view can land a moment after the lead row.
+    lte: new Date(lead.createdAt.getTime() + 60_000),
+  };
+  const where = { tenantId: session.tenantId, sessionId: lead.sessionId, createdAt: range };
+  const [views, events] = await Promise.all([
+    prisma.pageView.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: JOURNEY_ROWS,
+      select: { path: true, referrer: true, createdAt: true },
+    }),
+    prisma.productEvent.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: JOURNEY_ROWS,
+      select: {
+        eventType: true,
+        productId: true,
+        finishKey: true,
+        createdAt: true,
+        product: { select: { name: true, model: true } },
+      },
+    }),
+  ]);
+
+  const rows: RawStep[] = [
+    ...views.map((v) => ({
+      kind: "page_view" as const,
+      key: v.path,
+      detail: v.path,
+      referrer: v.referrer,
+      at: v.createdAt,
+    })),
+    ...events.map((e) => ({
+      kind: (e.eventType === "CLICK" ? "product_click" : "product_view") as RawStep["kind"],
+      key: e.productId ?? e.finishKey ?? "",
+      detail: e.product
+        ? `${e.product.name} · ${e.product.model}`
+        : (e.finishKey ?? "—"),
+      at: e.createdAt,
+    })),
+  ];
+  const { steps, summary } = buildJourney(rows);
+
+  // A referrer from the client's own site is internal navigation, not a source.
+  const ownHost = lead.tenant.siteUrl ? hostOf(lead.tenant.siteUrl) : null;
+  const sourceHost = summary.firstReferrer ? hostOf(summary.firstReferrer) : null;
+
+  return {
+    steps: steps.map((s) => ({
+      kind: s.kind,
+      detail: s.detail,
+      productId: s.kind === "page_view" ? null : s.key || null,
+      at: s.at.toISOString(),
+      count: s.count,
+    })),
+    visits: summary.visits,
+    productsViewed: summary.productsViewed,
+    firstSeen: summary.firstSeen?.toISOString() ?? null,
+    source: sourceHost && sourceHost !== "Direct" && sourceHost !== ownHost ? sourceHost : null,
+  };
 }

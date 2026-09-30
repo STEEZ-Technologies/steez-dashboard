@@ -62,6 +62,7 @@ import {
   deleteLead,
 } from "@/app/(dashboard)/leads/actions";
 import { useT } from "@/lib/i18n/provider";
+import { LeadJourneyView } from "@/components/leads/lead-journey";
 
 type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
 
@@ -185,20 +186,20 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
   // the same way an email client marks a message read on open, instead of
   // requiring a separate manual status change just to make the count honest.
   function toggleExpand(lead: LeadRow) {
+    const opening = !expanded.has(lead.id);
     setExpanded((prev) => {
       const next = new Set(prev);
-      if (next.has(lead.id)) {
-        next.delete(lead.id);
-      } else {
-        next.add(lead.id);
-        if (lead.status === "NEW") {
-          startTransition(async () => {
-            await updateLeadStatus(lead.id, "CONTACTED");
-          });
-        }
-      }
+      if (opening) next.add(lead.id);
+      else next.delete(lead.id);
       return next;
     });
+    // Outside the updater: React may run updaters during render, where
+    // starting a transition throws.
+    if (opening && lead.status === "NEW") {
+      startTransition(async () => {
+        await updateLeadStatus(lead.id, "CONTACTED");
+      });
+    }
   }
 
   return (
@@ -376,6 +377,9 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                               <p className="whitespace-pre-wrap text-sm">
                                 {lead.message || "—"}
                               </p>
+                              <div className="mt-5">
+                                <LeadJourneyView leadId={lead.id} />
+                              </div>
                             </div>
                             <div>
                               <p className="eyebrow mb-1.5">{t.notes}</p>
