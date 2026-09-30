@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Bilingual } from "@/components/shared/language-tabs";
 import {
   addProductContent,
   updateProductContent,
@@ -69,20 +70,26 @@ export function ProductContent({
         </ul>
       )}
 
-      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <div className="grid gap-1.5">
-          <Label htmlFor="newContentEn">Item (English)</Label>
-          <Input
-            id="newContentEn"
-            value={newEn}
-            onChange={(e) => setNewEn(e.target.value)}
-            placeholder="1x membrane housing"
-          />
-        </div>
-        <div className="grid gap-1.5">
-          <Label htmlFor="newContentZh">Item (Chinese)</Label>
-          <Input id="newContentZh" value={newZh} onChange={(e) => setNewZh(e.target.value)} />
-        </div>
+      <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+        <Bilingual
+          en={
+            <>
+              <Label htmlFor="newContentEn">Item (English)</Label>
+              <Input
+                id="newContentEn"
+                value={newEn}
+                onChange={(e) => setNewEn(e.target.value)}
+                placeholder="1x membrane housing"
+              />
+            </>
+          }
+          zh={
+            <>
+              <Label htmlFor="newContentZh">Item (Chinese)</Label>
+              <Input id="newContentZh" value={newZh} onChange={(e) => setNewZh(e.target.value)} />
+            </>
+          }
+        />
         <Button type="button" variant="outline" size="sm" disabled={pending} onClick={handleAdd}>
           <Plus /> Add item
         </Button>
@@ -112,16 +119,24 @@ function ProductContentItem({
   const [textZh, setTextZh] = useState(item.textZh ?? "");
 
   return (
-    <li className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
-      <Input
-        value={textEn}
-        onChange={(e) => setTextEn(e.target.value)}
-        onBlur={() => onSave({ textEn, textZh })}
-      />
-      <Input
-        value={textZh}
-        onChange={(e) => setTextZh(e.target.value)}
-        onBlur={() => onSave({ textEn, textZh })}
+    <li className="grid gap-2 rounded-lg border p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+      <Bilingual
+        en={
+          <Input
+            aria-label="Item (English)"
+            value={textEn}
+            onChange={(e) => setTextEn(e.target.value)}
+            onBlur={() => onSave({ textEn, textZh })}
+          />
+        }
+        zh={
+          <Input
+            aria-label="Item (Chinese)"
+            value={textZh}
+            onChange={(e) => setTextZh(e.target.value)}
+            onBlur={() => onSave({ textEn, textZh })}
+          />
+        }
       />
       <div className="flex items-center gap-1 justify-self-end">
         <Button
