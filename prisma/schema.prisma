@@ -59,7 +59,8 @@ model User {
   tenant       Tenant   @relation(fields: [tenantId], references: [id])
   email        String   @unique
   passwordHash String
-  name         String?
+  name         String? // display name shown in the dashboard; login stays the email
+  avatarPath   String? // profile picture, OSS object key
   role         Role     @default(STAFF)
   createdAt    DateTime @default(now())
 

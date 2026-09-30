@@ -44,6 +44,8 @@ const GROUP_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
 export function AppSidebar({
   tenantName,
   email,
+  displayName = null,
+  avatarUrl = null,
   role,
   newLeadCount = 0,
   isSuperAdmin = false,
@@ -51,6 +53,8 @@ export function AppSidebar({
 }: {
   tenantName: string;
   email: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
   role: string;
   /** Unread enquiries — surfaced as a badge so the inbox gets checked daily. */
   newLeadCount?: number;
@@ -120,7 +124,13 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <UserMenu email={email} role={role} onSignOut={() => signOutAction()} />
+        <UserMenu
+          email={email}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          role={role}
+          onSignOut={() => signOutAction()}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

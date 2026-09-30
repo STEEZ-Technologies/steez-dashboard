@@ -1,5 +1,6 @@
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
+import { getPublicUrl } from "@/lib/oss";
 import {
   SidebarInset,
   SidebarProvider,
@@ -24,11 +25,12 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getTenantFromSession();
-  const [tenant, dict, locale, newLeadCount] = await Promise.all([
+  const [tenant, dict, locale, newLeadCount, profile] = await Promise.all([
     prisma.tenant.findUniqueOrThrow({ where: { id: user.tenantId } }),
     getDictionary(),
     getLocale(),
     prisma.lead.count({ where: { tenantId: user.tenantId, status: "NEW" } }),
+    prisma.user.findUnique({ where: { id: user.id }, select: { name: true, avatarPath: true } }),
   ]);
 
   return (
@@ -37,6 +39,8 @@ export default async function DashboardLayout({
       <AppSidebar
         tenantName={tenant.name}
         email={user.email ?? ""}
+        displayName={profile?.name ?? null}
+        avatarUrl={profile?.avatarPath ? getPublicUrl(profile.avatarPath) : null}
         role={user.role}
         newLeadCount={newLeadCount}
         isSuperAdmin={isSuperAdmin(user.email)}

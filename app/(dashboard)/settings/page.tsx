@@ -4,6 +4,8 @@ import { getRecentAudit } from "@/lib/audit";
 import { PageHeader } from "@/components/shell/page-header";
 import { SettingsForm } from "@/components/settings/settings-form";
 import { ChangePasswordForm } from "@/components/settings/change-password-form";
+import { ProfileForm } from "@/components/settings/profile-form";
+import { getPublicUrl } from "@/lib/oss";
 import { TwoFactorForm } from "@/components/settings/two-factor-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,7 +17,7 @@ export default async function SettingsPage() {
     prisma.tenant.findUniqueOrThrow({ where: { id: session.tenantId } }),
     getRecentAudit(session.tenantId, 25),
     getDictionary(),
-    prisma.user.findUniqueOrThrow({ where: { id: session.id }, select: { totpEnabled: true } }),
+    prisma.user.findUniqueOrThrow({ where: { id: session.id }, select: { totpEnabled: true, name: true, avatarPath: true } }),
   ]);
 
   return (
@@ -30,6 +32,12 @@ export default async function SettingsPage() {
           widest child's max-content, which pushed these cards off-screen on
           phones. */}
       <div className="grid grid-cols-1 gap-6">
+        <ProfileForm
+          name={currentUser.name ?? ""}
+          avatarPath={currentUser.avatarPath ?? ""}
+          avatarUrl={currentUser.avatarPath ? getPublicUrl(currentUser.avatarPath) : undefined}
+        />
+
         <SettingsForm
           name={tenant.name}
           slug={tenant.slug}
