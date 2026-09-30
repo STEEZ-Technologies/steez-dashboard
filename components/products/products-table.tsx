@@ -104,14 +104,16 @@ function SortHead({
   sort,
   onToggle,
   children,
+  className,
 }: {
   k: SortKey;
   sort: Sort;
   onToggle: (key: SortKey) => void;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <TableHead>
+    <TableHead className={className}>
       <button
         onClick={() => onToggle(k)}
         className="inline-flex items-center gap-1 hover:text-foreground"
@@ -276,7 +278,7 @@ export function ProductsTable({
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[180px]">
+        <div className="relative w-full sm:w-auto sm:min-w-[180px] sm:flex-1">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder={t.searchPlaceholder}
@@ -290,7 +292,7 @@ export function ProductsTable({
           onValueChange={(v) => setCategory(v ?? "all")}
           items={categoryItems}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="flex-1 sm:w-[180px] sm:flex-none">
             <SelectValue placeholder={t.colCategory} />
           </SelectTrigger>
           <SelectContent>
@@ -307,7 +309,7 @@ export function ProductsTable({
           onValueChange={(v) => setStatus(v ?? "all")}
           items={statusItems}
         >
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="flex-1 sm:w-[150px] sm:flex-none">
             <SelectValue placeholder={t.colStatus} />
           </SelectTrigger>
           <SelectContent>
@@ -376,25 +378,25 @@ export function ProductsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[36px]">
+                <TableHead className="hidden sm:table-cell w-[36px]">
                   <Checkbox
                     checked={allVisibleSelected}
                     onCheckedChange={toggleAll}
                     aria-label="Select all"
                   />
                 </TableHead>
-                <TableHead className="w-[28px]"></TableHead>
+                <TableHead className="hidden sm:table-cell w-[28px]"></TableHead>
                 <TableHead className="w-[52px]"></TableHead>
                 <SortHead k="name" sort={sort} onToggle={toggleSort}>
                   {t.colProduct}
                 </SortHead>
-                <SortHead k="model" sort={sort} onToggle={toggleSort}>
+                <SortHead k="model" sort={sort} onToggle={toggleSort} className="hidden sm:table-cell">
                   {t.colModel}
                 </SortHead>
-                <SortHead k="category" sort={sort} onToggle={toggleSort}>
+                <SortHead k="category" sort={sort} onToggle={toggleSort} className="hidden sm:table-cell">
                   {t.colCategory}
                 </SortHead>
-                <SortHead k="status" sort={sort} onToggle={toggleSort}>
+                <SortHead k="status" sort={sort} onToggle={toggleSort} className="hidden sm:table-cell">
                   {t.colStatus}
                 </SortHead>
                 <TableHead className="w-[52px]"></TableHead>
@@ -534,14 +536,16 @@ function ProductTableRow({
         opacity: isDragging ? 0.5 : undefined,
       }}
     >
-      <TableCell>
+      {/* On a phone the row collapses to thumbnail · name · actions: selection
+          and drag need a pointer, and reordering stays in the row menu. */}
+      <TableCell className="hidden sm:table-cell">
         <Checkbox
           checked={selected}
           onCheckedChange={onToggle}
           aria-label={`Select ${p.name}`}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">
         <button
           type="button"
           className={`flex size-6 items-center justify-center text-muted-foreground ${
@@ -570,12 +574,24 @@ function ProductTableRow({
           )}
         </div>
       </TableCell>
-      <TableCell className="font-medium">{p.name}</TableCell>
-      <TableCell className="text-muted-foreground">{p.model}</TableCell>
-      <TableCell className="text-muted-foreground">
+      <TableCell className="whitespace-normal font-medium">
+        <Link href={`/products/${p.id}/edit`} className="hover:underline">
+          {p.name}
+        </Link>
+        {/* Model and status, which have their own columns from sm up. */}
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-normal text-muted-foreground sm:hidden">
+          <span>{p.model}</span>
+          <Badge variant={p.published ? "default" : "outline"}>
+            {p.published ? dict.products.published : dict.products.draft}
+          </Badge>
+          {p.featured && <Badge variant="secondary">{dict.products.featured}</Badge>}
+        </div>
+      </TableCell>
+      <TableCell className="hidden sm:table-cell text-muted-foreground">{p.model}</TableCell>
+      <TableCell className="hidden sm:table-cell text-muted-foreground">
         {p.categoryLabel ?? "—"}
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">
         <div className="flex gap-1.5">
           {p.featured && <Badge variant="secondary">{dict.products.featured}</Badge>}
           <Badge variant={p.published ? "default" : "outline"}>
