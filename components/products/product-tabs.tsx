@@ -16,11 +16,13 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type ProductTab = "basics" | "media" | "specs" | "finder";
 
-const TABS: { id: ProductTab; label: string }[] = [
-  { id: "basics", label: "Basics" },
-  { id: "media", label: "Photos & 3D" },
-  { id: "specs", label: "Specs & box" },
-  { id: "finder", label: "Finder quiz" },
+// `short` is what a phone shows, so all four fit across 390px without a
+// sideways-scrolling row that hides the last tab.
+const TABS: { id: ProductTab; label: string; short: string }[] = [
+  { id: "basics", label: "Basics", short: "Basics" },
+  { id: "media", label: "Photos & 3D", short: "Media" },
+  { id: "specs", label: "Specs & box", short: "Specs" },
+  { id: "finder", label: "Finder quiz", short: "Finder" },
 ];
 
 const isTab = (v: unknown): v is ProductTab => TABS.some((t) => t.id === v);
@@ -52,16 +54,14 @@ export function ProductTabs({
         onValueChange={(v) => isTab(v) && select(v)}
         className="mb-4 max-w-2xl"
       >
-        {/* Scrolls sideways rather than squeezing four labels into a phone. */}
-        <div className="-mx-1 overflow-x-auto px-1 pb-1">
-          <TabsList className="w-max">
-            {TABS.map((t) => (
-              <TabsTrigger key={t.id} value={t.id} className="px-3">
-                {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </div>
+        <TabsList className="w-full sm:w-max">
+          {TABS.map((t) => (
+            <TabsTrigger key={t.id} value={t.id} className="px-3">
+              <span className="sm:hidden">{t.short}</span>
+              <span className="hidden sm:inline">{t.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
       </Tabs>
       {/* A required field on a hidden tab can't show the browser's "please
           fill in" bubble, so Save would silently do nothing. Open its tab
