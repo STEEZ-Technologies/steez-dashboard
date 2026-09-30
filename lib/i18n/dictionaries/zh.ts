@@ -186,6 +186,13 @@ export const zh: Dictionary = {
     dealsWonValue: "成交金额",
     dealsNoValue: "将询盘标记为已成交并填写金额，即可在此追踪收入。",
     viewEnquiries: "查看询盘",
+    marketsTitle: "询盘来自哪里",
+    marketsSubtitle: "按买家国家和来源网站统计的询盘。% = 该国每位访客的询盘率。",
+    marketsByCountry: "按国家",
+    marketsBySource: "按来源",
+    marketsWon: "成交",
+    marketsRateHelp: "该国每位访客的询盘率",
+    marketsEmpty: "此期间没有询盘。",
   },
   analytics: {
     lastDays: "最近 {days} 天。",

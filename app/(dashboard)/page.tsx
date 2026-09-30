@@ -26,7 +26,8 @@ import { PageHeader } from "@/components/shell/page-header";
 import { StatCard } from "@/components/overview/stat-card";
 import { WeeklyDigest } from "@/components/overview/weekly-digest";
 import { DealsCard } from "@/components/overview/deals-card";
-import { getDealStats } from "@/lib/leads-stats";
+import { getDealStats, getEnquiryMarkets } from "@/lib/leads-stats";
+import { EnquiryMarkets } from "@/components/overview/enquiry-markets";
 import { RangeTabs } from "@/components/analytics/range-tabs";
 import { ViewsClicksChart } from "@/components/analytics/views-clicks-chart";
 import { RankBarChart } from "@/components/analytics/rank-bar-chart";
@@ -35,7 +36,7 @@ import { DevicePie } from "@/components/analytics/device-pie";
 import { ActivityFeed } from "@/components/analytics/activity-feed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
-import { getDictionary } from "@/lib/i18n";
+import { getDictionary, getLocale } from "@/lib/i18n";
 
 const ALLOWED = new Set(["7", "30", "90"]);
 
@@ -50,7 +51,7 @@ export default async function OverviewPage({
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
   // STEEZ's workspace has no catalog or analytics of its own.
   if (tenant.slug === PLATFORM_TENANT_SLUG) redirect("/admin");
-  const dict = await getDictionary();
+  const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const publishState = await getPublishState(tenantId);
   const sp = await searchParams;
   const rangeStr = sp.range && ALLOWED.has(sp.range) ? sp.range : "30";
@@ -70,6 +71,7 @@ export default async function OverviewPage({
     countries,
     performance,
     deals,
+    markets,
   ] = await Promise.all([
     getKpis(tenantId, days),
     getViewsVsClicksByDay(tenantId, days),
@@ -84,6 +86,7 @@ export default async function OverviewPage({
     getTopCountries(tenantId, days),
     getProductPerformance(tenantId, days),
     getDealStats(tenantId, days),
+    getEnquiryMarkets(tenantId, days),
   ]);
 
   const pvSpark = pv.map((d) => d.count);
@@ -137,6 +140,15 @@ export default async function OverviewPage({
 
       <div className="mt-4">
         <DealsCard stats={deals} days={days} dict={dict} />
+      </div>
+
+      <div className="mt-4">
+        <EnquiryMarkets
+          countries={markets.countries}
+          sources={markets.sources}
+          dict={dict}
+          locale={locale}
+        />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">

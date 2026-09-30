@@ -190,6 +190,13 @@ export const en = {
     dealsWonValue: "Won value",
     dealsNoValue: "Mark an enquiry Won and add its value to track revenue here.",
     viewEnquiries: "View enquiries",
+    marketsTitle: "Where enquiries come from",
+    marketsSubtitle: "Enquiries by buyer country and by the site that sent them. % = enquiries per visitor from that country.",
+    marketsByCountry: "By country",
+    marketsBySource: "By source",
+    marketsWon: "won",
+    marketsRateHelp: "Enquiries per visitor from this country",
+    marketsEmpty: "No enquiries in this period.",
   },
   analytics: {
     lastDays: "Last {days} days.",
