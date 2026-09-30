@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { captureRevision, touchParent } from "@/lib/revisions";
 
 async function assertOwnership(articleId: string, tenantId: string) {
   const article = await prisma.article.findFirst({
@@ -33,6 +34,7 @@ export async function addArticleBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(articleId, tenantId);
+  await captureRevision("article", articleId, "child");
 
   const max = await prisma.articleBlock.aggregate({
     where: { articleId },
@@ -51,6 +53,7 @@ export async function addArticleBlock(
     },
   });
   await logAudit({ action: "article.block_add", entity: "article", entityId: articleId });
+  await touchParent("article", articleId, tenantId);
   revalidatePath(`/news/${articleId}/edit`);
 }
 
@@ -61,6 +64,7 @@ export async function updateArticleBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(articleId, tenantId);
+  await captureRevision("article", articleId, "child");
 
   const block = await prisma.articleBlock.findFirst({ where: { id: blockId, articleId } });
   if (!block) return;
@@ -74,14 +78,17 @@ export async function updateArticleBlock(
       itemsZh: block.kind === "LIST" ? splitItems(data.itemsZhText ?? "") : block.itemsZh ?? undefined,
     },
   });
+  await touchParent("article", articleId, tenantId);
   revalidatePath(`/news/${articleId}/edit`);
 }
 
 export async function removeArticleBlock(articleId: string, blockId: string) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(articleId, tenantId);
+  await captureRevision("article", articleId, "child");
   await prisma.articleBlock.deleteMany({ where: { id: blockId, articleId } });
   await logAudit({ action: "article.block_remove", entity: "article", entityId: articleId });
+  await touchParent("article", articleId, tenantId);
   revalidatePath(`/news/${articleId}/edit`);
 }
 
@@ -92,6 +99,7 @@ export async function moveArticleBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(articleId, tenantId);
+  await captureRevision("article", articleId, "child");
 
   const blocks = await prisma.articleBlock.findMany({
     where: { articleId },
@@ -112,5 +120,6 @@ export async function moveArticleBlock(
       data: { sortOrder: blocks[idx].sortOrder },
     }),
   ]);
+  await touchParent("article", articleId, tenantId);
   revalidatePath(`/news/${articleId}/edit`);
 }

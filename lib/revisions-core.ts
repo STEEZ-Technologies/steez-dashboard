@@ -106,6 +106,24 @@ export function toSnapshot(entity: RevisionEntity, row: Record<string, unknown>)
   return plain(snap) as Snapshot;
 }
 
+// Postgres jsonb stores object keys in its own order, so a snapshot read
+// back from the database and one built fresh from a row can hold the same
+// data with keys shuffled. Compare with keys sorted, never raw JSON.stringify.
+export function stableStringify(v: unknown): string {
+  if (v === undefined) return "null";
+  if (v === null || typeof v !== "object") return JSON.stringify(v);
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(",")}]`;
+  const o = v as Record<string, unknown>;
+  return `{${Object.keys(o)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${stableStringify(o[k])}`)
+    .join(",")}}`;
+}
+
+export function sameSnapshot(a: unknown, b: unknown) {
+  return stableStringify(a) === stableStringify(b);
+}
+
 export type FieldChange = { field: string; before: unknown; after: unknown };
 
 /** Fields whose value differs between two snapshots, in form order. */
@@ -118,7 +136,7 @@ export function diffSnapshots(
   for (const field of [...FIELDS[entity], ...CHILDREN[entity]]) {
     const a = before[field] ?? null;
     const b = after[field] ?? null;
-    if (JSON.stringify(a) !== JSON.stringify(b)) changes.push({ field, before: a, after: b });
+    if (!sameSnapshot(a, b)) changes.push({ field, before: a, after: b });
   }
   return changes;
 }

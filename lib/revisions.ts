@@ -8,6 +8,7 @@ import {
   isRevisionEntity,
   KEEP_PER_ITEM,
   liveVersion,
+  sameSnapshot,
   shouldCoalesce,
   toSnapshot,
   type RevisionAction,
@@ -77,16 +78,20 @@ export async function captureRevision(
     const row = await loadRow(prisma, user.tenantId, entity, id);
     if (!row) return;
 
-    if (action === "child") {
-      const last = await prisma.revision.findFirst({
-        where: { tenantId: user.tenantId, entity, entityId: id },
-        orderBy: { createdAt: "desc" },
-        select: { userId: true, action: true, createdAt: true },
-      });
-      if (shouldCoalesce(last, { userId: user.id, action }, new Date())) return;
-    }
-
     const record = row as unknown as Record<string, unknown>;
+    const snapshot = toSnapshot(entity, record);
+
+    const last = await prisma.revision.findFirst({
+      where: { tenantId: user.tenantId, entity, entityId: id },
+      orderBy: { createdAt: "desc" },
+      select: { userId: true, action: true, createdAt: true, snapshot: true },
+    });
+    if (shouldCoalesce(last, { userId: user.id, action }, new Date())) return;
+    // A save that changed nothing, or a move at the end of a list, would
+    // otherwise add a version identical to the one before it. A delete is
+    // always kept — Recently deleted lists items by it.
+    if (action !== "delete" && last && sameSnapshot(last.snapshot, snapshot)) return;
+
     await prisma.revision.create({
       data: {
         tenantId: user.tenantId,
@@ -94,7 +99,7 @@ export async function captureRevision(
         entityId: id,
         label: labelOf(entity, record),
         action,
-        snapshot: toSnapshot(entity, record) as Prisma.InputJsonValue,
+        snapshot: snapshot as Prisma.InputJsonValue,
         userId: user.id,
         userEmail: user.email ?? null,
       },

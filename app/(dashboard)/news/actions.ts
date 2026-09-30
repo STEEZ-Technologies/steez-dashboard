@@ -6,6 +6,7 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { articleInputSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
+import { captureRevision } from "@/lib/revisions";
 
 function splitKeywords(text: string | undefined) {
   return (text ?? "")
@@ -71,6 +72,7 @@ export async function updateArticle(
 
   const existing = await prisma.article.findFirst({ where: { id, tenantId } });
 
+  await captureRevision("article", id, "update");
   await prisma.article.updateMany({
     where: { id, tenantId },
     data: {
@@ -96,6 +98,7 @@ export async function updateArticle(
 
 export async function deleteArticle(id: string) {
   const { tenantId } = await getTenantFromSession();
+  await captureRevision("article", id, "delete");
   await prisma.article.deleteMany({ where: { id, tenantId } });
   await logAudit({ action: "article.delete", entity: "article", entityId: id });
   revalidatePath("/news");

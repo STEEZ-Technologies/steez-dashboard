@@ -6,6 +6,7 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { finishInputSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
+import { captureRevision, touchParent } from "@/lib/revisions";
 
 async function assertProductOwnership(productId: string, tenantId: string) {
   const product = await prisma.product.findFirst({
@@ -22,6 +23,7 @@ export async function createFinish(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertProductOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
 
   const parsed = finishInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
@@ -49,6 +51,7 @@ export async function createFinish(
     entityId: productId,
     detail: parsed.data.materialLabel,
   });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
   redirect(`/products/${productId}/edit?flash=` + encodeURIComponent("Finish saved"));
 }
@@ -61,6 +64,7 @@ export async function updateFinish(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertProductOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
 
   const parsed = finishInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
@@ -79,6 +83,7 @@ export async function updateFinish(
     entityId: finishId,
     detail: parsed.data.materialLabel,
   });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
   redirect(`/products/${productId}/edit?flash=` + encodeURIComponent("Finish saved"));
 }
@@ -88,9 +93,11 @@ export async function deleteFinish(formData: FormData) {
   const productId = formData.get("productId") as string;
   const finishId = formData.get("finishId") as string;
   await assertProductOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
 
   await prisma.productFinish.deleteMany({ where: { id: finishId, productId } });
   await logAudit({ action: "finish.delete", entity: "finish", entityId: finishId });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }
 
@@ -100,6 +107,7 @@ export async function moveFinish(formData: FormData) {
   const finishId = formData.get("finishId") as string;
   const direction = formData.get("direction") as "up" | "down";
   await assertProductOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
 
   const finishes = await prisma.productFinish.findMany({
     where: { productId },
@@ -125,5 +133,6 @@ export async function moveFinish(formData: FormData) {
     }),
   ]);
 
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }

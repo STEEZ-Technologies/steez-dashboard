@@ -4,6 +4,7 @@ import {
   diffSnapshots,
   formatValue,
   liveVersion,
+  sameSnapshot,
   shouldCoalesce,
   toSnapshot,
 } from "./revisions-core";
@@ -62,6 +63,13 @@ describe("diffSnapshots", () => {
       images: [...product.images, { id: "i2", productId: "p1", imagePath: "b.webp", alt: null, sortOrder: 1, createdAt: new Date() }],
     });
     expect(diffSnapshots("product", before, after).map((c) => c.field)).toEqual(["description", "images"]);
+  });
+
+  it("ignores key order, as jsonb reorders keys on the way back", () => {
+    const fresh = { images: [{ imagePath: "a.webp", alt: null, sortOrder: 0 }] };
+    const stored = { images: [{ sortOrder: 0, alt: null, imagePath: "a.webp" }] };
+    expect(diffSnapshots("product", fresh, stored)).toEqual([]);
+    expect(sameSnapshot(fresh, stored)).toBe(true);
   });
 
   it("treats a missing field and null as the same", () => {

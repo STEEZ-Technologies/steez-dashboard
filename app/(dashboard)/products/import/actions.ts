@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { captureRevision } from "@/lib/revisions";
 
 export type ImportRow = {
   slug: string;
@@ -82,6 +83,7 @@ export async function importProductsCsv(rows: ImportRow[]): Promise<ImportSummar
     });
 
     if (existing) {
+      await captureRevision("product", existing.id, "update");
       await prisma.product.update({ where: { id: existing.id }, data });
       summary.updated++;
     } else {
