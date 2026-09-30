@@ -25,6 +25,8 @@ import { PublishBanner } from "@/components/shell/publish-banner";
 import { PageHeader } from "@/components/shell/page-header";
 import { StatCard } from "@/components/overview/stat-card";
 import { WeeklyDigest } from "@/components/overview/weekly-digest";
+import { DealsCard } from "@/components/overview/deals-card";
+import { getDealStats } from "@/lib/leads-stats";
 import { RangeTabs } from "@/components/analytics/range-tabs";
 import { ViewsClicksChart } from "@/components/analytics/views-clicks-chart";
 import { RankBarChart } from "@/components/analytics/rank-bar-chart";
@@ -67,6 +69,7 @@ export default async function OverviewPage({
     devices,
     countries,
     performance,
+    deals,
   ] = await Promise.all([
     getKpis(tenantId, days),
     getViewsVsClicksByDay(tenantId, days),
@@ -80,6 +83,7 @@ export default async function OverviewPage({
     getDeviceBreakdown(tenantId, days),
     getTopCountries(tenantId, days),
     getProductPerformance(tenantId, days),
+    getDealStats(tenantId, days),
   ]);
 
   const pvSpark = pv.map((d) => d.count);
@@ -129,6 +133,10 @@ export default async function OverviewPage({
         <div className="col-span-2 grid lg:col-span-1">
           <StatCard label={dict.overview.ctr} value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <DealsCard stats={deals} days={days} dict={dict} />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">

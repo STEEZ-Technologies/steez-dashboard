@@ -13,11 +13,16 @@ import {
   Archive,
   Inbox,
   BarChart3,
+  FileText,
+  Trophy,
+  XCircle,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -36,6 +41,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -52,9 +58,24 @@ import {
 import {
   updateLeadStatus,
   updateLeadNotes,
+  updateLeadDeal,
   deleteLead,
 } from "@/app/(dashboard)/leads/actions";
 import { useT } from "@/lib/i18n/provider";
+
+type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
+
+// Pipeline order — drives the filter, the "Move to" menu and badge tones.
+const STATUSES: LeadStatus[] = ["NEW", "CONTACTED", "QUOTED", "WON", "LOST", "ARCHIVED"];
+const STATUS_ICON: Record<LeadStatus, LucideIcon> = {
+  NEW: Inbox,
+  CONTACTED: CheckCircle2,
+  QUOTED: FileText,
+  WON: Trophy,
+  LOST: XCircle,
+  ARCHIVED: Archive,
+};
+const CURRENCIES = ["USD", "EUR", "CNY"] as const;
 
 export type LeadRow = {
   id: string;
@@ -63,8 +84,10 @@ export type LeadRow = {
   phone: string | null;
   company: string | null;
   message: string | null;
-  status: "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
+  status: LeadStatus;
   notes: string | null;
+  dealValue: number | null;
+  dealCurrency: string | null;
   country: string | null;
   productId: string | null;
   productName: string | null;
@@ -92,9 +115,49 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [toDelete, setToDelete] = useState<LeadRow | null>(null);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [dealDrafts, setDealDrafts] = useState<
+    Record<string, { value: string; currency: string }>
+  >({});
 
-  const statusLabel = (s: LeadRow["status"]) =>
-    s === "NEW" ? t.statusNew : s === "CONTACTED" ? t.statusContacted : t.statusArchived;
+  const statusLabel = (s: LeadStatus) =>
+    ({
+      NEW: t.statusNew,
+      CONTACTED: t.statusContacted,
+      QUOTED: t.statusQuoted,
+      WON: t.statusWon,
+      LOST: t.statusLost,
+      ARCHIVED: t.statusArchived,
+    })[s];
+
+  const statusBadge = (s: LeadStatus) => (
+    <Badge
+      variant={
+        s === "NEW" ? "default" : s === "LOST" || s === "ARCHIVED" ? "outline" : "secondary"
+      }
+      className={
+        s === "WON"
+          ? "bg-[color-mix(in_oklch,var(--chart-2)_18%,transparent)] text-[var(--chart-2)]"
+          : undefined
+      }
+    >
+      {statusLabel(s)}
+    </Badge>
+  );
+
+  const dealDraft = (lead: LeadRow) =>
+    dealDrafts[lead.id] ?? {
+      value: lead.dealValue != null ? String(lead.dealValue) : "",
+      currency: lead.dealCurrency ?? "USD",
+    };
+
+  function saveDeal(lead: LeadRow) {
+    const d = dealDraft(lead);
+    startTransition(async () => {
+      const err = await updateLeadDeal(lead.id, d.value, d.currency);
+      if (err) toast.error(err);
+      else toast.success(t.dealSaved);
+    });
+  }
 
   const visible = useMemo(
     () => (statusFilter === "ALL" ? leads : leads.filter((l) => l.status === statusFilter)),
@@ -147,14 +210,16 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
             <span>
               {statusFilter === "ALL"
                 ? t.allStatus
-                : statusLabel(statusFilter as LeadRow["status"])}
+                : statusLabel(statusFilter as LeadStatus)}
             </span>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">{t.allStatus}</SelectItem>
-            <SelectItem value="NEW">{t.statusNew}</SelectItem>
-            <SelectItem value="CONTACTED">{t.statusContacted}</SelectItem>
-            <SelectItem value="ARCHIVED">{t.statusArchived}</SelectItem>
+            {STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {statusLabel(s)}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -238,17 +303,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                         </div>
                         {/* Product, status and time, which have their own columns from sm up. */}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:hidden">
-                          <Badge
-                            variant={
-                              lead.status === "NEW"
-                                ? "default"
-                                : lead.status === "CONTACTED"
-                                  ? "secondary"
-                                  : "outline"
-                            }
-                          >
-                            {statusLabel(lead.status)}
-                          </Badge>
+                          {statusBadge(lead.status)}
                           <span>{lead.productId ? lead.productName : t.noProduct}</span>
                           <span>{relativeTime(lead.createdAt)}</span>
                         </div>
@@ -267,17 +322,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                         )}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell">
-                        <Badge
-                          variant={
-                            lead.status === "NEW"
-                              ? "default"
-                              : lead.status === "CONTACTED"
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          {statusLabel(lead.status)}
-                        </Badge>
+                        {statusBadge(lead.status)}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell whitespace-nowrap text-muted-foreground">
                         {relativeTime(lead.createdAt)}
@@ -292,21 +337,16 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                             <MoreHorizontal className="size-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {lead.status !== "CONTACTED" && (
-                              <DropdownMenuItem onClick={() => setStatus(lead, "CONTACTED")}>
-                                <CheckCircle2 className="size-4" /> {t.markContacted}
-                              </DropdownMenuItem>
-                            )}
-                            {lead.status !== "NEW" && (
-                              <DropdownMenuItem onClick={() => setStatus(lead, "NEW")}>
-                                <Inbox className="size-4" /> {t.markNew}
-                              </DropdownMenuItem>
-                            )}
-                            {lead.status !== "ARCHIVED" && (
-                              <DropdownMenuItem onClick={() => setStatus(lead, "ARCHIVED")}>
-                                <Archive className="size-4" /> {t.archive}
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuLabel>{t.moveTo}</DropdownMenuLabel>
+                            {STATUSES.filter((s) => s !== lead.status).map((s) => {
+                              const Icon = STATUS_ICON[s];
+                              return (
+                                <DropdownMenuItem key={s} onClick={() => setStatus(lead, s)}>
+                                  <Icon className="size-4" /> {statusLabel(s)}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                            {lead.productId && <DropdownMenuSeparator />}
                             {lead.productId && (
                               <DropdownMenuItem
                                 render={
@@ -356,6 +396,52 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                               >
                                 {t.saveNotes}
                               </Button>
+
+                              <p className="eyebrow mb-1.5 mt-5">{t.deal}</p>
+                              <div className="flex max-w-sm items-center gap-2">
+                                <Select
+                                  value={dealDraft(lead).currency}
+                                  onValueChange={(v) =>
+                                    setDealDrafts((d) => ({
+                                      ...d,
+                                      [lead.id]: { ...dealDraft(lead), currency: v ?? "USD" },
+                                    }))
+                                  }
+                                >
+                                  <SelectTrigger className="w-[88px] shrink-0">
+                                    <span>{dealDraft(lead).currency}</span>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {CURRENCIES.map((c) => (
+                                      <SelectItem key={c} value={c}>
+                                        {c}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Input
+                                  inputMode="decimal"
+                                  aria-label={t.deal}
+                                  placeholder={t.dealPlaceholder}
+                                  value={dealDraft(lead).value}
+                                  onChange={(e) =>
+                                    setDealDrafts((d) => ({
+                                      ...d,
+                                      [lead.id]: { ...dealDraft(lead), value: e.target.value },
+                                    }))
+                                  }
+                                  className="min-w-0 tabular-nums"
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="secondary"
+                                  disabled={pending}
+                                  onClick={() => saveDeal(lead)}
+                                >
+                                  {t.saveDeal}
+                                </Button>
+                              </div>
+                              <p className="mt-1.5 whitespace-normal text-xs text-muted-foreground">{t.dealHelp}</p>
                             </div>
                           </div>
                         </TableCell>

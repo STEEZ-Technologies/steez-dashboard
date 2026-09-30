@@ -26,12 +26,19 @@ export default async function LeadsPage() {
     message: l.message,
     status: l.status,
     notes: l.notes,
+    dealValue: l.dealValue != null ? Number(l.dealValue) : null,
+    dealCurrency: l.dealCurrency,
     country: l.country,
     productId: l.product?.id ?? null,
     productName: l.product?.name ?? null,
     productModel: l.product?.model ?? null,
     createdAt: l.createdAt.toISOString(),
   }));
+
+  const openCount = rows.filter((r) =>
+    ["NEW", "CONTACTED", "QUOTED"].includes(r.status),
+  ).length;
+  const wonCount = rows.filter((r) => r.status === "WON").length;
 
   return (
     <div>
@@ -41,7 +48,8 @@ export default async function LeadsPage() {
         description={
           rows.length === 0
             ? dict.leads.subtitle
-            : `${rows.length} ${rows.length === 1 ? dict.leads.countOne : dict.leads.countOther}`
+            : `${rows.length} ${rows.length === 1 ? dict.leads.countOne : dict.leads.countOther}` +
+              ` ${openCount} ${dict.leads.openCount} · ${wonCount} ${dict.leads.wonCount}`
         }
       />
       {rows.length === 0 ? (
