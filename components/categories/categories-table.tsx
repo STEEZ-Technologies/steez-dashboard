@@ -140,6 +140,7 @@ export function CategoriesTable({ categories }: { categories: CategoryRow[] }) {
   return (
     <div className="rounded-xl border bg-card">
       <DndContext
+        id="categories-dnd"
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}

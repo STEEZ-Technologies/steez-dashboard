@@ -371,6 +371,7 @@ export function ProductsTable({
 
       <div className="rounded-xl border bg-card">
         <DndContext
+          id="products-dnd"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
