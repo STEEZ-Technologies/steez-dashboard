@@ -63,6 +63,7 @@ import {
 } from "@/app/(dashboard)/leads/actions";
 import { useT } from "@/lib/i18n/provider";
 import { LeadJourneyView } from "@/components/leads/lead-journey";
+import { CountryCode } from "@/components/shared/country-code";
 
 type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
 
@@ -300,7 +301,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                               {lead.phone}
                             </a>
                           )}
-                          {lead.country && <span>{lead.country}</span>}
+                          {lead.country && <CountryCode code={lead.country} />}
                         </div>
                         {/* Product, status and time, which have their own columns from sm up. */}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:hidden">

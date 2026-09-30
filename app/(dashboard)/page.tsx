@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CountryCode } from "@/components/shared/country-code";
 import { Download, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
@@ -295,7 +296,11 @@ export default async function OverviewPage({
           </CardHeader>
           <CardContent>
             <BarList
-              items={countries.map((c) => ({ label: c.country, count: c.count }))}
+              items={countries.map((c) => ({
+                label: c.country,
+                count: c.count,
+                node: <CountryCode code={c.country} />,
+              }))}
               emptyLabel={dict.analytics.noGeo}
             />
           </CardContent>
