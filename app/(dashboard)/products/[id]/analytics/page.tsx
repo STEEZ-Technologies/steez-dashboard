@@ -71,18 +71,7 @@ export default async function ProductAnalyticsPage({
         </Card>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{dict.analytics.topFinishes}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarList
-              items={data.finishes.map((f) => ({ label: f.finish, count: f.clicks }))}
-              emptyLabel={dict.analytics.noFinish}
-            />
-          </CardContent>
-        </Card>
+      <div className="mt-4">
         <Card>
           <CardHeader>
             <CardTitle>{dict.analytics.topReferrers}</CardTitle>

@@ -85,9 +85,9 @@ export const en = {
       "Add your first product to start building the catalog buyers will browse.",
     deleteTitle: "Delete",
     deleteDesc:
-      "This permanently removes the product and its finishes. This cannot be undone.",
+      "This permanently removes the product. This cannot be undone.",
     bulkDeleteDesc:
-      "This permanently removes the selected products and their finishes. This cannot be undone.",
+      "This permanently removes the selected products. This cannot be undone.",
     toastDuplicated: "Product duplicated",
     toastMovedUp: "Moved up",
     toastMovedDown: "Moved down",
@@ -217,11 +217,9 @@ export const en = {
     devices: "Devices",
     topByViews: "Top products by views",
     topByClicks: "Top products by clicks",
-    topFinishes: "Top finishes clicked",
     topReferrers: "Top referrers",
     topCountries: "Top countries",
     recentActivity: "Recent activity",
-    noFinish: "No finish clicks yet.",
     noGeo: "No geo data yet.",
     noReferrers: "No referrers yet.",
     noActivity: "No activity yet.",

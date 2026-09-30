@@ -32,7 +32,6 @@ export function Breadcrumbs() {
     preview: dict.publish.previewChanges,
     new: dict.actions.new,
     edit: dict.actions.edit,
-    finishes: "Finishes",
   };
   function label(seg: string) {
     return LABELS[seg] ?? seg;

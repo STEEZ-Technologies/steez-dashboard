@@ -1,23 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Plus, BarChart3, ExternalLink } from "lucide-react";
+import { BarChart3, ExternalLink } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { ProductForm } from "@/components/products/ProductForm";
 import { formatSpecsText } from "@/lib/specs";
 import { getPublicUrl } from "@/lib/oss";
 import { updateProduct } from "../../actions";
-import { deleteFinish, moveFinish } from "../finishes/actions";
-import { ConfirmSubmitButton } from "@/components/shared/ConfirmSubmitButton";
 import { PageHeader } from "@/components/shell/page-header";
-import { Button } from "@/components/ui/button";
 import { LinkButton } from "@/components/ui/link-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductImages, type GalleryImage } from "@/components/products/product-images";
 import { ProductModels3D, type ProductModel } from "@/components/products/product-models-3d";
 import { ProductContent, type ProductContentRow } from "@/components/products/product-content";
-import { getDictionary } from "@/lib/i18n";
 import { HistoryCard } from "@/components/shared/HistoryCard";
 import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { ProductTabs, ProductTabPanel } from "@/components/products/product-tabs";
@@ -40,16 +35,11 @@ export default async function EditProductPage({
     prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { siteUrl: true, slug: true } }),
   ]);
   if (!product) notFound();
-  const dict = await getDictionary();
-  // KomiBright's site never reads the dashboard's product photo, the Featured
-  // flag or finishes (a Konlito concept) — so its editors don't see them.
+  // KomiBright's site never reads the dashboard's product photo or the
+  // Featured flag — so its editors don't see them.
   const lean = tenant.slug === "komibright";
 
-  const [finishes, galleryRows, model3dRows, contentRows] = await Promise.all([
-    prisma.productFinish.findMany({
-      where: { productId: product.id },
-      orderBy: { sortOrder: "asc" },
-    }),
+  const [galleryRows, model3dRows, contentRows] = await Promise.all([
     prisma.productImage.findMany({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
@@ -181,91 +171,6 @@ export default async function EditProductPage({
               </CardContent>
             </Card>
 
-            {!lean && (
-              <Card>
-                <CardHeader className="flex-row items-center justify-between">
-                  <CardTitle>Finishes</CardTitle>
-                  <LinkButton
-                    variant="outline"
-                    size="sm"
-                    href={`/products/${product.id}/finishes/new`}
-                  >
-                    <Plus /> Add finish
-                  </LinkButton>
-                </CardHeader>
-                <CardContent>
-                  {finishes.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No finishes yet.</p>
-                  ) : (
-                    <ul className="divide-y">
-                      {finishes.map((finish, index) => (
-                        <li key={finish.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                          <Image
-                            src={getPublicUrl(finish.imagePath)}
-                            alt=""
-                            width={40}
-                            height={40}
-                            className="size-10 rounded-md border object-cover"
-                            unoptimized
-                          />
-                          <span
-                            className="size-4 rounded-full border"
-                            style={{ backgroundColor: finish.accentHex }}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium">{finish.materialLabel}</p>
-                            <p className="text-xs text-muted-foreground">{finish.key}</p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <form action={moveFinish}>
-                              <input type="hidden" name="productId" value={product.id} />
-                              <input type="hidden" name="finishId" value={finish.id} />
-                              <input type="hidden" name="direction" value="up" />
-                              <Button
-                                type="submit"
-                                variant="ghost"
-                                size="icon-sm"
-                                disabled={index === 0}
-                                aria-label={dict.actions.moveUp}
-                              >
-                                ↑
-                              </Button>
-                            </form>
-                            <form action={moveFinish}>
-                              <input type="hidden" name="productId" value={product.id} />
-                              <input type="hidden" name="finishId" value={finish.id} />
-                              <input type="hidden" name="direction" value="down" />
-                              <Button
-                                type="submit"
-                                variant="ghost"
-                                size="icon-sm"
-                                disabled={index === finishes.length - 1}
-                                aria-label={dict.actions.moveDown}
-                              >
-                                ↓
-                              </Button>
-                            </form>
-                            <LinkButton variant="ghost" size="sm" href={`/products/${product.id}/finishes/${finish.id}/edit`}>
-                              Edit
-                            </LinkButton>
-                            <form action={deleteFinish}>
-                              <input type="hidden" name="productId" value={product.id} />
-                              <input type="hidden" name="finishId" value={finish.id} />
-                              <ConfirmSubmitButton
-                                confirmMessage={`Delete finish "${finish.materialLabel}"?`}
-                                className="rounded-md px-2 py-1 text-sm font-medium text-destructive hover:bg-destructive/10"
-                              >
-                                Delete
-                              </ConfirmSubmitButton>
-                            </form>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </ProductTabPanel>
         </ProductTabs>
       </LanguageScope>

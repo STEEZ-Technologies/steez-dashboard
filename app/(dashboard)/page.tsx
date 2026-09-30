@@ -12,7 +12,6 @@ import {
   getWeeklyDigest,
   getTopProductsByViews,
   getTopProductsByClicks,
-  getTopFinishes,
   getTopReferrers,
   getDeviceBreakdown,
   getTopCountries,
@@ -65,7 +64,6 @@ export default async function OverviewPage({
     digest,
     byViews,
     byClicks,
-    finishes,
     referrers,
     devices,
     countries,
@@ -80,7 +78,6 @@ export default async function OverviewPage({
     getWeeklyDigest(tenantId),
     getTopProductsByViews(tenantId, days),
     getTopProductsByClicks(tenantId, days),
-    getTopFinishes(tenantId, days),
     getTopReferrers(tenantId, days),
     getDeviceBreakdown(tenantId, days),
     getTopCountries(tenantId, days),
@@ -272,24 +269,13 @@ export default async function OverviewPage({
         </CardContent>
       </Card>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>{dict.analytics.devices}</CardTitle>
           </CardHeader>
           <CardContent>
             <DevicePie data={devices} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>{dict.analytics.topFinishes}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarList
-              items={finishes.map((f) => ({ label: f.finish, count: f.clicks }))}
-              emptyLabel={dict.analytics.noFinish}
-            />
           </CardContent>
         </Card>
         <Card>

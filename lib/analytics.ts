@@ -234,25 +234,6 @@ export function viewedNotClickedProducts(
     .sort((a, b) => b.views - a.views);
 }
 
-/* ── Finishes (catalog-specific) ──────────────────────────────── */
-
-export async function getTopFinishes(tenantId: string, days = 30, limit = 8) {
-  const since = daysAgo(days);
-  const grouped = await prisma.productEvent.groupBy({
-    by: ["finishKey"],
-    where: { tenantId, eventType: "CLICK", finishKey: { not: null }, createdAt: { gte: since } },
-    _count: { finishKey: true },
-    orderBy: { _count: { finishKey: "desc" } },
-    take: limit,
-  });
-  return grouped.map((g) => ({
-    finish: g.finishKey as string,
-    clicks: g._count.finishKey,
-  }));
-}
-
-/* ── Referrers ────────────────────────────────────────────────── */
-
 export async function getTopReferrers(tenantId: string, days = 30, limit = 8) {
   const since = daysAgo(days);
   const rows = await prisma.pageView.findMany({
@@ -365,7 +346,7 @@ export async function getProductAnalytics(
   const prevStart = daysAgo(days * 2);
   const where = { tenantId, productId, createdAt: { gte: since } };
 
-  const [events, eventsPrev, byDayRows, finishRows, referrerRows] =
+  const [events, eventsPrev, byDayRows, referrerRows] =
     await Promise.all([
       prisma.productEvent.groupBy({
         by: ["eventType"],
@@ -380,13 +361,6 @@ export async function getProductAnalytics(
       prisma.productEvent.findMany({
         where,
         select: { createdAt: true, eventType: true },
-      }),
-      prisma.productEvent.groupBy({
-        by: ["finishKey"],
-        where: { ...where, eventType: "CLICK", finishKey: { not: null } },
-        _count: { finishKey: true },
-        orderBy: { _count: { finishKey: "desc" } },
-        take: 8,
       }),
       prisma.productEvent.findMany({
         where,
@@ -428,10 +402,6 @@ export async function getProductAnalytics(
     clicks: { value: clicks, delta: pctDelta(clicks, clicksPrev) },
     ctr: { value: ctrPercent(clicks, views), delta: ctrPercent(clicks, views) - ctrPercent(clicksPrev, viewsPrev) },
     byDay,
-    finishes: finishRows.map((f) => ({
-      finish: f.finishKey as string,
-      clicks: f._count.finishKey,
-    })),
     referrers,
   };
 }
