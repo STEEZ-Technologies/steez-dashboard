@@ -38,11 +38,11 @@ function formatStatValue(
 }
 
 function useNumberFlowElementReady(): boolean {
-  const [ready, setReady] = useState(
-    () =>
-      typeof customElements !== "undefined" &&
-      Boolean(customElements.get("number-flow-react"))
-  );
+  // Always false on the first render, server and client alike: reading
+  // customElements here made the client's first render differ from the
+  // server's static text (hydration mismatch). The effect below flips it
+  // right after hydration — whenDefined resolves at once if it's defined.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (ready) {
