@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
+import { flushSync } from "react-dom"
 
 import { Moon, Sun } from "lucide-react"
 
@@ -34,9 +35,18 @@ export const AnimatedThemeToggler = ({ className }: AnimatedThemeTogglerProps) =
 
   const onToggle = useCallback(() => {
     const toggled = !darkMode
-    setDarkMode(toggled)
-    document.documentElement.classList.toggle("dark", toggled)
-    localStorage.setItem("theme", toggled ? "dark" : "light")
+    const apply = () => {
+      flushSync(() => setDarkMode(toggled))
+      document.documentElement.classList.toggle("dark", toggled)
+      localStorage.setItem("theme", toggled ? "dark" : "light")
+    }
+
+    // Crossfade the old theme into the new one (see ::view-transition in
+    // globals.css). Snapshot fade runs on the compositor, so it stays smooth
+    // even with the glass blur; browsers without it just switch instantly.
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (!document.startViewTransition || reduceMotion) apply()
+    else document.startViewTransition(apply)
   }, [darkMode])
 
   return (

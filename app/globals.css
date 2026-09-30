@@ -387,3 +387,10 @@ body::before {
 .custom-checkbox:checked {
   border-color: var(--mint, currentColor);
 }
+
+/* Theme switch: a soft crossfade between the two themes' snapshots. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 450ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
