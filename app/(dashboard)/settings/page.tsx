@@ -44,9 +44,6 @@ export default async function SettingsPage() {
 
         <SettingsForm
           name={tenant.name}
-          slug={tenant.slug}
-          deployHookUrl={tenant.deployHookUrl}
-          siteUrl={tenant.siteUrl}
           canManage={session.role === "OWNER"}
         />
 

@@ -394,12 +394,10 @@ export const en = {
     publishNow: "Publish to live site",
     publishing: "Publishing…",
     published: "Publishing started — your site rebuilds in a minute or two.",
-    notConfigured:
-      "No deploy hook set. Add one in Settings so catalog edits can go live.",
-    notConfiguredStaff: "Saved — ask your workspace owner to turn on publishing in Settings.",
+    notConfigured: "Saved — publishing to your live site isn't connected yet. STEEZ will set it up.",
     hookLabel: "Deploy hook URL",
     hookHelp:
-      "Vercel → your public site's project → Settings → Git → Deploy Hooks. Paste the URL here so Publish can rebuild the live site.",
+      "Cloudflare Pages → the client site's project → Settings → Builds → Deploy hooks (Vercel: Settings → Git → Deploy Hooks). Publish calls this URL to rebuild the live site.",
     hookSaved: "Deploy hook saved",
     lastPublished: "Last published",
     never: "Never published",
@@ -440,6 +438,9 @@ export const en = {
     currentWorkspace: "Open now",
     actingBanner: "You're in {name}'s workspace as STEEZ. Changes are logged under your email.",
     exitWorkspace: "Back to STEEZ",
+    siteSettings: "Live site & publishing",
+    siteSaved: "Site settings saved",
+    publishingNotSet: "Publishing not connected",
   },
   history: {
     title: "History",

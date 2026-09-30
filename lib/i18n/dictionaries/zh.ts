@@ -385,11 +385,10 @@ export const zh: Dictionary = {
     publishNow: "发布到官网",
     publishing: "发布中…",
     published: "已开始发布 — 您的网站将在一两分钟内重新构建。",
-    notConfigured: "未设置部署钩子。请在设置中添加，以便目录更改能够上线。",
-    notConfiguredStaff: "已保存 — 请联系工作区所有者在设置中开启发布功能。",
+    notConfigured: "已保存 — 尚未连接到您的官网发布。STEEZ 会为您设置。",
     hookLabel: "部署钩子 URL",
     hookHelp:
-      "Vercel → 您官网的项目 → Settings → Git → Deploy Hooks。将 URL 粘贴到此处，发布功能即可重新构建官网。",
+      "Cloudflare Pages → 客户网站项目 → Settings → Builds → Deploy hooks（Vercel：Settings → Git → Deploy Hooks）。发布时会调用此 URL 重新构建官网。",
     hookSaved: "部署钩子已保存",
     lastPublished: "上次发布",
     never: "尚未发布",
@@ -430,6 +429,9 @@ export const zh: Dictionary = {
     currentWorkspace: "当前",
     actingBanner: "您正以 STEEZ 身份在 {name} 的工作区中。所有更改都会以您的邮箱记录。",
     exitWorkspace: "返回 STEEZ",
+    siteSettings: "官网与发布",
+    siteSaved: "网站设置已保存",
+    publishingNotSet: "未连接发布",
   },
   history: {
     title: "历史版本",

@@ -54,12 +54,10 @@ export function PublishBanner({
               {pending ? t.publishing : t.publishNow}
             </Button>
           ) : null
-        ) : canPublish ? (
-          <Link href="/settings" className="text-sm font-medium underline">
-            {t.notConfigured}
-          </Link>
         ) : (
-          <span className="text-sm text-muted-foreground">{t.notConfiguredStaff}</span>
+          // The hook is STEEZ's to connect (from /admin), so there's nothing
+          // for the client to go and fix.
+          <span className="text-sm text-muted-foreground">{t.notConfigured}</span>
         )}
       </div>
     </div>
