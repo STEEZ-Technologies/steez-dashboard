@@ -37,7 +37,7 @@ export function PublishBanner({
   }
 
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/10 px-4 py-3">
+    <div className="glass mb-4 flex flex-wrap items-center gap-3 rounded-2xl px-4 py-3">
       <TriangleAlert className="size-4 shrink-0 text-[var(--gold)]" />
       <p className="text-sm">
         <span className="font-semibold tabular-nums">{pendingCount}</span>{" "}

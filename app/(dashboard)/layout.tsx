@@ -55,8 +55,10 @@ export default async function DashboardLayout({
         isSuperAdmin={isSuperAdmin(user.email)}
         isPlatformWorkspace={tenant.slug === PLATFORM_TENANT_SLUG}
       />
-      <SidebarInset className="min-w-0">
-        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur">
+      <SidebarInset className="min-w-0 bg-transparent">
+        {/* Floating glass bar: inset from the edges so page content visibly
+            slides under it and through the blur. */}
+        <header className="glass sticky top-2 z-10 mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-3 md:mx-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-1 h-4" />
           <Breadcrumbs />
