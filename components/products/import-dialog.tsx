@@ -21,8 +21,21 @@ import {
 } from "@/app/(dashboard)/products/import/actions";
 import { useT } from "@/lib/i18n/provider";
 
-export function ImportDialog({ importLabel }: { importLabel: string }) {
-  const [open, setOpen] = useState(false);
+/** Pass `open`/`onOpenChange` to drive it from elsewhere (the Products "More"
+ *  menu); it then draws no trigger button of its own. */
+export function ImportDialog({
+  importLabel,
+  open: openProp,
+  onOpenChange,
+}: {
+  importLabel: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (o: boolean) => (controlled ? onOpenChange?.(o) : setOpenState(o));
   const [rows, setRows] = useState<ImportRow[] | null>(null);
   const [fileName, setFileName] = useState("");
   const [summary, setSummary] = useState<ImportSummary | null>(null);
@@ -70,9 +83,11 @@ export function ImportDialog({ importLabel }: { importLabel: string }) {
         if (!o) reset();
       }}
     >
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>
-        <Upload /> {importLabel}
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger render={<Button variant="outline" size="sm" />}>
+          <Upload /> {importLabel}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{importLabel}</DialogTitle>

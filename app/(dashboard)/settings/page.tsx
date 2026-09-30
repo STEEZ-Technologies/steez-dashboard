@@ -10,6 +10,8 @@ import { TwoFactorForm } from "@/components/settings/two-factor-form";
 import { AuditList } from "@/components/settings/audit-list";
 import { Card, CardContent } from "@/components/ui/card";
 import { getDictionary } from "@/lib/i18n";
+import { Users } from "lucide-react";
+import { LinkButton } from "@/components/ui/link-button";
 
 export default async function SettingsPage() {
   const session = await getTenantFromSession();
@@ -26,6 +28,12 @@ export default async function SettingsPage() {
         eyebrow={dict.pages.settings.eyebrow}
         title={dict.pages.settings.title}
         description={dict.settings.subtitle}
+        action={
+          // Team left the sidebar and lives under Settings.
+          <LinkButton variant="outline" href="/team">
+            <Users /> {dict.nav.team}
+          </LinkButton>
+        }
       />
 
       {/* grid-cols-1 (minmax(0,1fr)) — a bare `grid` sizes its column to the

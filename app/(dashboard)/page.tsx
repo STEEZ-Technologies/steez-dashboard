@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ArrowRight, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 import { getTenantFromSession } from "@/lib/tenant";
@@ -17,7 +17,7 @@ import { StatCard } from "@/components/overview/stat-card";
 import { WeeklyDigest } from "@/components/overview/weekly-digest";
 import { ViewsClicksChart } from "@/components/analytics/views-clicks-chart";
 import { ActivityFeed } from "@/components/analytics/activity-feed";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
 import { getDictionary } from "@/lib/i18n";
 
@@ -29,12 +29,11 @@ export default async function OverviewPage() {
   const dict = await getDictionary();
   const publishState = await getPublishState(tenantId);
 
-  const [kpis, series, pv, activity, productCount, digest] = await Promise.all([
+  const [kpis, series, pv, activity, digest] = await Promise.all([
     getKpis(tenantId, 30),
     getViewsVsClicksByDay(tenantId, 30),
     getPageViewsByDay(tenantId, 30),
     getRecentActivity(tenantId, 10),
-    prisma.product.count({ where: { tenantId } }),
     getWeeklyDigest(tenantId),
   ]);
 
@@ -71,6 +70,12 @@ export default async function OverviewPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>{dict.overview.viewsVsClicks}</CardTitle>
+            {/* Analytics left the sidebar; this is its way in. */}
+            <CardAction>
+              <LinkButton variant="ghost" size="sm" href="/analytics">
+                {dict.overview.fullAnalytics} <ArrowRight />
+              </LinkButton>
+            </CardAction>
           </CardHeader>
           <CardContent>
             <ViewsClicksChart data={series} />
@@ -91,28 +96,6 @@ export default async function OverviewPage() {
         <WeeklyDigest digest={digest} />
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardContent className="p-5">
-            <p className="eyebrow">{dict.overview.catalog}</p>
-            <p className="mt-2 text-2xl font-extrabold tabular-nums">{productCount}</p>
-            <p className="text-sm text-muted-foreground">{dict.overview.productsPublishedDraft}</p>
-          </CardContent>
-        </Card>
-        <Card className="sm:col-span-2">
-          <CardContent className="flex flex-wrap items-center gap-3 p-5">
-            <LinkButton variant="secondary" href="/products">
-              {dict.overview.manageProducts}
-            </LinkButton>
-            <LinkButton variant="secondary" href="/categories">
-              {dict.overview.manageCategories}
-            </LinkButton>
-            <LinkButton variant="secondary" href="/analytics">
-              {dict.overview.fullAnalytics}
-            </LinkButton>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

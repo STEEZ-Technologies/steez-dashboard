@@ -75,14 +75,16 @@ export default async function AnalyticsPage({
         description={dict.analytics.lastDays.replace("{days}", String(days))}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <LinkButton
-              variant="outline"
-              size="sm"
-              href={`/api/export?range=${rangeStr}`}
-            >
-              <Download /> {dict.actions.export}
-            </LinkButton>
             <RangeTabs current={rangeStr} />
+            <LinkButton
+              variant="ghost"
+              size="icon"
+              href={`/api/export?range=${rangeStr}`}
+              aria-label={dict.actions.export}
+              title={dict.actions.export}
+            >
+              <Download />
+            </LinkButton>
           </div>
         }
       />

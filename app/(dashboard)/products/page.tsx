@@ -1,4 +1,4 @@
-import { Plus, Package, Download } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
@@ -9,7 +9,7 @@ import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/shell/empty-state";
 import { getDictionary } from "@/lib/i18n";
 import { ProductsTable, type ProductRow } from "@/components/products/products-table";
-import { ImportDialog } from "@/components/products/import-dialog";
+import { ProductsMoreMenu } from "@/components/products/products-more-menu";
 
 export default async function ProductsPage() {
   const { tenantId, role } = await getTenantFromSession();
@@ -53,10 +53,7 @@ export default async function ProductsPage() {
         description={`${products.length} ${products.length === 1 ? dict.products.countOne : dict.products.countOther}`}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <LinkButton variant="outline" size="sm" href="/api/products/export">
-              <Download /> {dict.actions.export}
-            </LinkButton>
-            <ImportDialog importLabel={dict.actions.import} />
+            <ProductsMoreMenu />
             <LinkButton href="/products/new">
               <Plus /> {dict.actions.newProduct}
             </LinkButton>
