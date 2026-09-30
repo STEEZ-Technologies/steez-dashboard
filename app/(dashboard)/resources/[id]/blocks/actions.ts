@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { captureRevision, touchParent } from "@/lib/revisions";
 
 async function assertOwnership(guideId: string, tenantId: string) {
   const guide = await prisma.guide.findFirst({
@@ -33,6 +34,7 @@ export async function addGuideBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(guideId, tenantId);
+  await captureRevision("guide", guideId, "child");
 
   const max = await prisma.guideBlock.aggregate({
     where: { guideId },
@@ -51,6 +53,7 @@ export async function addGuideBlock(
     },
   });
   await logAudit({ action: "guide.block_add", entity: "guide", entityId: guideId });
+  await touchParent("guide", guideId, tenantId);
   revalidatePath(`/resources/${guideId}/edit`);
 }
 
@@ -61,6 +64,7 @@ export async function updateGuideBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(guideId, tenantId);
+  await captureRevision("guide", guideId, "child");
 
   const block = await prisma.guideBlock.findFirst({ where: { id: blockId, guideId } });
   if (!block) return;
@@ -74,14 +78,17 @@ export async function updateGuideBlock(
       itemsZh: block.kind === "LIST" ? splitItems(data.itemsZhText ?? "") : block.itemsZh ?? undefined,
     },
   });
+  await touchParent("guide", guideId, tenantId);
   revalidatePath(`/resources/${guideId}/edit`);
 }
 
 export async function removeGuideBlock(guideId: string, blockId: string) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(guideId, tenantId);
+  await captureRevision("guide", guideId, "child");
   await prisma.guideBlock.deleteMany({ where: { id: blockId, guideId } });
   await logAudit({ action: "guide.block_remove", entity: "guide", entityId: guideId });
+  await touchParent("guide", guideId, tenantId);
   revalidatePath(`/resources/${guideId}/edit`);
 }
 
@@ -92,6 +99,7 @@ export async function moveGuideBlock(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(guideId, tenantId);
+  await captureRevision("guide", guideId, "child");
 
   const blocks = await prisma.guideBlock.findMany({
     where: { guideId },
@@ -112,5 +120,6 @@ export async function moveGuideBlock(
       data: { sortOrder: blocks[idx].sortOrder },
     }),
   ]);
+  await touchParent("guide", guideId, tenantId);
   revalidatePath(`/resources/${guideId}/edit`);
 }

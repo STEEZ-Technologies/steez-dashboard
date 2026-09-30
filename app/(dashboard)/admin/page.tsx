@@ -31,6 +31,8 @@ export default async function AdminPage() {
     createdAt: t.createdAt.toISOString().slice(0, 10),
     ownerId: t.users[0]?.id ?? null,
     ownerEmail: t.users[0]?.email ?? null,
+    deployHookUrl: t.deployHookUrl,
+    siteUrl: t.siteUrl,
   }));
 
   return (

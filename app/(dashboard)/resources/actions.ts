@@ -6,6 +6,7 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { guideInputSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
+import { captureRevision } from "@/lib/revisions";
 
 function extractGuideExtras(formData: FormData) {
   const reader = (formData.get("reader") as string | null) ?? "BOTH";
@@ -62,6 +63,7 @@ export async function updateGuide(
 
   const { reader, published, minutes } = extractGuideExtras(formData);
 
+  await captureRevision("guide", id, "update");
   await prisma.guide.updateMany({
     where: { id, tenantId },
     data: {
@@ -84,6 +86,7 @@ export async function updateGuide(
 
 export async function deleteGuide(id: string) {
   const { tenantId } = await getTenantFromSession();
+  await captureRevision("guide", id, "delete");
   await prisma.guide.deleteMany({ where: { id, tenantId } });
   await logAudit({ action: "guide.delete", entity: "guide", entityId: id });
   revalidatePath("/resources");

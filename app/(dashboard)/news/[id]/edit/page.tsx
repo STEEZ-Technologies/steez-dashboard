@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateArticle } from "../../actions";
+import { HistoryCard } from "@/components/shared/HistoryCard";
 
 export default async function EditArticlePage({
   params,
@@ -68,6 +69,8 @@ export default async function EditArticlePage({
           </CardContent>
         </Card>
       </LanguageScope>
+
+      <HistoryCard entity="article" id={article.id} />
     </div>
   );
 }

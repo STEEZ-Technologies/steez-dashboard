@@ -18,6 +18,7 @@ import { ProductImages, type GalleryImage } from "@/components/products/product-
 import { ProductModels3D, type ProductModel } from "@/components/products/product-models-3d";
 import { ProductContent, type ProductContentRow } from "@/components/products/product-content";
 import { getDictionary } from "@/lib/i18n";
+import { HistoryCard } from "@/components/shared/HistoryCard";
 import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { ProductTabs, ProductTabPanel } from "@/components/products/product-tabs";
 
@@ -253,6 +254,8 @@ export default async function EditProductPage({
           </ProductTabPanel>
         </ProductTabs>
       </LanguageScope>
+
+      <HistoryCard entity="product" id={product.id} />
     </div>
   );
 }

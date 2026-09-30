@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { productInputSchema } from "@/lib/validation";
 import { parseSpecsText } from "@/lib/specs";
 import { logAudit } from "@/lib/audit";
+import { captureRevision, captureRevisions } from "@/lib/revisions";
 import type { ProductKind, ProductUseCase } from "@/app/generated/prisma/client";
 
 function extractProductExtras(formData: FormData) {
@@ -126,6 +127,7 @@ export async function updateProduct(
     if (!category) return "Invalid category";
   }
 
+  await captureRevision("product", id, "update");
   await prisma.product.updateMany({
     where: { id, tenantId },
     data: { ...parsed.data, categoryId, featured, published, specs, kind, useCases },
@@ -144,6 +146,7 @@ export async function updateProduct(
 
 export async function deleteProduct(id: string) {
   const { tenantId } = await getTenantFromSession();
+  await captureRevision("product", id, "delete");
   await prisma.product.deleteMany({ where: { id, tenantId } });
   await logAudit({ action: "product.delete", entity: "product", entityId: id });
   revalidatePath("/products");
@@ -263,6 +266,7 @@ export async function bulkUpdateProducts(
 ) {
   const { tenantId } = await getTenantFromSession();
   if (ids.length === 0) return;
+  await captureRevisions("product", ids, "update");
   await prisma.product.updateMany({
     where: { id: { in: ids }, tenantId },
     data: patch,
@@ -278,6 +282,7 @@ export async function bulkUpdateProducts(
 export async function bulkDeleteProducts(ids: string[]) {
   const { tenantId } = await getTenantFromSession();
   if (ids.length === 0) return;
+  await captureRevisions("product", ids, "delete");
   await prisma.product.deleteMany({ where: { id: { in: ids }, tenantId } });
   await logAudit({
     action: "product.bulk_delete",

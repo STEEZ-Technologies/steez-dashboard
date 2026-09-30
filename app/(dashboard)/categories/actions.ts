@@ -6,6 +6,7 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { categoryInputSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
+import { captureRevision } from "@/lib/revisions";
 
 export async function createCategory(
   _prevState: string | undefined,
@@ -47,6 +48,7 @@ export async function updateCategory(
   const parsed = categoryInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
+  await captureRevision("category", id, "update");
   await prisma.category.updateMany({
     where: { id, tenantId },
     data: parsed.data,
@@ -64,6 +66,7 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string) {
   const { tenantId } = await getTenantFromSession();
+  await captureRevision("category", id, "delete");
   await prisma.category.deleteMany({ where: { id, tenantId } });
   await logAudit({ action: "category.delete", entity: "category", entityId: id });
   revalidatePath("/categories");

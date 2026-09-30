@@ -9,14 +9,46 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shell/empty-state";
 import { getDictionary } from "@/lib/i18n";
+import { getLiveVersion } from "@/lib/revisions";
+import type { RevisionEntity } from "@/lib/revisions-core";
+import { DiscardButton } from "@/components/shared/discard-button";
 
 export default async function PreviewPage() {
   const { tenantId } = await getTenantFromSession();
   const dict = await getDictionary();
   const t = dict.publish;
-  const { products, categories } = await getPendingChanges(tenantId);
+  const { products, categories, articles, guides } = await getPendingChanges(tenantId);
 
-  const nothingPending = products.length === 0 && categories.length === 0;
+  const nothingPending =
+    products.length === 0 && categories.length === 0 && articles.length === 0 && guides.length === 0;
+
+  // Whether each pending item has a saved live version to go back to.
+  const discardState = new Map<string, "ready" | "new" | "unavailable">();
+  const pendingItems: [RevisionEntity, string][] = [
+    ...categories.map((c) => ["category", c.id] as [RevisionEntity, string]),
+    ...products.map((p) => ["product", p.id] as [RevisionEntity, string]),
+    ...articles.map((a) => ["article", a.id] as [RevisionEntity, string]),
+    ...guides.map((g) => ["guide", g.id] as [RevisionEntity, string]),
+  ];
+  await Promise.all(
+    pendingItems.map(async ([entity, id]) => {
+      const live = await getLiveVersion(tenantId, entity, id);
+      discardState.set(
+        `${entity}:${id}`,
+        live.kind === "revision" ? "ready" : live.kind === "none" ? "new" : "unavailable",
+      );
+    }),
+  );
+  const discard = (entity: RevisionEntity, id: string, name: string) => (
+    <div className="mt-3">
+      <DiscardButton
+        entity={entity}
+        id={id}
+        name={name}
+        state={discardState.get(`${entity}:${id}`) ?? "unavailable"}
+      />
+    </div>
+  );
 
   return (
     <div>
@@ -49,6 +81,7 @@ export default async function PreviewPage() {
                       {c.description && (
                         <p className="mt-1 text-sm text-muted-foreground">{c.description}</p>
                       )}
+                      {discard("category", c.id, c.label)}
                     </CardContent>
                   </Card>
                 ))}
@@ -117,12 +150,39 @@ export default async function PreviewPage() {
                         {!p.published && (
                           <p className="mt-2 text-xs text-destructive">{t.previewUnpublished}</p>
                         )}
+                        {discard("product", p.id, p.name)}
                       </CardContent>
                     </Card>
                   );
                 })}
               </div>
             </section>
+          )}
+
+          {[
+            { entity: "article" as const, title: dict.history.previewArticles, rows: articles },
+            { entity: "guide" as const, title: dict.history.previewGuides, rows: guides },
+          ].map(
+            ({ entity, title, rows }) =>
+              rows.length > 0 && (
+                <section key={entity}>
+                  <h2 className="mb-3 text-sm font-semibold text-muted-foreground">{title}</h2>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {rows.map((r) => (
+                      <Card key={r.id}>
+                        <CardContent className="py-4">
+                          <p className="font-medium">{r.titleEn}</p>
+                          <p className="text-xs text-muted-foreground">{r.slug}</p>
+                          {!r.published && (
+                            <p className="mt-2 text-xs text-destructive">{t.previewUnpublished}</p>
+                          )}
+                          {discard(entity, r.id, r.titleEn)}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              ),
           )}
         </div>
       )}

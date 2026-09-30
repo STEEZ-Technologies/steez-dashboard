@@ -8,17 +8,13 @@ import { Button } from "@/components/ui/button";
 import { updateTenantSettings } from "@/app/(dashboard)/settings/actions";
 import { useT } from "@/lib/i18n/provider";
 
+// Only what the client should touch. The slug, live site address and deploy
+// hook are STEEZ's to set, from /admin.
 export function SettingsForm({
   name,
-  slug,
-  deployHookUrl,
-  siteUrl,
   canManage,
 }: {
   name: string;
-  slug: string;
-  deployHookUrl: string | null;
-  siteUrl: string | null;
   canManage: boolean;
 }) {
   const [error, formAction, pending] = useActionState(updateTenantSettings, undefined);
@@ -31,39 +27,6 @@ export function SettingsForm({
           <div className="grid gap-2">
             <Label htmlFor="name">{dict.settings.workspaceName}</Label>
             <Input id="name" name="name" defaultValue={name} disabled={!canManage} required />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="slug">{dict.settings.publicSlug}</Label>
-            <Input id="slug" value={slug} disabled readOnly />
-            <p className="text-xs text-muted-foreground">
-              {dict.settings.slugLockedNote}
-            </p>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="siteUrl">{dict.settings.siteUrlLabel}</Label>
-            <Input
-              id="siteUrl"
-              name="siteUrl"
-              type="url"
-              inputMode="url"
-              placeholder="https://komibright.com"
-              defaultValue={siteUrl ?? ""}
-              disabled={!canManage}
-            />
-            <p className="text-xs text-muted-foreground">{dict.settings.siteUrlHelp}</p>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="deployHookUrl">{dict.publish.hookLabel}</Label>
-            <Input
-              id="deployHookUrl"
-              name="deployHookUrl"
-              type="url"
-              inputMode="url"
-              placeholder="https://api.vercel.com/v1/integrations/deploy/…"
-              defaultValue={deployHookUrl ?? ""}
-              disabled={!canManage}
-            />
-            <p className="text-xs text-muted-foreground">{dict.publish.hookHelp}</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {canManage ? (

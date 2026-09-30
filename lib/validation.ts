@@ -131,6 +131,11 @@ export const userInviteSchema = z.object({
 
 export const tenantSettingsSchema = z.object({
   name: z.string().trim().min(1, { error: "Name is required" }),
+});
+
+// How a workspace reaches its live site. Set by STEEZ from the admin page,
+// never by the client: a wrong hook silently stops every publish.
+export const tenantSiteSchema = z.object({
   // Deploy hook that rebuilds the tenant's public static site. Optional, but
   // must be a real https URL when present — it's fetched server-side.
   deployHookUrl: z

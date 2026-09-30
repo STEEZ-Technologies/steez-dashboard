@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { captureRevision, touchParent } from "@/lib/revisions";
 
 async function assertOwnership(productId: string, tenantId: string) {
   const product = await prisma.product.findFirst({
@@ -19,6 +20,7 @@ export async function addProductContent(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
   if (!data.textEn.trim()) return;
 
   const max = await prisma.productContent.aggregate({
@@ -34,6 +36,7 @@ export async function addProductContent(
     },
   });
   await logAudit({ action: "product.content_add", entity: "product", entityId: productId });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }
 
@@ -44,18 +47,22 @@ export async function updateProductContent(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
   await prisma.productContent.update({
     where: { id: contentId },
     data: { textEn: data.textEn, textZh: data.textZh || null },
   });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }
 
 export async function removeProductContent(productId: string, contentId: string) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
   await prisma.productContent.deleteMany({ where: { id: contentId, productId } });
   await logAudit({ action: "product.content_remove", entity: "product", entityId: productId });
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }
 
@@ -66,6 +73,7 @@ export async function moveProductContent(
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
+  await captureRevision("product", productId, "child");
 
   const rows = await prisma.productContent.findMany({
     where: { productId },
@@ -80,5 +88,6 @@ export async function moveProductContent(
     prisma.productContent.update({ where: { id: rows[idx].id }, data: { sortOrder: rows[swap].sortOrder } }),
     prisma.productContent.update({ where: { id: rows[swap].id }, data: { sortOrder: rows[idx].sortOrder } }),
   ]);
+  await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);
 }

@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/super-admin";
-import { createTenantSchema } from "@/lib/validation";
+import { createTenantSchema, tenantSiteSchema } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
 import { ACTING_TENANT_COOKIE } from "@/lib/tenant";
 
@@ -52,6 +52,46 @@ export async function createTenant(
   });
 
   revalidatePath("/admin");
+  return undefined;
+}
+
+/**
+ * Connect a workspace to its live site: the deploy hook Publish calls, and
+ * the address "View live" links point at. STEEZ-only — clients never see
+ * either field, since a wrong hook silently stops every publish.
+ */
+export async function updateTenantSite(
+  tenantId: string,
+  _prevState: string | undefined,
+  formData: FormData,
+) {
+  const admin = await requireSuperAdmin();
+
+  const parsed = tenantSiteSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
+
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { id: true, name: true, slug: true },
+  });
+  if (!tenant) return "Workspace not found";
+
+  await prisma.tenant.update({
+    where: { id: tenant.id },
+    data: {
+      deployHookUrl: parsed.data.deployHookUrl ?? null,
+      siteUrl: parsed.data.siteUrl ?? null,
+    },
+  });
+  // The hook URL is a credential of sorts — log that it changed, not its value.
+  await logAudit({
+    action: "platform.site_update",
+    entity: "tenant",
+    entityId: tenant.id,
+    detail: `${tenant.name} (${tenant.slug}) by ${admin.email}`,
+  });
+
+  revalidatePath("/", "layout");
   return undefined;
 }
 
