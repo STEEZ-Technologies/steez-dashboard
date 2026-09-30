@@ -81,6 +81,7 @@ import {
   bulkDeleteProducts,
 } from "@/app/(dashboard)/products/actions";
 import { useT } from "@/lib/i18n/provider";
+import type { Completeness } from "@/lib/completeness";
 
 export type ProductRow = {
   id: string;
@@ -91,6 +92,7 @@ export type ProductRow = {
   featured: boolean;
   published: boolean;
   imageUrl: string | null;
+  completeness: Completeness;
 };
 
 type SortKey = "name" | "model" | "category" | "status";
@@ -173,6 +175,7 @@ export function ProductsTable({
       if (status === "published" && !p.published) return false;
       if (status === "draft" && p.published) return false;
       if (status === "featured" && !p.featured) return false;
+      if (status === "incomplete" && p.completeness.missing.length === 0) return false;
       return true;
     });
     if (sort.key !== null) {
@@ -206,8 +209,9 @@ export function ProductsTable({
       published: t.published,
       draft: t.draft,
       featured: t.featured,
+      incomplete: t.incomplete,
     }),
-    [t.allStatus, t.published, t.draft, t.featured],
+    [t.allStatus, t.published, t.draft, t.featured, t.incomplete],
   );
 
   function toggleSort(key: SortKey) {
@@ -317,6 +321,7 @@ export function ProductsTable({
             <SelectItem value="published">{t.published}</SelectItem>
             <SelectItem value="draft">{t.draft}</SelectItem>
             <SelectItem value="featured">{t.featured}</SelectItem>
+            <SelectItem value="incomplete">{t.incomplete}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -499,6 +504,23 @@ export function ProductsTable({
   );
 }
 
+/** "4/6" when a product has gaps; nothing when it's complete. The title
+ *  lists what's missing; the edit page shows the same list with links. */
+function CompletenessChip({ c }: { c: Completeness }) {
+  const { dict } = useT();
+  if (c.missing.length === 0) return null;
+  const gaps = c.missing.map((m) => dict.products.gaps[m.key]).join(", ");
+  return (
+    <Badge
+      variant="outline"
+      className="tabular-nums text-muted-foreground"
+      title={`${dict.products.missing}: ${gaps}`}
+    >
+      {c.done}/{c.total}
+    </Badge>
+  );
+}
+
 function ProductTableRow({
   p,
   pending,
@@ -586,6 +608,7 @@ function ProductTableRow({
             {p.published ? dict.products.published : dict.products.draft}
           </Badge>
           {p.featured && <Badge variant="secondary">{dict.products.featured}</Badge>}
+          <CompletenessChip c={p.completeness} />
         </div>
       </TableCell>
       <TableCell className="hidden sm:table-cell text-muted-foreground">{p.model}</TableCell>
@@ -598,6 +621,7 @@ function ProductTableRow({
           <Badge variant={p.published ? "default" : "outline"}>
             {p.published ? dict.products.published : dict.products.draft}
           </Badge>
+          <CompletenessChip c={p.completeness} />
         </div>
       </TableCell>
       <TableCell>

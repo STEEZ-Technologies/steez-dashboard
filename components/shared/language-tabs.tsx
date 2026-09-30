@@ -50,6 +50,11 @@ function findMissing(root: HTMLElement): EditLang[] {
   return zh.some((field, i) => !field.value.trim() && en[i]?.value.trim()) ? ["zh"] : [];
 }
 
+/** Switch the page's edit language from inside a scope (null outside one). */
+export function useSetEditLanguage() {
+  return useContext(LanguageContext)?.setLang ?? null;
+}
+
 export function LanguageScope({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = useState<EditLang>("en");
   const [missing, setMissing] = useState<EditLang[]>([]);

@@ -21,6 +21,8 @@ import { getDictionary } from "@/lib/i18n";
 import { HistoryCard } from "@/components/shared/HistoryCard";
 import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { ProductTabs, ProductTabPanel } from "@/components/products/product-tabs";
+import { CompletenessBar } from "@/components/products/completeness-bar";
+import { productCompleteness } from "@/lib/completeness";
 
 export default async function EditProductPage({
   params,
@@ -69,6 +71,18 @@ export default async function EditProductPage({
     id: m.id,
     url: getPublicUrl(m.modelPath),
   }));
+  const completeness = productCompleteness(
+    {
+      nameZh: product.nameZh,
+      description: product.description,
+      descriptionZh: product.descriptionZh,
+      imagePath: product.imagePath,
+      galleryCount: galleryRows.length,
+      categoryId: product.categoryId,
+      specs: product.specs,
+    },
+    { lean },
+  );
   const contents: ProductContentRow[] = contentRows.map((c) => ({
     id: c.id,
     textEn: c.textEn,
@@ -104,6 +118,7 @@ export default async function EditProductPage({
       <LanguageScope>
         <LanguageTabs />
         <ProductTabs initialTab={tab}>
+          <CompletenessBar completeness={completeness} />
           <ProductForm
             action={updateProduct.bind(null, product.id)}
             categories={categories}

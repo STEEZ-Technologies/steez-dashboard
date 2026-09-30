@@ -94,6 +94,17 @@ export const en = {
     toastDeleted: "Product deleted",
     toastBulkDeleted: "Products deleted",
     toastOrderSaved: "Order saved",
+    incomplete: "Incomplete",
+    missing: "Missing",
+    completenessHint: "Finish these so buyers see the full product:",
+    gaps: {
+      nameZh: "Chinese name",
+      description: "English description",
+      descriptionZh: "Chinese description",
+      photo: "Photo",
+      category: "Category",
+      specs: "Specs",
+    },
   },
   categories: {
     subtitle: "Group products the way buyers browse them.",

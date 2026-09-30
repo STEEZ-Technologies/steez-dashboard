@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/shell/empty-state";
 import { getDictionary } from "@/lib/i18n";
+import { productCompleteness } from "@/lib/completeness";
 import { ProductsTable, type ProductRow } from "@/components/products/products-table";
 import { ProductsMoreMenu } from "@/components/products/products-more-menu";
 
@@ -19,16 +20,18 @@ export default async function ProductsPage() {
     prisma.product.findMany({
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
-      include: { category: true },
+      include: { category: true, _count: { select: { images: true } } },
     }),
     prisma.category.findMany({
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
       select: { label: true },
     }),
-    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { siteUrl: true } }),
+    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { siteUrl: true, slug: true } }),
   ]);
 
+  // KomiBright's site shows the gallery, not the main photo (see edit page).
+  const lean = tenant.slug === "komibright";
   const rows: ProductRow[] = products.map((p) => ({
     id: p.id,
     slug: p.slug,
@@ -38,6 +41,18 @@ export default async function ProductsPage() {
     featured: p.featured,
     published: p.published,
     imageUrl: p.imagePath ? getPublicUrl(p.imagePath) : null,
+    completeness: productCompleteness(
+      {
+        nameZh: p.nameZh,
+        description: p.description,
+        descriptionZh: p.descriptionZh,
+        imagePath: p.imagePath,
+        galleryCount: p._count.images,
+        categoryId: p.categoryId,
+        specs: p.specs,
+      },
+      { lean },
+    ),
   }));
 
   return (

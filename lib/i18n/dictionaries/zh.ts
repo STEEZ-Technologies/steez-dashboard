@@ -92,6 +92,17 @@ export const zh: Dictionary = {
     toastDeleted: "产品已删除",
     toastBulkDeleted: "产品已删除",
     toastOrderSaved: "排序已保存",
+    incomplete: "待完善",
+    missing: "缺少",
+    completenessHint: "补全以下内容，让买家看到完整的产品：",
+    gaps: {
+      nameZh: "中文名称",
+      description: "英文描述",
+      descriptionZh: "中文描述",
+      photo: "图片",
+      category: "分类",
+      specs: "规格",
+    },
   },
   categories: {
     subtitle: "按买家浏览方式给产品分组。",

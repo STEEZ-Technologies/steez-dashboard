@@ -28,6 +28,12 @@ const TABS: { id: ProductTab; label: string; short: string }[] = [
 const isTab = (v: unknown): v is ProductTab => TABS.some((t) => t.id === v);
 
 const TabContext = createContext<ProductTab | null>(null);
+const SelectTabContext = createContext<((tab: ProductTab) => void) | null>(null);
+
+/** Switch the edit page's tab from inside it (null outside <ProductTabs>). */
+export function useSelectProductTab() {
+  return useContext(SelectTabContext);
+}
 
 export function ProductTabs({
   initialTab,
@@ -49,6 +55,7 @@ export function ProductTabs({
 
   return (
     <TabContext.Provider value={tab}>
+      <SelectTabContext.Provider value={select}>
       <Tabs
         value={tab}
         onValueChange={(v) => isTab(v) && select(v)}
@@ -75,6 +82,7 @@ export function ProductTabs({
       >
         {children}
       </div>
+      </SelectTabContext.Provider>
     </TabContext.Provider>
   );
 }
