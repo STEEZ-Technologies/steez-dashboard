@@ -195,7 +195,45 @@ export type ProductInput = z.infer<typeof productInputSchema>;
 export type ProductContentInput = z.infer<typeof productContentInputSchema>;
 export type ProductFitInput = z.infer<typeof productFitInputSchema>;
 export type FinishInput = z.infer<typeof finishInputSchema>;
+const isoDay = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? undefined : v))
+  .pipe(z.iso.date({ error: "Use a real date" }).optional());
+
+export const newsEventInputSchema = z
+  .object({
+    slug: slugField,
+    kind: z.enum(["EXHIBITION", "VISIT", "PRESS", "PRODUCT"]),
+    titleEn: z.string().trim().min(1, { error: "English title is required" }),
+    titleZh: optionalText,
+    placeEn: optionalText,
+    placeZh: optionalText,
+    booth: optionalText,
+    dating: z.enum(["DAYS", "YEAR", "NONE"]),
+    startDate: isoDay,
+    endDate: isoDay,
+    year: z
+      .string()
+      .trim()
+      .transform((v) => (v === "" ? undefined : Number(v)))
+      .pipe(z.number().int().min(1900).max(2100, { error: "Use a four-digit year" }).optional()),
+    imagePath: optionalText,
+    imageAltEn: optionalText,
+    imageAltZh: optionalText,
+  })
+  .refine((v) => v.dating !== "DAYS" || v.startDate, {
+    error: "Pick the first day",
+    path: ["startDate"],
+  })
+  .refine((v) => v.dating !== "YEAR" || v.year, { error: "Enter the year", path: ["year"] })
+  .refine((v) => !v.startDate || !v.endDate || v.endDate >= v.startDate, {
+    error: "The last day can't be before the first",
+    path: ["endDate"],
+  });
+
 export type ArticleInput = z.infer<typeof articleInputSchema>;
+export type NewsEventInput = z.infer<typeof newsEventInputSchema>;
 export type ArticleBlockInput = z.infer<typeof articleBlockInputSchema>;
 export type GuideInput = z.infer<typeof guideInputSchema>;
 export type GuideBlockInput = z.infer<typeof guideBlockInputSchema>;

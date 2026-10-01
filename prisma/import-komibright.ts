@@ -1,6 +1,6 @@
 /**
  * One-off import: komibright-v2's real static content (products, buyer
- * guides, articles and the two manual-fact groups) into the dashboard's
+ * guides, articles, the news timeline and the two manual-fact groups) into the dashboard's
  * komibright tenant. Idempotent (upserts by slug/key).
  *
  * kind: "machine" -> Category "Systems", "accessory" -> Category "Service Parts"
@@ -31,6 +31,7 @@ import type { Product } from "../../komibright-v2/lib/products";
 import type { Block, Guide } from "../../komibright-v2/lib/resources";
 import type { Article, Block as ArticleBlockShape } from "../../komibright-v2/lib/articles";
 import type { Fact } from "../../komibright-v2/lib/manualFacts";
+import type { Milestone } from "../../komibright-v2/lib/news";
 import type { Dispensing, Fit, Source } from "../../komibright-v2/lib/finder";
 import type { ManualFactKey } from "../app/generated/prisma/client";
 
@@ -44,6 +45,7 @@ const {
   products: PRODUCTS,
   guides: GUIDES,
   articles: ARTICLES,
+  milestones: MILESTONES,
   feedFacts: FEED_FACTS,
   serviceFacts: SERVICE_FACTS,
   fit: FIT,
@@ -53,6 +55,7 @@ const {
   products: Product[];
   guides: Guide[];
   articles: Article[];
+  milestones: Milestone[];
   feedFacts: Fact[];
   serviceFacts: Fact[];
   fit: Record<string, Fit>;
@@ -346,8 +349,41 @@ async function main() {
     });
   }
 
+  // The news page's "Company news" timeline, in the site's own order.
+  const KIND_MAP = {
+    exhibition: "EXHIBITION",
+    visit: "VISIT",
+    press: "PRESS",
+    product: "PRODUCT",
+  } as const;
+  for (const [index, m] of MILESTONES.entries()) {
+    const days = m.days ?? [];
+    const data = {
+      kind: KIND_MAP[m.type],
+      titleEn: m.title.en,
+      titleZh: m.title.zh ?? null,
+      placeEn: m.place?.en ?? null,
+      placeZh: m.place?.zh ?? null,
+      booth: m.booth ?? null,
+      dating: days.length ? ("DAYS" as const) : m.year ? ("YEAR" as const) : ("NONE" as const),
+      startDate: days.length ? new Date(days[0]) : null,
+      endDate: days.length > 1 ? new Date(days[days.length - 1]) : null,
+      year: m.year ?? null,
+      imagePath: siteUrl(m.photo?.src),
+      imageAltEn: m.photo?.alt.en ?? null,
+      imageAltZh: m.photo?.alt.zh ?? null,
+      sortOrder: index,
+      published: true,
+    };
+    await prisma.newsEvent.upsert({
+      where: { tenantId_slug: { tenantId: tenant.id, slug: m.id } },
+      update: data,
+      create: { tenantId: tenant.id, slug: m.id, ...data },
+    });
+  }
+
   console.log(
-    `Imported ${categories.length} categories, ${PRODUCTS.length} products, ${GUIDES.length} guides, ${ARTICLES.length} articles, ${manualFacts.length} manual facts.`,
+    `Imported ${categories.length} categories, ${PRODUCTS.length} products, ${GUIDES.length} guides, ${ARTICLES.length} articles, ${MILESTONES.length} news events, ${manualFacts.length} manual facts.`,
   );
 }
 

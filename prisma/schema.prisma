@@ -41,6 +41,7 @@ model Tenant {
   products      Product[]
   articles      Article[]
   guides        Guide[]
+  newsEvents    NewsEvent[]
   manualFacts   ManualFact[]
   productEvents ProductEvent[]
   pageViews     PageView[]
@@ -312,6 +313,50 @@ model ArticleBlock {
   @@index([articleId])
 }
 
+// The client site's "Company news" timeline (komibright-v2 lib/news.ts
+// MILESTONES): exhibitions, visits, press. Not articles — an expo needs dates,
+// a venue and a booth, and the site lays the upcoming one out day by day on
+// its homepage.
+enum NewsEventKind {
+  EXHIBITION
+  VISIT
+  PRESS
+  PRODUCT
+}
+
+enum NewsEventDating {
+  DAYS // startDate (+ endDate for a multi-day show)
+  YEAR // only the year is known
+  NONE // undated
+}
+
+model NewsEvent {
+  id         String          @id @default(cuid())
+  tenantId   String
+  tenant     Tenant          @relation(fields: [tenantId], references: [id])
+  slug       String
+  kind       NewsEventKind   @default(EXHIBITION)
+  titleEn    String
+  titleZh    String?
+  placeEn    String?
+  placeZh    String?
+  booth      String?
+  dating     NewsEventDating @default(DAYS)
+  startDate  DateTime?       @db.Date
+  endDate    DateTime?       @db.Date
+  year       Int?
+  imagePath  String? // OSS key
+  imageAltEn String?
+  imageAltZh String?
+  sortOrder  Int             @default(0)
+  published  Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
 enum GuideReader {
   DISTRIBUTOR
   CUSTOMER
@@ -458,34 +503,34 @@ enum LeadStatus {
 // this message — follow up". Written by the unauthenticated public endpoint
 // app/api/public/[tenantSlug]/lead/route.ts.
 model Lead {
-  id        String     @id @default(cuid())
-  tenantId  String
-  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  id           String     @id @default(cuid())
+  tenantId     String
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
   // Which product they were looking at, when the site sends it. Nullable:
   // a general contact-page enquiry has no product context.
-  productId String?
-  product   Product?   @relation(fields: [productId], references: [id])
-  name      String?
-  email     String?
-  phone     String?
-  company   String?
-  message   String?
-  status    LeadStatus @default(NEW)
-  notes     String? // internal follow-up notes, never shown publicly
+  productId    String?
+  product      Product?   @relation(fields: [productId], references: [id])
+  name         String?
+  email        String?
+  phone        String?
+  company      String?
+  message      String?
+  status       LeadStatus @default(NEW)
+  notes        String? // internal follow-up notes, never shown publicly
   // Pipeline outcome. dealValue/dealCurrency are what the order is worth,
   // entered by staff; totals are summed per currency (no FX conversion).
   // closedAt is stamped when the lead moves to WON/LOST, cleared on reopen.
-  dealValue    Decimal?  @db.Decimal(14, 2)
+  dealValue    Decimal?   @db.Decimal(14, 2)
   dealCurrency String?
   closedAt     DateTime?
   // Same anonymous id as PageView/ProductEvent, so a lead can be tied back
   // to what that visitor browsed before enquiring.
-  sessionId String?
-  path      String?
-  referrer  String?
-  country   String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  sessionId    String?
+  path         String?
+  referrer     String?
+  country      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@index([tenantId, createdAt])
   @@index([tenantId, status])
