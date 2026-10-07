@@ -101,10 +101,7 @@ export default function LoginPage() {
         ) : (
           <SignInPage
             logo={
-              <div className="flex items-baseline gap-2">
-                <STEEZWordmark size={26} color="var(--foreground)" />
-                <span className="cn-text text-lg font-bold text-[var(--gold,#E0A93A)]">思智</span>
-              </div>
+              <STEEZWordmark size={26} color="var(--foreground)" />
             }
             title={<span className="font-light text-foreground tracking-tighter">{dict.auth.welcomeBack}</span>}
             description={dict.auth.signInSub}

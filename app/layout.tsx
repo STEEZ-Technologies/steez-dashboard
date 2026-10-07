@@ -39,7 +39,7 @@ const stackSansText = Stack_Sans_Text({
 });
 
 export const metadata: Metadata = {
-  title: "STEEZ · 思智 — Dashboard",
+  title: "STEEZ — Dashboard",
   description: "Manage your product catalog and see how buyers engage with it.",
 };
 
