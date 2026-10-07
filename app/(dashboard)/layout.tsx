@@ -38,6 +38,7 @@ export default async function DashboardLayout({
     <SidebarProvider>
       <AppSidebar
         tenantName={tenant.name}
+        tenantSlug={tenant.slug}
         email={user.email ?? ""}
         displayName={profile?.name ?? null}
         avatarUrls={

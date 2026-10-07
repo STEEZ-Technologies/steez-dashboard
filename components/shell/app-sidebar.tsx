@@ -44,6 +44,7 @@ const GROUP_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
 
 export function AppSidebar({
   tenantName,
+  tenantSlug,
   email,
   displayName = null,
   avatarUrls = [],
@@ -53,6 +54,7 @@ export function AppSidebar({
   isPlatformWorkspace = false,
 }: {
   tenantName: string;
+  tenantSlug: string;
   email: string;
   displayName?: string | null;
   avatarUrls?: string[];
@@ -84,11 +86,19 @@ export function AppSidebar({
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex items-baseline gap-1.5 overflow-hidden group-data-[collapsible=icon]:hidden">
+          <div className="flex items-center gap-2.5 overflow-hidden group-data-[collapsible=icon]:hidden">
             <STEEZWordmark size={18} color="var(--sidebar-foreground)" />
-            <span className="cn-text text-sm font-bold text-sidebar-primary">
-              思智
-            </span>
+            {tenantSlug === "komibright" && (
+              <>
+                <span aria-hidden className="text-sm text-sidebar-foreground/50">
+                  ×
+                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/komibright-logo.svg" alt="KomiBright" className="h-6 w-auto dark:hidden" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/brand/komibright-logo-dark.svg" alt="KomiBright" className="hidden h-6 w-auto dark:block" />
+              </>
+            )}
           </div>
         </div>
         <p className="eyebrow px-2 group-data-[collapsible=icon]:hidden">
