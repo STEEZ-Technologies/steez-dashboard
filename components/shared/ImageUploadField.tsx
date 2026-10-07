@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/provider";
 
 export function ImageUploadField({
   name,
@@ -27,6 +28,7 @@ export function ImageUploadField({
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const placeholderUrl = placeholderUrls[placeholderIndex];
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useT().dict.editor;
 
   async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -97,7 +99,7 @@ export function ImageUploadField({
             size="sm"
             onClick={() => inputRef.current?.click()}
           >
-            {previewUrl ? "Replace image" : "Upload image"}
+            {previewUrl ? t.replaceImage : t.uploadImage}
           </Button>
           {previewUrl && (
             <Button
@@ -107,13 +109,13 @@ export function ImageUploadField({
               onClick={clear}
               className="text-muted-foreground"
             >
-              <X className="size-3.5" /> Remove
+              <X className="size-3.5" /> {t.remove}
             </Button>
           )}
         </div>
       </div>
       {status === "error" && (
-        <p className="text-sm text-destructive">Upload failed. Try again.</p>
+        <p className="text-sm text-destructive">{t.uploadFailed}</p>
       )}
     </div>
   );

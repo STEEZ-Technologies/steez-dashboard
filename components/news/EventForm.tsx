@@ -38,12 +38,6 @@ type EventFormValues = {
   published: boolean;
 };
 
-const DATING_ITEMS: Record<DatingValue, string> = {
-  DAYS: "On set dates",
-  YEAR: "Only the year is known",
-  NONE: "No date",
-};
-
 export function EventForm({
   action,
   defaultValues,
@@ -72,6 +66,10 @@ export function EventForm({
       PRESS: t.kindPress,
       PRODUCT: t.kindProduct,
     }),
+    [t],
+  );
+  const datingItems = useMemo<Record<DatingValue, string>>(
+    () => ({ DAYS: t.datingDays, YEAR: t.datingYear, NONE: t.datingNone }),
     [t],
   );
 
@@ -103,7 +101,7 @@ export function EventForm({
       <Card>
         <CardContent className="grid gap-5 p-6">
           <div className="grid gap-2">
-            <Label>Type</Label>
+            <Label>{t.type}</Label>
             <Select value={kind} onValueChange={(v) => v && setKind(v as NewsEventKindValue)} items={kindItems}>
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -120,11 +118,11 @@ export function EventForm({
           <Bilingual
             en={
               <>
-                <Label htmlFor="titleEn">Title (English)</Label>
+                <Label htmlFor="titleEn">{t.titleEn}</Label>
                 <Input
                   id="titleEn"
                   name="titleEn"
-                  placeholder="E.g. Aquatech China 2026, Shanghai"
+                  placeholder={t.titleEnPh}
                   defaultValue={defaultValues?.titleEn}
                   required
                 />
@@ -132,11 +130,11 @@ export function EventForm({
             }
             zh={
               <>
-                <Label htmlFor="titleZh">Title (Chinese)</Label>
+                <Label htmlFor="titleZh">{t.titleZh}</Label>
                 <Input
                   id="titleZh"
                   name="titleZh"
-                  placeholder="E.g. 2026 上海国际水展"
+                  placeholder={t.titleZhPh}
                   defaultValue={defaultValues?.titleZh}
                 />
               </>
@@ -144,7 +142,7 @@ export function EventForm({
           />
 
           <div className="grid gap-2">
-            <Label htmlFor="slug">Short code</Label>
+            <Label htmlFor="slug">{t.slug}</Label>
             <Input
               id="slug"
               name="slug"
@@ -152,22 +150,19 @@ export function EventForm({
               defaultValue={defaultValues?.slug}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              Never shown on the site — it just keeps this entry matched to its translations.
-              Lowercase words separated by dashes, no spaces.
-            </p>
+            <p className="text-xs text-muted-foreground">{t.slugHelp}</p>
           </div>
 
           <div className="grid gap-2">
-            <Label>When</Label>
-            <Select value={dating} onValueChange={(v) => v && setDating(v as DatingValue)} items={DATING_ITEMS}>
+            <Label>{t.when}</Label>
+            <Select value={dating} onValueChange={(v) => v && setDating(v as DatingValue)} items={datingItems}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="DAYS">{DATING_ITEMS.DAYS}</SelectItem>
-                <SelectItem value="YEAR">{DATING_ITEMS.YEAR}</SelectItem>
-                <SelectItem value="NONE">{DATING_ITEMS.NONE}</SelectItem>
+                <SelectItem value="DAYS">{datingItems.DAYS}</SelectItem>
+                <SelectItem value="YEAR">{datingItems.YEAR}</SelectItem>
+                <SelectItem value="NONE">{datingItems.NONE}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -175,7 +170,7 @@ export function EventForm({
           {dating === "DAYS" && (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="startDate">First day</Label>
+                <Label htmlFor="startDate">{t.firstDay}</Label>
                 <Input
                   id="startDate"
                   name="startDate"
@@ -186,7 +181,7 @@ export function EventForm({
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endDate">
-                  Last day <span className="font-normal text-muted-foreground">(if more than one)</span>
+                  {t.lastDay} <span className="font-normal text-muted-foreground">{t.lastDayHint}</span>
                 </Label>
                 <Input
                   id="endDate"
@@ -195,17 +190,13 @@ export function EventForm({
                   defaultValue={defaultValues?.endDate}
                 />
               </div>
-              <p className="text-xs text-muted-foreground sm:col-span-2">
-                Until the last day has passed, the event is marked upcoming. An upcoming
-                exhibition with a venue and a booth number is also featured on the site&apos;s
-                homepage. After the last day it becomes an ordinary past entry on its own.
-              </p>
+              <p className="text-xs text-muted-foreground sm:col-span-2">{t.datesHelp}</p>
             </div>
           )}
 
           {dating === "YEAR" && (
             <div className="grid gap-2">
-              <Label htmlFor="year">Year</Label>
+              <Label htmlFor="year">{t.year}</Label>
               <Input
                 id="year"
                 name="year"
@@ -221,22 +212,22 @@ export function EventForm({
             optional
             en={
               <>
-                <Label htmlFor="placeEn">Where (English)</Label>
+                <Label htmlFor="placeEn">{t.placeEn}</Label>
                 <Input
                   id="placeEn"
                   name="placeEn"
-                  placeholder="E.g. Shanghai New International Expo Centre (Pudong)"
+                  placeholder={t.placeEnPh}
                   defaultValue={defaultValues?.placeEn}
                 />
               </>
             }
             zh={
               <>
-                <Label htmlFor="placeZh">Where (Chinese)</Label>
+                <Label htmlFor="placeZh">{t.placeZh}</Label>
                 <Input
                   id="placeZh"
                   name="placeZh"
-                  placeholder="E.g. 上海新国际博览中心（浦东）"
+                  placeholder={t.placeZhPh}
                   defaultValue={defaultValues?.placeZh}
                 />
               </>
@@ -246,7 +237,7 @@ export function EventForm({
           {kind === "EXHIBITION" ? (
             <div className="grid gap-2">
               <Label htmlFor="booth">
-                Booth number <span className="font-normal text-muted-foreground">(optional)</span>
+                {t.booth} <span className="font-normal text-muted-foreground">{t.optional}</span>
               </Label>
               <Input
                 id="booth"
@@ -261,7 +252,7 @@ export function EventForm({
 
           <ImageUploadField
             name="imagePath"
-            label="Photo (optional)"
+            label={t.photo}
             defaultValue={defaultValues?.imagePath}
             defaultUrl={defaultImageUrl}
           />
@@ -270,18 +261,18 @@ export function EventForm({
             optional
             en={
               <>
-                <Label htmlFor="imageAltEn">Describe the photo (English)</Label>
+                <Label htmlFor="imageAltEn">{t.altEn}</Label>
                 <Input
                   id="imageAltEn"
                   name="imageAltEn"
-                  placeholder="E.g. The KomiBright stand at Aquatech China"
+                  placeholder={t.altEnPh}
                   defaultValue={defaultValues?.imageAltEn}
                 />
               </>
             }
             zh={
               <>
-                <Label htmlFor="imageAltZh">Describe the photo (Chinese)</Label>
+                <Label htmlFor="imageAltZh">{t.altZh}</Label>
                 <Input
                   id="imageAltZh"
                   name="imageAltZh"
@@ -292,14 +283,14 @@ export function EventForm({
           />
 
           <label className="flex items-center gap-2 text-sm">
-            <Switch checked={published} onCheckedChange={setPublished} /> Published
+            <Switch checked={published} onCheckedChange={setPublished} /> {t.published}
           </label>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           <div>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving…" : submitLabel}
+              {pending ? t.saving : submitLabel}
             </Button>
           </div>
         </CardContent>

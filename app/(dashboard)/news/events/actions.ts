@@ -1,5 +1,6 @@
 "use server";
 
+import { getDictionary } from "@/lib/i18n";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
@@ -42,7 +43,7 @@ export async function createNewsEvent(
   const taken = await prisma.newsEvent.findFirst({
     where: { tenantId, slug: parsed.data.slug },
   });
-  if (taken) return "Another event already uses that short code";
+  if (taken) return (await getDictionary()).newsEvents.errSlugTaken;
 
   // New events go to the top: the timeline reads newest first.
   const minSort = await prisma.newsEvent.aggregate({
@@ -80,7 +81,7 @@ export async function updateNewsEvent(
   const taken = await prisma.newsEvent.findFirst({
     where: { tenantId, slug: parsed.data.slug, id: { not: id } },
   });
-  if (taken) return "Another event already uses that short code";
+  if (taken) return (await getDictionary()).newsEvents.errSlugTaken;
 
   await prisma.newsEvent.updateMany({
     where: { id, tenantId },

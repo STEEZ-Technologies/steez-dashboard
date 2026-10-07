@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/provider";
 
 /* One language on screen at a time instead of English and Chinese side by
  * side. Every field is still rendered — the other language's fields are only
@@ -99,6 +100,7 @@ export function LanguageScope({ children }: { children: React.ReactNode }) {
 
 export function LanguageTabs({ className }: { className?: string }) {
   const scope = useContext(LanguageContext);
+  const { dict } = useT();
   if (!scope) return null;
   return (
     <div
@@ -107,7 +109,7 @@ export function LanguageTabs({ className }: { className?: string }) {
         className,
       )}
     >
-      <span className="pl-1 text-xs font-medium text-muted-foreground">Writing in</span>
+      <span className="pl-1 text-xs font-medium text-muted-foreground">{dict.editor.writingIn}</span>
       <Tabs value={scope.lang} onValueChange={(v) => v && scope.setLang(v as EditLang)}>
         <TabsList>
           {LANGS.map((l) => (
@@ -116,7 +118,7 @@ export function LanguageTabs({ className }: { className?: string }) {
               {scope.missing.includes(l.id) && (
                 <span
                   className="size-1.5 rounded-full bg-amber-500"
-                  aria-label="Some fields not translated yet"
+                  aria-label={dict.editor.notTranslated}
                 />
               )}
             </TabsTrigger>

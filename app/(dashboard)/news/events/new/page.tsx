@@ -1,15 +1,17 @@
 import { EventForm } from "@/components/news/EventForm";
 import { PageHeader } from "@/components/shell/page-header";
 import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
+import { getDictionary } from "@/lib/i18n";
 import { createNewsEvent } from "../actions";
 
-export default function NewEventPage() {
+export default async function NewEventPage() {
+  const t = (await getDictionary()).newsEvents;
   return (
     <div>
-      <PageHeader eyebrow="Catalog" title="New event" />
+      <PageHeader title={t.newTitle} />
       <LanguageScope>
         <LanguageTabs />
-        <EventForm action={createNewsEvent} submitLabel="Create event" />
+        <EventForm action={createNewsEvent} submitLabel={t.create} />
       </LanguageScope>
     </div>
   );
