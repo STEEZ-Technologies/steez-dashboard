@@ -8,6 +8,7 @@ import {
   isValidElement,
   type ReactNode,
   useCallback,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -154,13 +155,17 @@ function ChartInner({
   onPhaseChange,
 }: ChartInnerProps) {
   const lines = useMemo(() => extractAreaConfigs(children), [children]);
+  // Unique per chart: with a shared id, url(#…) resolves to the first clipPath
+  // in the document, so every chart was clipped to the first one's width (a
+  // sparkline's 86px cut the Overview's views-vs-clicks lines off).
+  const clipPathId = `chart-area-grow-clip-${useId()}`;
 
   return (
     <TimeSeriesChartInner
       animationDuration={animationDuration}
       animationEasing={animationEasing}
       chartStatus={chartStatus}
-      clipPathId="chart-area-grow-clip"
+      clipPathId={clipPathId}
       containerRef={containerRef}
       data={data}
       enterTransition={enterTransition}
