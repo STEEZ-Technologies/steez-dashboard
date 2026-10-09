@@ -602,6 +602,7 @@ export const en = {
     keepSignedIn: "Keep me signed in",
     resetPasswordLink: "Reset password",
     errInvalidCredentials: "Invalid email or password.",
+    errTooManyAttempts: "Too many sign-in attempts. Wait 5 minutes and try again.",
     errSomethingWrong: "Something went wrong.",
     errInvalidCode: "Invalid code. Try again or use a recovery code.",
     totpTitle: "Two-factor authentication",

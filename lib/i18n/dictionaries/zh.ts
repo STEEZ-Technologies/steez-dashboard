@@ -591,6 +591,7 @@ export const zh: Dictionary = {
     keepSignedIn: "保持登录",
     resetPasswordLink: "重置密码",
     errInvalidCredentials: "邮箱或密码错误。",
+    errTooManyAttempts: "登录尝试次数过多。请等待 5 分钟后重试。",
     errSomethingWrong: "出了点问题。",
     errInvalidCode: "验证码无效。请重试或使用恢复码。",
     totpTitle: "双重认证",

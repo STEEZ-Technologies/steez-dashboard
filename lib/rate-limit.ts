@@ -56,3 +56,8 @@ export async function checkRateLimit(
   ]);
   return true;
 }
+
+/** Drops every recorded hit for `key` — e.g. after a successful login. */
+export async function clearRateLimit(rawKey: string): Promise<void> {
+  await prisma.rateLimitHit.deleteMany({ where: { key: storedKey(rawKey) } });
+}

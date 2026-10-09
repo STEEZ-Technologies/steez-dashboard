@@ -4,8 +4,22 @@
     {
       "name": "steez-dashboard",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3002
+    },
+    {
+      "name": "komibright-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/yxngsterx/Projects/komibright-v2",
+        "run",
+        "dev"
+      ],
+      "port": 3100
     }
   ]
 }

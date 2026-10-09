@@ -37,7 +37,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
   };
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No activity yet.</p>;
+    return <p className="text-sm text-muted-foreground">{dict.analytics.noActivity}</p>;
   }
   return (
     <ul className="space-y-4">

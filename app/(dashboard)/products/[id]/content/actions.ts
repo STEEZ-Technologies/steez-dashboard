@@ -48,8 +48,10 @@ export async function updateProductContent(
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
   await captureRevision("product", productId, "child");
-  await prisma.productContent.update({
-    where: { id: contentId },
+  // updateMany so the row must belong to this (tenant-checked) product — a
+  // contentId from another tenant's product matches nothing.
+  await prisma.productContent.updateMany({
+    where: { id: contentId, productId },
     data: { textEn: data.textEn, textZh: data.textZh || null },
   });
   await touchParent("product", productId, tenantId);

@@ -248,7 +248,7 @@ export function ArticleForm({
                 }
               />
               <p className="text-xs text-muted-foreground">
-                The short summary above doubles as the description shown in Google — there's no
+                The short summary above doubles as the description shown in Google — there&apos;s no
                 separate field for it.
               </p>
             </div>

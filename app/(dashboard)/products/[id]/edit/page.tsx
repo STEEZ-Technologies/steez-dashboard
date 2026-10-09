@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BarChart3, ExternalLink } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";

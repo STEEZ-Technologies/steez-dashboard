@@ -35,7 +35,9 @@ describe("productInputSchema", () => {
       slug: "k6130",
       model: "K6130",
       name: "Concealed Cistern",
+      nameZh: "",
       description: "",
+      descriptionZh: "",
       imagePath: "",
     });
     expect(r.success).toBe(true);

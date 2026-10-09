@@ -49,7 +49,7 @@ export function ProductContent({
     <div>
       {items.length === 0 ? (
         <p className="mb-4 text-sm text-muted-foreground">
-          No box contents listed yet — e.g. "1x membrane housing", "2x mounting brackets".
+          No box contents listed yet — e.g. &quot;1x membrane housing&quot;, &quot;2x mounting brackets&quot;.
         </p>
       ) : (
         <ul className="mb-4 grid gap-3">

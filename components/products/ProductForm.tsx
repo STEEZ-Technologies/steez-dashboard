@@ -282,8 +282,8 @@ export function ProductForm({
                 </label>
                 <p className="text-sm text-muted-foreground">
                   Used by the &quot;Find your system&quot; quiz on the website to match customers to
-                  this product. Leave off if this machine's numbers aren't in the catalogue yet — an
-                  empty field means "not published," never a guess.
+                  this product. Leave off if this machine&apos;s numbers aren&apos;t in the catalogue yet — an
+                  empty field means &quot;not published,&quot; never a guess.
                 </p>
                 {hasFit && (
                   <div className="grid gap-4 sm:grid-cols-2">

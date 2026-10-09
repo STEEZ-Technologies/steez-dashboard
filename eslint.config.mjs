@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Vendored from the bklit shadcn registry (ui.bklit.com). Upstream code we
     // re-pull on updates, so it is not held to our react-hooks rules.
     "components/charts/**",
+    // Third-party minified bundles served as static files.
+    "public/vendor/**",
   ]),
 ]);
 

@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { authConfig } from "@/lib/auth.config";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, clearRateLimit } from "@/lib/rate-limit";
 import { verifyTotpToken, matchRecoveryCode } from "@/lib/totp";
 
 // Thrown from authorize() when the password is correct but a 2FA code is
@@ -14,6 +14,11 @@ export class TOTPRequiredError extends CredentialsSignin {
 }
 export class TOTPInvalidError extends CredentialsSignin {
   static type = "TOTPInvalid";
+}
+// Rate limit hit — surfaced separately so a correct password that's blocked
+// doesn't read as "Invalid email or password".
+export class RateLimitedError extends CredentialsSignin {
+  static type = "RateLimited";
 }
 
 // Unchecked "Keep me signed in" still gets a real session — just a short one,
@@ -39,7 +44,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         rememberMe: { label: "Keep me signed in", type: "text" },
       },
       authorize: async (credentials, request) => {
-        const email = credentials?.email as string | undefined;
+        // Accounts are stored lowercased (lib/validation.ts) — match that so
+        // "Owner@Konlito.com" or a pasted trailing space still signs in.
+        const email = (credentials?.email as string | undefined)?.trim().toLowerCase();
         const password = credentials?.password as string | undefined;
         const code = (credentials?.code as string | undefined)?.trim();
         // Native checkbox: "on" when checked, absent (undefined) when not.
@@ -53,7 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           checkRateLimit(`login:email:${email}`, { max: 5, windowMs: 5 * 60_000 }),
           checkRateLimit(`login:ip:${ip}`, { max: 20, windowMs: 5 * 60_000 }),
         ]);
-        if (!emailOk || !ipOk) return null;
+        if (!emailOk || !ipOk) throw new RateLimitedError();
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
@@ -77,6 +84,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             });
           }
         }
+
+        // Successful sign-in resets the per-email counter, so normal use
+        // (several logins, the 2FA step's second submit) never trips it.
+        await clearRateLimit(`login:email:${email}`);
 
         return {
           id: user.id,

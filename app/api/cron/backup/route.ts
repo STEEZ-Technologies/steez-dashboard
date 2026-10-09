@@ -9,8 +9,11 @@ export const maxDuration = 60;
  * so this endpoint can't be hit by anyone who finds the URL.
  */
 export async function GET(request: Request) {
+  // Fail closed: with CRON_SECRET unset the expected header would be the
+  // literal "Bearer undefined", which anyone could send.
+  const secret = process.env.CRON_SECRET;
   const auth = request.headers.get("authorization");
-  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!secret || auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -22,9 +22,10 @@ export async function authenticate(
 ): Promise<AuthenticateResult> {
   // STEEZ staff land on the tenant list; client users on their catalog.
   // Only picks a destination — credentials are still checked by signIn.
-  const email = formData.get("email");
+  const rawEmail = formData.get("email");
+  const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : null;
   const account =
-    typeof email === "string"
+    email
       ? await prisma.user.findUnique({
           where: { email },
           select: { tenant: { select: { slug: true } } },
@@ -35,7 +36,7 @@ export async function authenticate(
 
   try {
     await signIn("credentials", {
-      email: formData.get("email"),
+      email,
       password: formData.get("password"),
       code: formData.get("code") ?? undefined,
       rememberMe: formData.get("rememberMe") ?? undefined,
@@ -52,6 +53,8 @@ export async function authenticate(
           return { totpRequired: true };
         case "TOTPInvalid":
           return { totpRequired: true, error: dict.auth.errInvalidCode };
+        case "RateLimited":
+          return { error: dict.auth.errTooManyAttempts };
         case "CredentialsSignin":
           return { error: dict.auth.errInvalidCredentials };
         default:
