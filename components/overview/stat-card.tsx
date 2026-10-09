@@ -5,6 +5,7 @@ import { curveMonotoneX } from "@visx/curve";
 import { AreaChart } from "@/components/charts/area-chart";
 import { Area } from "@/components/charts/area";
 import { Card, CardContent } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/info-tip";
 import { cn } from "@/lib/utils";
 
 export function StatCard({
@@ -13,12 +14,14 @@ export function StatCard({
   delta,
   deltaSuffix = "%",
   spark,
+  info,
 }: {
   label: string;
   value: number | string;
   delta: number | null;
   deltaSuffix?: string;
   spark?: number[];
+  info?: string;
 }) {
   const up = delta != null && delta >= 0;
   const data = (spark ?? []).map((v, i) => ({ i, v }));
@@ -26,7 +29,10 @@ export function StatCard({
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-5">
-        <p className="eyebrow">{label}</p>
+        <p className="eyebrow">
+          {label}
+          {info && <InfoTip text={info} label={label} className="ml-1 align-[-2px]" />}
+        </p>
         <div className="mt-2 flex items-end justify-between gap-2">
           <span className="text-3xl font-extrabold tracking-tight tabular-nums">
             {typeof value === "number" ? value.toLocaleString() : value}

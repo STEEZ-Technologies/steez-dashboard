@@ -17,6 +17,9 @@ import {
   getDeviceBreakdown,
   getTopCountries,
   getProductPerformance,
+  getEntryPages,
+  getVisitLanguages,
+  productsByCtr,
   zeroViewProducts,
   viewedNotClickedProducts,
 } from "@/lib/analytics";
@@ -37,8 +40,16 @@ import { ActivityFeed } from "@/components/analytics/activity-feed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
 import { getDictionary, getLocale } from "@/lib/i18n";
+import { MetricTitle } from "@/components/shared/info-tip";
+import { humanizePath } from "@/lib/analytics-helpers";
 
 const ALLOWED = new Set(["7", "30", "90"]);
+
+// Sites whose visit id is held in memory and dies on a reload or new tab
+// (KomiBright stores nothing on the visitor's device), so a distinct session
+// is a visit, not a person. Konlito's id persists in localStorage, so there it
+// is a visitor.
+const SESSION_IS_VISIT = new Set(["komibright"]);
 
 // Overview and Analytics are one page: the headline numbers first, then the
 // breakdowns that used to live on /analytics (which now redirects here).
@@ -71,6 +82,9 @@ export default async function OverviewPage({
     performance,
     deals,
     markets,
+    enquiryCount,
+    entryPages,
+    languages,
   ] = await Promise.all([
     getKpis(tenantId, days),
     getViewsVsClicksByDay(tenantId, days),
@@ -85,13 +99,29 @@ export default async function OverviewPage({
     getProductPerformance(tenantId, days),
     getDealStats(tenantId, days),
     getEnquiryMarkets(tenantId, days),
+    prisma.lead.count({ where: { tenantId, status: { not: "ARCHIVED" } } }),
+    getEntryPages(tenantId, days),
+    getVisitLanguages(tenantId, days),
   ]);
+  // A site that doesn't send enquiries here yet (KomiBright's copy is off until
+  // its privacy policy covers it) would only show a wall of zeros; the sales
+  // cards appear with its first enquiry.
+  const showSales = enquiryCount > 0;
 
   const pvSpark = pv.map((d) => d.count);
   const viewSpark = series.map((d) => d.views);
   const clickSpark = series.map((d) => d.clicks);
   const noViews = zeroViewProducts(performance);
   const noClicks = viewedNotClickedProducts(performance);
+  const byCtr = productsByCtr(performance);
+  const pathLabels = {
+    home: dict.overview.pathHome,
+    category: dict.overview.pathCategory,
+    product: dict.overview.pathProduct,
+  };
+  const languageName = new Intl.DisplayNames([locale], { type: "language" });
+  // A single-language site (Konlito) would show one 100% bar — say nothing.
+  const showLanguages = languages.length > 1;
 
   return (
     <div>
@@ -126,33 +156,37 @@ export default async function OverviewPage({
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard label={dict.overview.pageViews} value={kpis.pageViews.value} delta={kpis.pageViews.delta} spark={pvSpark} />
-        <StatCard label={dict.analytics.uniqueVisitors} value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />
-        <StatCard label={dict.overview.productViews} value={kpis.productViews.value} delta={kpis.productViews.delta} spark={viewSpark} />
-        <StatCard label={dict.overview.productClicks} value={kpis.productClicks.value} delta={kpis.productClicks.delta} spark={clickSpark} />
+        <StatCard label={dict.overview.pageViews} info={dict.help.pageViews} value={kpis.pageViews.value} delta={kpis.pageViews.delta} spark={pvSpark} />
+        <StatCard label={SESSION_IS_VISIT.has(tenant.slug) ? dict.analytics.visits : dict.analytics.uniqueVisitors} info={SESSION_IS_VISIT.has(tenant.slug) ? dict.help.visits : dict.help.uniqueVisitors} value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />
+        <StatCard label={dict.overview.productViews} info={dict.help.productViews} value={kpis.productViews.value} delta={kpis.productViews.delta} spark={viewSpark} />
+        <StatCard label={dict.overview.productClicks} info={dict.help.productClicks} value={kpis.productClicks.value} delta={kpis.productClicks.delta} spark={clickSpark} />
         {/* Fifth card spans the row on phones instead of sitting alone. */}
         <div className="col-span-2 grid lg:col-span-1">
-          <StatCard label={dict.overview.ctr} value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
+          <StatCard label={dict.overview.ctr} info={dict.help.ctr} value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
         </div>
       </div>
 
-      <div className="mt-4">
-        <DealsCard stats={deals} days={days} dict={dict} />
-      </div>
+      {showSales && (
+        <>
+          <div className="mt-4">
+            <DealsCard stats={deals} days={days} dict={dict} />
+          </div>
 
-      <div className="mt-4">
-        <EnquiryMarkets
-          countries={markets.countries}
-          sources={markets.sources}
-          dict={dict}
-          locale={locale}
-        />
-      </div>
+          <div className="mt-4">
+            <EnquiryMarkets
+              countries={markets.countries}
+              sources={markets.sources}
+              dict={dict}
+              locale={locale}
+            />
+          </div>
+        </>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>{dict.overview.viewsVsClicks}</CardTitle>
+            <MetricTitle title={dict.overview.viewsVsClicks} info={dict.help.viewsVsClicks} />
           </CardHeader>
           <CardContent>
             <ViewsClicksChart data={series} />
@@ -161,7 +195,7 @@ export default async function OverviewPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>{dict.overview.recentActivity}</CardTitle>
+            <MetricTitle title={dict.overview.recentActivity} info={dict.help.recentActivity} />
           </CardHeader>
           <CardContent>
             <ActivityFeed items={activity} />
@@ -172,7 +206,7 @@ export default async function OverviewPage({
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.topByViews}</CardTitle>
+            <MetricTitle title={dict.analytics.topByViews} info={dict.help.topByViews} />
           </CardHeader>
           <CardContent>
             <RankBarChart
@@ -185,7 +219,7 @@ export default async function OverviewPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.topByClicks}</CardTitle>
+            <MetricTitle title={dict.analytics.topByClicks} info={dict.help.topByClicks} />
           </CardHeader>
           <CardContent>
             <RankBarChart
@@ -273,7 +307,7 @@ export default async function OverviewPage({
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.devices}</CardTitle>
+            <MetricTitle title={dict.analytics.devices} info={dict.help.devices} />
           </CardHeader>
           <CardContent>
             <DevicePie data={devices} />
@@ -281,7 +315,7 @@ export default async function OverviewPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.topReferrers}</CardTitle>
+            <MetricTitle title={dict.analytics.topReferrers} info={dict.help.topReferrers} />
           </CardHeader>
           <CardContent>
             <BarList
@@ -292,7 +326,7 @@ export default async function OverviewPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.topCountries}</CardTitle>
+            <MetricTitle title={dict.analytics.topCountries} info={dict.help.topCountries} />
           </CardHeader>
           <CardContent>
             <BarList
@@ -305,6 +339,55 @@ export default async function OverviewPage({
             />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <MetricTitle title={dict.analytics.entryPages} info={dict.help.entryPages} />
+          </CardHeader>
+          <CardContent>
+            <BarList
+              items={entryPages.map((e) => ({
+                label: e.path,
+                count: e.count,
+                node: e.name ?? humanizePath(e.path, pathLabels),
+              }))}
+            />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <MetricTitle title={dict.analytics.productCtr} info={dict.help.productCtr} />
+          </CardHeader>
+          <CardContent>
+            <BarList
+              items={byCtr.map((p) => ({
+                label: p.productId,
+                count: p.ctr ?? 0,
+                value: `${p.ctr}%`,
+                node: p.name,
+              }))}
+              emptyLabel={dict.analytics.productCtrEmpty}
+            />
+          </CardContent>
+        </Card>
+        {showLanguages && (
+          <Card>
+            <CardHeader>
+              <MetricTitle title={dict.analytics.languages} info={dict.help.languages} />
+            </CardHeader>
+            <CardContent>
+              <BarList
+                items={languages.map((l) => ({
+                  label: l.lang,
+                  count: l.count,
+                  node: languageName.of(l.lang) ?? l.lang,
+                }))}
+              />
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="mt-4">

@@ -3,11 +3,23 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { LinkButton } from "@/components/ui/link-button";
 import type { DealStats } from "@/lib/leads-stats";
 import type { Dictionary } from "@/lib/i18n";
+import { InfoTip } from "@/components/shared/info-tip";
 
-function Figure({ label, children }: { label: string; children: React.ReactNode }) {
+function Figure({
+  label,
+  info,
+  children,
+}: {
+  label: string;
+  info: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-w-0">
-      <p className="eyebrow">{label}</p>
+      <p className="eyebrow">
+        {label}
+        <InfoTip text={info} label={label} className="ml-1 align-[-2px]" />
+      </p>
       <div className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight">{children}</div>
     </div>
   );
@@ -43,12 +55,12 @@ export function DealsCard({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4">
-          <Figure label={t.dealsEnquiries}>{stats.enquiries}</Figure>
-          <Figure label={t.dealsWon}>{stats.won}</Figure>
-          <Figure label={t.dealsWinRate}>
+          <Figure label={t.dealsEnquiries} info={dict.help.dealsEnquiries}>{stats.enquiries}</Figure>
+          <Figure label={t.dealsWon} info={dict.help.dealsWon}>{stats.won}</Figure>
+          <Figure label={t.dealsWinRate} info={dict.help.dealsWinRate}>
             {stats.winRate == null ? "—" : `${stats.winRate}%`}
           </Figure>
-          <Figure label={t.dealsWonValue}>
+          <Figure label={t.dealsWonValue} info={dict.help.dealsWonValue}>
             {stats.wonValue.length === 0 ? (
               "—"
             ) : (

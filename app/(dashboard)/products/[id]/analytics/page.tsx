@@ -9,7 +9,8 @@ import { LinkButton } from "@/components/ui/link-button";
 import { RangeTabs } from "@/components/analytics/range-tabs";
 import { ViewsClicksChart } from "@/components/analytics/views-clicks-chart";
 import { BarList } from "@/components/analytics/bar-list";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { MetricTitle } from "@/components/shared/info-tip";
 import { getDictionary } from "@/lib/i18n";
 
 const ALLOWED = new Set(["7", "30", "90"]);
@@ -50,10 +51,11 @@ export default async function ProductAnalyticsPage({
       />
 
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label={dict.overview.productViews} value={data.views.value} delta={data.views.delta} />
-        <StatCard label={dict.overview.productClicks} value={data.clicks.value} delta={data.clicks.delta} />
+        <StatCard label={dict.overview.productViews} info={dict.help.productViews} value={data.views.value} delta={data.views.delta} />
+        <StatCard label={dict.overview.productClicks} info={dict.help.productClicks} value={data.clicks.value} delta={data.clicks.delta} />
         <StatCard
           label={dict.analytics.clickThrough}
+          info={dict.help.ctr}
           value={`${data.ctr.value}%`}
           delta={data.ctr.delta}
           deltaSuffix="pts"
@@ -63,7 +65,7 @@ export default async function ProductAnalyticsPage({
       <div className="mt-4">
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.viewsVsClicksTime}</CardTitle>
+            <MetricTitle title={dict.analytics.viewsVsClicksTime} info={dict.help.viewsVsClicks} />
           </CardHeader>
           <CardContent>
             <ViewsClicksChart data={data.byDay} />
@@ -74,7 +76,7 @@ export default async function ProductAnalyticsPage({
       <div className="mt-4">
         <Card>
           <CardHeader>
-            <CardTitle>{dict.analytics.topReferrers}</CardTitle>
+            <MetricTitle title={dict.analytics.topReferrers} info={dict.help.topReferrers} />
           </CardHeader>
           <CardContent>
             <BarList

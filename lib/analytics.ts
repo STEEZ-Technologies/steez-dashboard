@@ -1,6 +1,8 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import {
+  splitLanguage,
   daysAgo,
   pctDelta,
   ctrPercent,
@@ -226,6 +228,16 @@ export function zeroViewProducts(perf: ProductPerformance[]): ProductPerformance
  * Viewed but never clicked through — buyers found them and weren't convinced.
  * Usually a photo, price, or description problem rather than a traffic one.
  */
+/** Products ranked by click-through. Under MIN_VIEWS a rate is noise — one
+ *  view and one click would top the list at 100%. */
+const MIN_VIEWS = 5;
+export function productsByCtr(perf: ProductPerformance[], limit = 8) {
+  return perf
+    .filter((p) => p.views >= MIN_VIEWS && p.ctr !== null)
+    .sort((a, b) => (b.ctr ?? 0) - (a.ctr ?? 0) || b.views - a.views)
+    .slice(0, limit);
+}
+
 export function viewedNotClickedProducts(
   perf: ProductPerformance[],
 ): ProductPerformance[] {
@@ -234,34 +246,81 @@ export function viewedNotClickedProducts(
     .sort((a, b) => b.views - a.views);
 }
 
-export async function getTopReferrers(tenantId: string, days = 30, limit = 8) {
+/* Breakdowns count each visit once, by its first page. Counting every page view
+   lets one visitor who reads ten pages outweigh ten who read one — and every
+   page in a visit carries the referrer it arrived with, so a source's share
+   would track how deep its visitors browse, not how many it sends.
+   cache() runs it once per request however many breakdowns ask for it. */
+const firstViewPerVisit = cache((tenantId: string, days: number) => {
   const since = daysAgo(days);
-  const rows = await prisma.pageView.findMany({
-    where: { tenantId, createdAt: { gte: since } },
-    select: { referrer: true },
-  });
+  return prisma.$queryRaw<
+    {
+      path: string;
+      referrer: string | null;
+      userAgent: string | null;
+      country: string | null;
+    }[]
+  >`
+    SELECT DISTINCT ON ("sessionId") "path", "referrer", "userAgent", "country"
+    FROM "PageView"
+    WHERE "tenantId" = ${tenantId} AND "createdAt" >= ${since}
+    ORDER BY "sessionId", "createdAt" ASC`;
+});
+
+function countTop(keys: (string | null)[], limit: number) {
   const counts = new Map<string, number>();
-  for (const r of rows) {
-    const host = hostOf(r.referrer);
-    counts.set(host, (counts.get(host) ?? 0) + 1);
-  }
+  for (const k of keys) if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
   return Array.from(counts.entries())
-    .map(([source, count]) => ({ source, count }))
+    .map(([key, count]) => ({ key, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, limit);
+}
+
+/** The page each visit landed on — what search and ads actually send people
+ *  to. Language prefixes are folded in; the languages card splits those out. */
+export async function getEntryPages(tenantId: string, days = 30, limit = 8) {
+  const rows = await firstViewPerVisit(tenantId, days);
+  const top = countTop(rows.map((r) => splitLanguage(r.path).path), limit);
+  // A product page reads better as the product's own name than its URL slug.
+  const slugs = top
+    .map(({ key }) => key.match(/^\/products?\/([^/]+)$/)?.[1])
+    .filter((s): s is string => !!s);
+  const products = slugs.length
+    ? await prisma.product.findMany({
+        where: { tenantId, slug: { in: slugs } },
+        select: { slug: true, name: true },
+      })
+    : [];
+  const nameOf = new Map(products.map((p) => [p.slug, p.name]));
+  return top.map(({ key, count }) => ({
+    path: key,
+    count,
+    name: nameOf.get(key.split("/").pop() ?? "") ?? null,
+  }));
+}
+
+/** Which language each visit started in, as a language code. */
+export async function getVisitLanguages(tenantId: string, days = 30) {
+  const rows = await firstViewPerVisit(tenantId, days);
+  return countTop(rows.map((r) => splitLanguage(r.path).lang), 10).map(
+    ({ key, count }) => ({ lang: key, count }),
+  );
+}
+
+export async function getTopReferrers(tenantId: string, days = 30, limit = 8) {
+  const rows = await firstViewPerVisit(tenantId, days);
+  return countTop(rows.map((r) => hostOf(r.referrer)), limit).map(
+    ({ key, count }) => ({ source: key, count }),
+  );
 }
 
 /* ── Device breakdown ─────────────────────────────────────────── */
 
 export async function getDeviceBreakdown(tenantId: string, days = 30) {
-  const since = daysAgo(days);
-  const rows = await prisma.pageView.findMany({
-    where: { tenantId, createdAt: { gte: since } },
-    select: { userAgent: true },
-  });
+  const rows = await firstViewPerVisit(tenantId, days);
   // Tablets are folded into Mobile rather than shown as their own slice: the
   // split isn't actionable for a catalog owner, and keeping the bucket means
-  // the breakdown still adds up to total page views.
+  // the breakdown still adds up to total visits.
   const counts = { Desktop: 0, Mobile: 0 };
   for (const r of rows) {
     const device = deviceOf(r.userAgent);
@@ -321,18 +380,10 @@ export async function getRecentActivity(tenantId: string, limit = 12): Promise<A
 /* ── Geo (offline geoip-lite, populated on the track endpoint) ─── */
 
 export async function getTopCountries(tenantId: string, days = 30, limit = 8) {
-  const since = daysAgo(days);
-  const grouped = await prisma.pageView.groupBy({
-    by: ["country"],
-    where: { tenantId, country: { not: null }, createdAt: { gte: since } },
-    _count: { country: true },
-    orderBy: { _count: { country: "desc" } },
-    take: limit,
-  });
-  return grouped.map((g) => ({
-    country: g.country as string,
-    count: g._count.country,
-  }));
+  const rows = await firstViewPerVisit(tenantId, days);
+  return countTop(rows.map((r) => r.country), limit).map(
+    ({ key, count }) => ({ country: key, count }),
+  );
 }
 
 /* ── Per-product drill-down ───────────────────────────────────── */

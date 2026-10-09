@@ -3,7 +3,8 @@ export function BarList({
   emptyLabel = "No data yet.",
 }: {
   /** `node` replaces the plain label text, e.g. a country with its flag. */
-  items: { label: string; count: number; node?: React.ReactNode }[];
+  /** `value` replaces the printed count, e.g. "42%"; the bar still uses `count`. */
+  items: { label: string; count: number; node?: React.ReactNode; value?: string }[];
   emptyLabel?: string;
 }) {
   if (items.length === 0) {
@@ -17,7 +18,7 @@ export function BarList({
           <div className="flex items-center justify-between gap-3 px-2.5 py-1.5">
             <span className="z-10 truncate text-sm font-medium">{item.node ?? item.label}</span>
             <span className="z-10 text-sm tabular-nums text-muted-foreground">
-              {item.count.toLocaleString()}
+              {item.value ?? item.count.toLocaleString()}
             </span>
           </div>
           <div

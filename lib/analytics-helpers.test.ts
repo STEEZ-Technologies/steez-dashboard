@@ -5,6 +5,7 @@ import {
   hostOf,
   deviceOf,
   bucketByDay,
+  splitLanguage,
 } from "./analytics-helpers";
 
 describe("pctDelta", () => {
@@ -67,5 +68,16 @@ describe("bucketByDay", () => {
   });
   it("returns empty array for no rows", () => {
     expect(bucketByDay([])).toEqual([]);
+  });
+});
+
+describe("splitLanguage", () => {
+  it("treats an unprefixed path as English", () => {
+    expect(splitLanguage("/products/kb-c25r/")).toEqual({ lang: "en", path: "/products/kb-c25r" });
+    expect(splitLanguage("/")).toEqual({ lang: "en", path: "/" });
+  });
+  it("strips a language prefix, query and trailing slash", () => {
+    expect(splitLanguage("/zh/products/kb-c25r/?ref=x")).toEqual({ lang: "zh", path: "/products/kb-c25r" });
+    expect(splitLanguage("/ja")).toEqual({ lang: "ja", path: "/" });
   });
 });
