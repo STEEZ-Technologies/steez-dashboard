@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { ArrowRight, Building2, Globe, KeyRound, Plus } from "lucide-react";
+import { ArrowRight, Building2, Globe, KeyRound, Plus, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { LinkButton } from "@/components/ui/link-button";
 import { EmptyState } from "@/components/shell/empty-state";
 import {
   createTenant,
@@ -44,6 +45,8 @@ export type TenantRow = {
   ownerEmail: string | null;
   deployHookUrl: string | null;
   siteUrl: string | null;
+  /** Has a site that can be handed over to the client's own hosting. */
+  canHandOver: boolean;
 };
 
 export function TenantsPanel({
@@ -206,6 +209,17 @@ export function TenantsPanel({
                     >
                       <Globe className="size-4" />
                     </Button>
+                    {tenant.canHandOver && (
+                      <LinkButton
+                        variant="ghost"
+                        size="icon-sm"
+                        href={`/admin/handover/${tenant.slug}`}
+                        aria-label={dict.handover.action}
+                        title={dict.handover.action}
+                      >
+                        <Send className="size-4" />
+                      </LinkButton>
+                    )}
                     {tenant.ownerId && (
                       <Button
                         variant="ghost"

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/super-admin";
 import { PageHeader } from "@/components/shell/page-header";
 import { getDictionary } from "@/lib/i18n";
+import { handoverFor } from "@/lib/handover";
 import { TenantsPanel, type TenantRow } from "@/components/admin/tenants-panel";
 
 export default async function AdminPage() {
@@ -33,6 +34,7 @@ export default async function AdminPage() {
     ownerEmail: t.users[0]?.email ?? null,
     deployHookUrl: t.deployHookUrl,
     siteUrl: t.siteUrl,
+    canHandOver: handoverFor(t.slug) !== null,
   }));
 
   return (

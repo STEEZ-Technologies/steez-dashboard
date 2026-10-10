@@ -27,6 +27,7 @@ export function Breadcrumbs() {
     settings: dict.nav.settings,
     leads: dict.nav.leads,
     admin: dict.nav.admin,
+    handover: dict.handover.action,
     news: dict.nav.news,
     resources: dict.nav.resources,
     events: dict.newsEvents.title,
