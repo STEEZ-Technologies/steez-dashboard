@@ -3,10 +3,10 @@ import { deployKeyValid, dispatchDeploy, githubConfigured, handoverFor } from "@
 
 /**
  * The deploy hook of a workspace whose site has been handed over to the
- * client's own Cloudflare account (see lib/handover.ts). Publish POSTs here
+ * client's own Alibaba Cloud account (see lib/handover.ts). Publish POSTs here
  * exactly as it would to a Pages deploy hook; this starts the repo's
- * deploy-client workflow, which rebuilds and deploys into their account.
- * Never goes live — repointing DNS happens once, from /admin/handover.
+ * deploy-client workflow, which rebuilds and uploads into their account.
+ * Only ever the `publish` step — DNS is changed from /admin/handover alone.
  */
 export async function POST(
   request: Request,
@@ -23,7 +23,7 @@ export async function POST(
   }
 
   try {
-    await dispatchDeploy(cfg, false);
+    await dispatchDeploy(cfg, "publish");
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Handover deploy failed:", error);

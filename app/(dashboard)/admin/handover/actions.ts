@@ -6,72 +6,100 @@ import { prisma } from "@/lib/db";
 import { requireSuperAdmin } from "@/lib/super-admin";
 import { logAudit } from "@/lib/audit";
 import {
+  checkAliyun,
   deployKey,
   dispatchDeploy,
   githubConfigured,
   handoverFor,
-  prepareCloudflare,
+  onAliyunDns,
   setRepoSecret,
 } from "@/lib/handover";
 
-export type TransferResult = { error: string } | { ok: true; pagesDev: string };
-
 /**
- * The one-click handover: move a workspace's live site into the client's own
- * Cloudflare account. The client's token goes straight into the site repo's
+ * Step 1 of the handover: upload the site into the client's own Alibaba
+ * Cloud account and move the domain's DNS there, records copied first so
+ * nothing visible changes. The AccessKey goes straight into the site repo's
  * encrypted Actions secrets — it is never stored here or logged.
  */
-export async function transferSite(slug: string, formData: FormData): Promise<TransferResult> {
+export async function transferSite(slug: string, formData: FormData): Promise<string | undefined> {
   const admin = await requireSuperAdmin();
 
   const cfg = handoverFor(slug);
-  if (!cfg) return { error: "This workspace has no handover set up" };
-  if (!githubConfigured()) return { error: "HANDOVER_GITHUB_TOKEN is not set on the dashboard" };
+  if (!cfg) return "This workspace has no handover set up";
+  if (!githubConfigured()) return "HANDOVER_GITHUB_TOKEN is not set on the dashboard";
 
-  const accountId = String(formData.get("accountId") ?? "").trim();
-  const token = String(formData.get("apiToken") ?? "").trim();
-  const goLive = formData.get("goLive") === "on";
-  if (!/^[0-9a-f]{32}$/i.test(accountId)) return { error: "Account ID is 32 hex characters" };
-  if (token.length < 20) return { error: "Paste the client's API token" };
+  const akId = String(formData.get("akId") ?? "").trim();
+  const akSecret = String(formData.get("akSecret") ?? "").trim();
+  if (!/^LTAI[0-9A-Za-z]{12,}$/.test(akId)) return "An AccessKey ID starts with LTAI";
+  if (akSecret.length < 20) return "Paste the AccessKey secret";
 
-  const tenant = await prisma.tenant.findUnique({
-    where: { slug },
-    select: { id: true, name: true, siteUrl: true },
-  });
-  if (!tenant) return { error: "Workspace not found" };
+  const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true, name: true } });
+  if (!tenant) return "Workspace not found";
 
-  const prep = await prepareCloudflare(cfg, accountId, token);
-  if ("error" in prep) return prep;
+  const problem = await checkAliyun(cfg, akId, akSecret);
+  if (problem) return problem;
 
   try {
-    await setRepoSecret(cfg, "CLIENT_CF_ACCOUNT_ID", accountId);
-    await setRepoSecret(cfg, "CLIENT_CF_API_TOKEN", token);
-    await dispatchDeploy(cfg, goLive);
+    await setRepoSecret(cfg, "CLIENT_ALIYUN_AK_ID", akId);
+    await setRepoSecret(cfg, "CLIENT_ALIYUN_AK_SECRET", akSecret);
+    await dispatchDeploy(cfg, "handover");
   } catch (error) {
     console.error("Handover failed:", error);
-    return { error: error instanceof Error ? error.message : "GitHub request failed" };
+    return error instanceof Error ? error.message : "GitHub request failed";
   }
 
-  // From now on Publish deploys into the client's account.
+  // From now on Publish uploads into the client's account.
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   await prisma.tenant.update({
     where: { id: tenant.id },
-    data: {
-      deployHookUrl: `${proto}://${host}/api/handover/${slug}/deploy?key=${deployKey(slug)}`,
-      siteUrl: goLive ? cfg.siteUrl : tenant.siteUrl,
-    },
+    data: { deployHookUrl: `${proto}://${host}/api/handover/${slug}/deploy?key=${deployKey(slug)}` },
   });
 
   await logAudit({
     action: "platform.site_handover",
     entity: "tenant",
     entityId: tenant.id,
-    detail: `${tenant.name} → Cloudflare account ${accountId}${goLive ? `, live on ${cfg.domains.join(" + ")}` : ""} by ${admin.email}`,
+    detail: `${tenant.name} → Alibaba Cloud (AccessKey ${akId.slice(0, 8)}…) by ${admin.email}`,
   });
 
   revalidatePath("/admin");
   revalidatePath(`/admin/handover/${slug}`);
-  return { ok: true, pagesDev: prep.pagesDev };
+  return undefined;
+}
+
+/**
+ * Step 2: point the domains at the new site. Only once the domain resolves
+ * through Alibaba Cloud DNS — before that, the records go-live writes would
+ * sit in a zone nobody asks.
+ */
+export async function goLive(slug: string): Promise<string | undefined> {
+  const admin = await requireSuperAdmin();
+
+  const cfg = handoverFor(slug);
+  if (!cfg) return "This workspace has no handover set up";
+  if (!githubConfigured()) return "HANDOVER_GITHUB_TOKEN is not set on the dashboard";
+  if (!(await onAliyunDns(cfg)).aliyun) return `${cfg.domains[0]} doesn't answer from Alibaba Cloud DNS yet`;
+
+  const tenant = await prisma.tenant.findUnique({ where: { slug }, select: { id: true, name: true } });
+  if (!tenant) return "Workspace not found";
+
+  try {
+    await dispatchDeploy(cfg, "go_live");
+  } catch (error) {
+    console.error("Go-live failed:", error);
+    return error instanceof Error ? error.message : "GitHub request failed";
+  }
+
+  await prisma.tenant.update({ where: { id: tenant.id }, data: { siteUrl: cfg.siteUrl } });
+  await logAudit({
+    action: "platform.site_go_live",
+    entity: "tenant",
+    entityId: tenant.id,
+    detail: `${tenant.name} live on ${cfg.domains.join(" + ")} by ${admin.email}`,
+  });
+
+  revalidatePath("/", "layout");
+  return undefined;
 }

@@ -2,13 +2,12 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, CircleAlert, ExternalLink, Loader2, Send } from "lucide-react";
+import { CheckCircle2, CircleAlert, ExternalLink, Globe, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -20,17 +19,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { transferSite } from "@/app/(dashboard)/admin/handover/actions";
+import { goLive, transferSite } from "@/app/(dashboard)/admin/handover/actions";
 import type { DeployRun } from "@/lib/handover";
 import { useT } from "@/lib/i18n/provider";
 
-const TOKEN_URL = "https://dash.cloudflare.com/profile/api-tokens";
+const RAM_URL = "https://ram.console.aliyun.com/users";
 
 export function HandoverPanel({
   slug,
   name,
   domains,
-  project,
+  dns,
   githubReady,
   originsReady,
   runs,
@@ -38,7 +37,7 @@ export function HandoverPanel({
   slug: string;
   name: string;
   domains: string[];
-  project: string;
+  dns: { aliyun: boolean; servers: string[] };
   githubReady: boolean;
   originsReady: boolean;
   runs: DeployRun[];
@@ -47,15 +46,15 @@ export function HandoverPanel({
   const t = dict.handover;
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [goLive, setGoLive] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pagesDev, setPagesDev] = useState<string | null>(null);
+  const [transferError, setTransferError] = useState<string | null>(null);
+  const [liveError, setLiveError] = useState<string | null>(null);
   const [watchUntil, setWatchUntil] = useState(0);
-  const [pending, startTransition] = useTransition();
+  const [transferring, startTransfer] = useTransition();
+  const [launching, startLaunch] = useTransition();
 
+  const zone = domains[0];
   const domainList = domains.join(" + ");
-  const preview = pagesDev ?? `${project}.pages.dev`;
 
   // Poll while a deploy is running, and for a minute after starting one —
   // GitHub takes a few seconds to list a freshly dispatched run.
@@ -66,23 +65,30 @@ export function HandoverPanel({
     return () => clearInterval(id);
   }, [running, watchUntil, router]);
 
-  function submit() {
-    if (!formRef.current) return;
-    const formData = new FormData(formRef.current);
-    if (goLive) formData.set("goLive", "on");
-    setError(null);
-    startTransition(async () => {
-      const res = await transferSite(slug, formData);
-      if ("error" in res) {
-        setError(res.error);
-        return;
-      }
-      setPagesDev(res.pagesDev);
+  function started() {
+    setWatchUntil(Date.now() + 60_000);
+    toast.success(t.started);
+    router.refresh();
+  }
+
+  function transfer(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setTransferError(null);
+    startTransfer(async () => {
+      const err = await transferSite(slug, formData);
+      if (err) return setTransferError(err);
       formRef.current?.reset();
-      setGoLive(false);
-      setWatchUntil(Date.now() + 60_000);
-      toast.success(t.started);
-      router.refresh();
+      started();
+    });
+  }
+
+  function launch() {
+    setLiveError(null);
+    startLaunch(async () => {
+      const err = await goLive(slug);
+      if (err) return setLiveError(err);
+      started();
     });
   }
 
@@ -97,14 +103,14 @@ export function HandoverPanel({
             <div className="flex gap-2 text-sm">
               <CircleAlert className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <span>
-                {t.checkToken.replace("{zone}", domains[0])}{" "}
+                {t.checkKey.replace("{zone}", zone)}{" "}
                 <a
-                  href={TOKEN_URL}
+                  href={RAM_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 underline underline-offset-2"
                 >
-                  {t.createToken} <ExternalLink className="size-3" />
+                  {t.createKey} <ExternalLink className="size-3" />
                 </a>
               </span>
             </div>
@@ -112,63 +118,62 @@ export function HandoverPanel({
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <form
-              ref={formRef}
-              className="grid gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (goLive) setConfirming(true);
-                else submit();
-              }}
-            >
+          <CardContent className="grid gap-4 p-6">
+            <div className="grid gap-1">
+              <h2 className="text-base font-semibold">{t.step1}</h2>
+              <p className="text-sm text-muted-foreground">{t.step1Desc.replace("{zone}", zone)}</p>
+            </div>
+            <form ref={formRef} className="grid gap-4" onSubmit={transfer}>
               <div className="grid gap-2">
-                <Label htmlFor="accountId">{t.accountId}</Label>
-                <Input
-                  id="accountId"
-                  name="accountId"
-                  required
-                  autoComplete="off"
-                  spellCheck={false}
-                  pattern="[0-9a-fA-F]{32}"
-                  className="font-mono"
-                />
-                <p className="text-xs text-muted-foreground">{t.accountIdHelp}</p>
+                <Label htmlFor="akId">{t.akId}</Label>
+                <Input id="akId" name="akId" required autoComplete="off" spellCheck={false} className="font-mono" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="apiToken">{t.apiToken}</Label>
+                <Label htmlFor="akSecret">{t.akSecret}</Label>
                 <Input
-                  id="apiToken"
-                  name="apiToken"
+                  id="akSecret"
+                  name="akSecret"
                   type="password"
                   required
                   autoComplete="off"
                   spellCheck={false}
                   className="font-mono"
                 />
-                <p className="text-xs text-muted-foreground">{t.apiTokenHelp}</p>
+                <p className="text-xs text-muted-foreground">{t.akHelp}</p>
               </div>
-              <label className="flex items-start gap-3 rounded-lg border p-3">
-                <Checkbox
-                  checked={goLive}
-                  onCheckedChange={(v) => setGoLive(Boolean(v))}
-                  className="mt-0.5"
-                />
-                <span className="grid gap-1">
-                  <span className="text-sm font-medium">
-                    {t.goLive.replace("{domains}", domainList)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t.goLiveHelp.replace("{pagesDev}", preview)}
-                  </span>
-                </span>
-              </label>
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <Button type="submit" size="lg" disabled={pending || !githubReady}>
-                {pending ? <Loader2 className="animate-spin" /> : <Send />}
-                {pending ? t.transferring : t.transfer.replace("{name}", name)}
+              {transferError && <p className="text-sm text-destructive">{transferError}</p>}
+              <Button type="submit" size="lg" disabled={transferring || !githubReady}>
+                {transferring ? <Loader2 className="animate-spin" /> : <Send />}
+                {transferring ? t.transferring : t.transfer.replace("{name}", name)}
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="grid gap-4 p-6">
+            <div className="grid gap-1">
+              <h2 className="text-base font-semibold">{t.step2}</h2>
+              <p className="text-sm text-muted-foreground">{t.step2Desc.replace("{domains}", domainList)}</p>
+            </div>
+            <Check
+              ok={dns.aliyun}
+              label={
+                dns.aliyun
+                  ? t.dnsAliyun.replace("{zone}", zone)
+                  : t.dnsElsewhere.replace("{zone}", zone).replace("{servers}", dns.servers.join(", ") || "—")
+              }
+            />
+            {liveError && <p className="text-sm text-destructive">{liveError}</p>}
+            <Button
+              size="lg"
+              variant="outline"
+              disabled={launching || !githubReady || !dns.aliyun}
+              onClick={() => setConfirming(true)}
+            >
+              {launching ? <Loader2 className="animate-spin" /> : <Globe />}
+              {launching ? t.goingLive : t.goLive}
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -199,14 +204,6 @@ export function HandoverPanel({
                 </div>
               ))
             )}
-            <a
-              href={`https://${preview}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 text-xs text-muted-foreground underline underline-offset-2"
-            >
-              {t.preview.replace("{url}", preview)}
-            </a>
           </CardContent>
         </Card>
       </div>
@@ -222,7 +219,7 @@ export function HandoverPanel({
             <AlertDialogAction
               onClick={() => {
                 setConfirming(false);
-                submit();
+                launch();
               }}
             >
               {t.confirm}
