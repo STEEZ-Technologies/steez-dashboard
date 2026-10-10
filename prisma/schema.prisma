@@ -42,6 +42,7 @@ model Tenant {
   articles      Article[]
   guides        Guide[]
   newsEvents    NewsEvent[]
+  videos        Video[]
   manualFacts   ManualFact[]
   productEvents ProductEvent[]
   pageViews     PageView[]
@@ -354,6 +355,35 @@ model NewsEvent {
   updatedAt  DateTime        @updatedAt
 
   @@unique([tenantId, slug])
+  @@index([tenantId])
+}
+
+// The site's video shelf (komibright-v2 components/resources/VideoShelf.tsx,
+// on the Resources page). Every video lives on YouTube; the site never embeds
+// it — YouTube is blocked in mainland China — and links out from a poster it
+// serves itself, so all that is stored here is the id and how to label it.
+enum VideoKind {
+  PRESS
+  DISTRIBUTOR
+  TRAINING
+  PRODUCT
+}
+
+model Video {
+  id        String    @id @default(cuid())
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
+  youtubeId String // the 11-character id, also the site's key for the video
+  short     Boolean   @default(false) // a Short: portrait, linked at /shorts/
+  kind      VideoKind @default(PRODUCT)
+  titleEn   String
+  titleZh   String?
+  sortOrder Int       @default(0)
+  published Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([tenantId, youtubeId])
   @@index([tenantId])
 }
 

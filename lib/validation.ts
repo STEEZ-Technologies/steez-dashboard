@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseYouTube } from "@/lib/youtube";
 
 const slugField = z
   .string()
@@ -232,7 +233,26 @@ export const newsEventInputSchema = z
     path: ["endDate"],
   });
 
+export const videoInputSchema = z.object({
+  video: z
+    .string()
+    .trim()
+    .min(1, { error: "Paste the video's YouTube link" })
+    .transform((v, ctx) => {
+      const parsed = parseYouTube(v);
+      if (!parsed) {
+        ctx.addIssue({ code: "custom", message: "That isn't a YouTube video link" });
+        return z.NEVER;
+      }
+      return parsed;
+    }),
+  kind: z.enum(["PRESS", "DISTRIBUTOR", "TRAINING", "PRODUCT"]),
+  titleEn: z.string().trim().min(1, { error: "English title is required" }),
+  titleZh: optionalText,
+});
+
 export type ArticleInput = z.infer<typeof articleInputSchema>;
+export type VideoInput = z.infer<typeof videoInputSchema>;
 export type NewsEventInput = z.infer<typeof newsEventInputSchema>;
 export type ArticleBlockInput = z.infer<typeof articleBlockInputSchema>;
 export type GuideInput = z.infer<typeof guideInputSchema>;
