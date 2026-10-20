@@ -143,6 +143,10 @@ model Product {
   nameZh        String?
   description   String?
   descriptionZh String?
+  // The other four languages KomiBright's site is published in:
+  // { fr?: { name?, description? }, it?: …, es?: …, ja?: … }. A missing key
+  // means "not edited here" — the site keeps its own copy for that language.
+  i18n          Json?
   // kind/useCases: komibright's catalogue browser facets — machine vs
   // accessory, and which use-case scenes a product belongs to. Optional
   // defaults keep Konlito's existing products unaffected (kind defaults to
@@ -171,6 +175,7 @@ model Product {
   images        ProductImage[]
   models3d      ProductModel3D[]
   contents      ProductContent[]
+  applications  ProductApplication[]
   fit           ProductFit?
   leads         Lead[]
 
@@ -188,6 +193,24 @@ model ProductContent {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   textEn    String
   textZh    String?
+  textI18n  Json? // { fr?, it?, es?, ja? }
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// Extra "Suited to" labels on komibright's product page (Household,
+// Commercial, Light industry…), shown beside the use-case chips. Free text,
+// not use cases: they drive no filter, finder or homepage scene. Same shape
+// as ProductContent.
+model ProductApplication {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  textEn    String
+  textZh    String?
+  textI18n  Json? // { fr?, it?, es?, ja? }
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
