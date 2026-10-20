@@ -30,7 +30,7 @@ async function loadRow(db: Db, tenantId: string, entity: RevisionEntity, id: str
     case "product":
       return db.product.findFirst({
         where,
-        include: { fit: true, images: asc, contents: asc, finishes: asc, models3d: asc },
+        include: { fit: true, images: asc, contents: asc, applications: asc, finishes: asc, models3d: asc },
       });
     case "article":
       return db.article.findFirst({ where, include: { blocks: asc } });
@@ -140,7 +140,7 @@ export async function setUpdatedAt(entity: RevisionEntity, id: string, tenantId:
 
 // ---- restore -------------------------------------------------------------
 
-const JSON_FIELDS = new Set(["specs", "itemsEn", "itemsZh"]);
+const JSON_FIELDS = new Set(["specs", "itemsEn", "itemsZh", "i18n", "textI18n"]);
 const DATE_FIELDS = new Set(["publishedAt"]);
 
 // Json columns can't take a bare null through Prisma, and dates come back
@@ -212,6 +212,12 @@ async function writeSnapshot(
       await tx.productImage.createMany({ data: childRows(snap, "images", productId) as Prisma.ProductImageCreateManyInput[] });
       await tx.productContent.deleteMany({ where: productId });
       await tx.productContent.createMany({ data: childRows(snap, "contents", productId) as Prisma.ProductContentCreateManyInput[] });
+      // A version saved before these labels existed has no "applications"
+      // key; leave the current labels alone rather than deleting them.
+      if ("applications" in snap) {
+        await tx.productApplication.deleteMany({ where: productId });
+        await tx.productApplication.createMany({ data: childRows(snap, "applications", productId) as Prisma.ProductApplicationCreateManyInput[] });
+      }
       await tx.productFinish.deleteMany({ where: productId });
       await tx.productFinish.createMany({ data: childRows(snap, "finishes", productId) as Prisma.ProductFinishCreateManyInput[] });
       await tx.productModel3D.deleteMany({ where: productId });

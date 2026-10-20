@@ -1,3 +1,4 @@
+import { readProductI18n, readTextI18n } from "@/lib/product-i18n";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
@@ -58,6 +59,7 @@ export async function GET(
       images: { orderBy: { sortOrder: "asc" } },
       models3d: { orderBy: { sortOrder: "asc" } },
       contents: { orderBy: { sortOrder: "asc" } },
+      applications: { orderBy: { sortOrder: "asc" } },
       fit: true,
     },
   });
@@ -78,6 +80,9 @@ export async function GET(
     nameZh: product.nameZh,
     description: product.description,
     descriptionZh: product.descriptionZh,
+    // French, Italian, Spanish and Japanese name/description, only the ones
+    // actually written — { fr: { name, description }, … }.
+    i18n: readProductI18n(product.i18n),
     kind: KIND[product.kind],
     useCases: product.useCases.map((u) => USE_CASE[u]),
     image: heroUrl ?? images[0] ?? null,
@@ -94,7 +99,13 @@ export async function GET(
       image: getPublicUrl(finish.imagePath),
       accent: finish.accentHex,
     })),
-    contents: product.contents.map((c) => ({ en: c.textEn, zh: c.textZh })),
+    contents: product.contents.map((c) => ({ en: c.textEn, zh: c.textZh, ...readTextI18n(c.textI18n) })),
+    // Extra "Suited to" labels, shown beside the use cases.
+    applications: product.applications.map((a) => ({
+      en: a.textEn,
+      zh: a.textZh,
+      ...readTextI18n(a.textI18n),
+    })),
     fit: product.fit
       ? {
           litresPerDay: product.fit.litresPerDay,

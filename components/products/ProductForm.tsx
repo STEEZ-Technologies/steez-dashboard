@@ -17,13 +17,21 @@ import {
 } from "@/components/ui/select";
 import { ImageUploadField } from "@/components/shared/ImageUploadField";
 import { SpecRows } from "@/components/products/spec-rows";
-import { Bilingual } from "@/components/shared/language-tabs";
+import { Multilingual, useEditsLanguage } from "@/components/shared/language-tabs";
+import { EXTRA_LANGS, type ExtraLang, type ProductI18n } from "@/lib/product-i18n";
 import { ProductTabPanel } from "@/components/products/product-tabs";
 
 type ProductKindValue = "MACHINE" | "ACCESSORY";
 type UseCaseValue = "KITCHEN" | "HOSPITALITY" | "LAB" | "MOBILE";
 type DispensingValue = "TANK" | "JAR" | "DIRECT";
 type SourceValue = "MAINS" | "OPEN";
+
+const LANG_NAMES: Record<ExtraLang, string> = {
+  fr: "French",
+  it: "Italian",
+  es: "Spanish",
+  ja: "Japanese",
+};
 
 const USE_CASES: { value: UseCaseValue; label: string }[] = [
   { value: "KITCHEN", label: "Kitchen" },
@@ -39,6 +47,7 @@ type ProductFormValues = {
   nameZh: string;
   description: string;
   descriptionZh: string;
+  i18n: ProductI18n;
   imagePath: string;
   categoryId: string;
   specsText: string;
@@ -87,6 +96,13 @@ export function ProductForm({
     defaultValues?.fit?.dispensing ?? "TANK",
   );
   const [powered, setPowered] = useState(defaultValues?.fit?.powered ?? false);
+  // True on a page that edits the four extra languages (KomiBright's). The
+  // form then posts them, and says so, so the save action writes them.
+  const editsExtra = useEditsLanguage("fr");
+  const extra = (render: (lang: ExtraLang) => React.ReactNode) =>
+    editsExtra
+      ? Object.fromEntries(EXTRA_LANGS.map((l) => [l, render(l)]))
+      : {};
 
   const toggleUseCase = (value: UseCaseValue) =>
     setUseCases((prev) =>
@@ -112,6 +128,7 @@ export function ProductForm({
       <input type="hidden" name="categoryId" value={categoryId === "none" ? "" : categoryId} />
       <input type="hidden" name="featured" value={featured ? "on" : ""} />
       <input type="hidden" name="published" value={published ? "on" : ""} />
+      {editsExtra && <input type="hidden" name="i18nFields" value="on" />}
       <input type="hidden" name="kind" value={kind} />
       {useCases.map((v) => (
         <input key={v} type="hidden" name="useCases" value={v} />
@@ -147,44 +164,69 @@ export function ProductForm({
                 </div>
               </div>
 
-              <Bilingual
-                en={
-                  <>
-                    <Label htmlFor="name">Name (English)</Label>
-                    <Input id="name" name="name" defaultValue={defaultValues?.name} required />
-                  </>
-                }
-                zh={
-                  <>
-                    <Label htmlFor="nameZh">Name (Chinese)</Label>
-                    <Input id="nameZh" name="nameZh" defaultValue={defaultValues?.nameZh} />
-                  </>
-                }
+              <Multilingual
+                fields={{
+                  en: (
+                    <>
+                      <Label htmlFor="name">Name (English)</Label>
+                      <Input id="name" name="name" defaultValue={defaultValues?.name} required />
+                    </>
+                  ),
+                  zh: (
+                    <>
+                      <Label htmlFor="nameZh">Name (Chinese)</Label>
+                      <Input id="nameZh" name="nameZh" defaultValue={defaultValues?.nameZh} />
+                    </>
+                  ),
+                  ...extra((l) => (
+                    <>
+                      <Label htmlFor={`name_${l}`}>Name ({LANG_NAMES[l]})</Label>
+                      <Input
+                        id={`name_${l}`}
+                        name={`name_${l}`}
+                        defaultValue={defaultValues?.i18n?.[l]?.name ?? ""}
+                      />
+                    </>
+                  )),
+                }}
               />
 
-              <Bilingual
-                en={
-                  <>
-                    <Label htmlFor="description">Description (English)</Label>
-                    <Textarea
-                      id="description"
-                      name="description"
-                      rows={3}
-                      defaultValue={defaultValues?.description}
-                    />
-                  </>
-                }
-                zh={
-                  <>
-                    <Label htmlFor="descriptionZh">Description (Chinese)</Label>
-                    <Textarea
-                      id="descriptionZh"
-                      name="descriptionZh"
-                      rows={3}
-                      defaultValue={defaultValues?.descriptionZh}
-                    />
-                  </>
-                }
+              <Multilingual
+                fields={{
+                  en: (
+                    <>
+                      <Label htmlFor="description">Description (English)</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        rows={3}
+                        defaultValue={defaultValues?.description}
+                      />
+                    </>
+                  ),
+                  zh: (
+                    <>
+                      <Label htmlFor="descriptionZh">Description (Chinese)</Label>
+                      <Textarea
+                        id="descriptionZh"
+                        name="descriptionZh"
+                        rows={3}
+                        defaultValue={defaultValues?.descriptionZh}
+                      />
+                    </>
+                  ),
+                  ...extra((l) => (
+                    <>
+                      <Label htmlFor={`description_${l}`}>Description ({LANG_NAMES[l]})</Label>
+                      <Textarea
+                        id={`description_${l}`}
+                        name={`description_${l}`}
+                        rows={3}
+                        defaultValue={defaultValues?.i18n?.[l]?.description ?? ""}
+                      />
+                    </>
+                  )),
+                }}
               />
 
               <div className="grid gap-2">

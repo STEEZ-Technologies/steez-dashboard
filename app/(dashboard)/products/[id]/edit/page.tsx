@@ -12,8 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductImages, type GalleryImage } from "@/components/products/product-images";
 import { ProductModels3D, type ProductModel } from "@/components/products/product-models-3d";
 import { ProductContent, type ProductContentRow } from "@/components/products/product-content";
+import {
+  ProductApplications,
+  type ProductApplicationRow,
+} from "@/components/products/product-applications";
+import { readProductI18n, readTextI18n } from "@/lib/product-i18n";
 import { HistoryCard } from "@/components/shared/HistoryCard";
-import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
+import { ALL_EDIT_LANGS, LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 import { ProductTabs, ProductTabPanel } from "@/components/products/product-tabs";
 import { CompletenessBar } from "@/components/products/completeness-bar";
 import { productCompleteness } from "@/lib/completeness";
@@ -38,7 +43,7 @@ export default async function EditProductPage({
   // Featured flag — so its editors don't see them.
   const lean = tenant.slug === "komibright";
 
-  const [galleryRows, model3dRows, contentRows] = await Promise.all([
+  const [galleryRows, model3dRows, contentRows, applicationRows] = await Promise.all([
     prisma.productImage.findMany({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
@@ -48,6 +53,10 @@ export default async function EditProductPage({
       orderBy: { sortOrder: "asc" },
     }),
     prisma.productContent.findMany({
+      where: { productId: product.id },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.productApplication.findMany({
       where: { productId: product.id },
       orderBy: { sortOrder: "asc" },
     }),
@@ -76,6 +85,13 @@ export default async function EditProductPage({
     id: c.id,
     textEn: c.textEn,
     textZh: c.textZh,
+    textI18n: readTextI18n(c.textI18n),
+  }));
+  const applications: ProductApplicationRow[] = applicationRows.map((a) => ({
+    id: a.id,
+    textEn: a.textEn,
+    textZh: a.textZh,
+    textI18n: readTextI18n(a.textI18n),
   }));
 
   return (
@@ -104,7 +120,9 @@ export default async function EditProductPage({
         }
       />
 
-      <LanguageScope>
+      {/* KomiBright's site is published in six languages, so its products are
+          edited in six; every other tenant keeps English and Chinese. */}
+      <LanguageScope langs={lean ? ALL_EDIT_LANGS : undefined}>
         <LanguageTabs />
         <ProductTabs initialTab={tab}>
           <CompletenessBar completeness={completeness} />
@@ -121,6 +139,7 @@ export default async function EditProductPage({
               nameZh: product.nameZh ?? "",
               description: product.description ?? "",
               descriptionZh: product.descriptionZh ?? "",
+              i18n: readProductI18n(product.i18n),
               imagePath: product.imagePath ?? "",
               categoryId: product.categoryId ?? "none",
               specsText: formatSpecsText(product.specs),
@@ -139,6 +158,19 @@ export default async function EditProductPage({
                 : null,
             }}
           />
+
+          {lean && (
+            <ProductTabPanel tab="basics">
+              <Card className="mt-6 max-w-2xl">
+                <CardHeader>
+                  <CardTitle>Suited to — extra labels</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProductApplications productId={product.id} items={applications} />
+                </CardContent>
+              </Card>
+            </ProductTabPanel>
+          )}
 
           <ProductTabPanel tab="specs">
             <Card className="mt-6 max-w-2xl">

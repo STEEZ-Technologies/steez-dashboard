@@ -5,6 +5,8 @@ import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 import { captureRevision, touchParent } from "@/lib/revisions";
+import { i18nColumn } from "@/lib/product-i18n-server";
+import type { LocalizedRowInput } from "@/components/products/localized-row-list";
 
 async function assertOwnership(productId: string, tenantId: string) {
   const product = await prisma.product.findFirst({
@@ -16,7 +18,7 @@ async function assertOwnership(productId: string, tenantId: string) {
 
 export async function addProductContent(
   productId: string,
-  data: { textEn: string; textZh?: string },
+  data: LocalizedRowInput,
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
@@ -32,6 +34,7 @@ export async function addProductContent(
       productId,
       textEn: data.textEn,
       textZh: data.textZh || null,
+      ...i18nColumn(data.textI18n),
       sortOrder: (max._max.sortOrder ?? -1) + 1,
     },
   });
@@ -43,7 +46,7 @@ export async function addProductContent(
 export async function updateProductContent(
   productId: string,
   contentId: string,
-  data: { textEn: string; textZh?: string },
+  data: LocalizedRowInput,
 ) {
   const { tenantId } = await getTenantFromSession();
   await assertOwnership(productId, tenantId);
@@ -52,7 +55,7 @@ export async function updateProductContent(
   // contentId from another tenant's product matches nothing.
   await prisma.productContent.updateMany({
     where: { id: contentId, productId },
-    data: { textEn: data.textEn, textZh: data.textZh || null },
+    data: { textEn: data.textEn, textZh: data.textZh || null, ...i18nColumn(data.textI18n) },
   });
   await touchParent("product", productId, tenantId);
   revalidatePath(`/products/${productId}/edit`);

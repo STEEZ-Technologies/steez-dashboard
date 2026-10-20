@@ -8,7 +8,8 @@ import { productInputSchema } from "@/lib/validation";
 import { parseSpecsText } from "@/lib/specs";
 import { logAudit } from "@/lib/audit";
 import { captureRevision, captureRevisions } from "@/lib/revisions";
-import type { ProductKind, ProductUseCase } from "@/app/generated/prisma/client";
+import { Prisma, type ProductKind, type ProductUseCase } from "@/app/generated/prisma/client";
+import { isEmptyI18n, productI18nFromForm } from "@/lib/product-i18n";
 
 function extractProductExtras(formData: FormData) {
   const categoryIdRaw = formData.get("categoryId");
@@ -24,7 +25,14 @@ function extractProductExtras(formData: FormData) {
   const useCases = formData
     .getAll("useCases")
     .filter((v): v is string => typeof v === "string") as ProductUseCase[];
-  return { categoryId, featured, published, specs, kind, useCases };
+  // Only a form that rendered the French/Italian/Spanish/Japanese fields
+  // says so; any other save leaves the stored translations alone.
+  const i18nPosted = formData.get("i18nFields") === "on";
+  const i18nValue = i18nPosted ? productI18nFromForm(formData) : null;
+  const i18n = i18nValue
+    ? { i18n: isEmptyI18n(i18nValue) ? Prisma.DbNull : (i18nValue as Prisma.InputJsonObject) }
+    : {};
+  return { categoryId, featured, published, specs, kind, useCases, i18n };
 }
 
 // Fit is optional per product — an empty section means "no fit data," not
@@ -68,7 +76,7 @@ export async function createProduct(
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { categoryId, featured, published, specs, kind, useCases } =
+  const { categoryId, featured, published, specs, kind, useCases, i18n } =
     extractProductExtras(formData);
 
   if (categoryId) {
@@ -93,6 +101,7 @@ export async function createProduct(
       specs,
       kind,
       useCases,
+      ...i18n,
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
     },
   });
@@ -117,7 +126,7 @@ export async function updateProduct(
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
 
-  const { categoryId, featured, published, specs, kind, useCases } =
+  const { categoryId, featured, published, specs, kind, useCases, i18n } =
     extractProductExtras(formData);
 
   if (categoryId) {
@@ -130,7 +139,7 @@ export async function updateProduct(
   await captureRevision("product", id, "update");
   await prisma.product.updateMany({
     where: { id, tenantId },
-    data: { ...parsed.data, categoryId, featured, published, specs, kind, useCases },
+    data: { ...parsed.data, categoryId, featured, published, specs, kind, useCases, ...i18n },
   });
   await upsertProductFit(id, formData);
 
@@ -182,6 +191,7 @@ export async function duplicateProduct(id: string) {
       nameZh: src.nameZh,
       description: src.description,
       descriptionZh: src.descriptionZh,
+      i18n: src.i18n ?? undefined,
       imagePath: src.imagePath,
       specs: src.specs ?? undefined,
       kind: src.kind,

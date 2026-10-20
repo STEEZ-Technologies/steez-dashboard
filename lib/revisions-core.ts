@@ -29,7 +29,7 @@ export function isRevisionEntity(v: string): v is RevisionEntity {
 // the item in its list.
 export const FIELDS: Record<RevisionEntity, readonly string[]> = {
   product: [
-    "name", "nameZh", "model", "slug", "description", "descriptionZh",
+    "name", "nameZh", "model", "slug", "description", "descriptionZh", "i18n",
     "categoryId", "kind", "useCases", "specs", "imagePath", "imageAlt",
     "featured", "published", "seoTitle", "seoDescription", "seoKeywords",
     "canonicalUrl", "ogImagePath", "noindex",
@@ -57,14 +57,15 @@ export const FIELDS: Record<RevisionEntity, readonly string[]> = {
 export const CHILD_FIELDS: Record<string, readonly string[]> = {
   fit: ["litresPerDay", "minBar", "sources", "dispensing", "powered"],
   images: ["imagePath", "alt", "sortOrder"],
-  contents: ["textEn", "textZh", "sortOrder"],
+  contents: ["textEn", "textZh", "textI18n", "sortOrder"],
+  applications: ["textEn", "textZh", "textI18n", "sortOrder"],
   finishes: ["key", "materialLabel", "imagePath", "accentHex", "sortOrder"],
   models3d: ["modelPath", "sortOrder"],
   blocks: ["kind", "textEn", "textZh", "itemsEn", "itemsZh", "sortOrder"],
 };
 
 export const CHILDREN: Record<RevisionEntity, readonly string[]> = {
-  product: ["fit", "images", "contents", "finishes", "models3d"],
+  product: ["fit", "images", "contents", "applications", "finishes", "models3d"],
   article: ["blocks"],
   guide: ["blocks"],
   category: [],
@@ -211,6 +212,8 @@ const LABELS: Record<string, string> = {
   fit: "Finder facts",
   images: "Gallery",
   contents: "Box contents",
+  applications: "Suited to labels",
+  i18n: "Name & description (FR/IT/ES/JA)",
   finishes: "Finishes",
   models3d: "3D models",
   blocks: "Body text",
