@@ -258,3 +258,92 @@ export type ArticleBlockInput = z.infer<typeof articleBlockInputSchema>;
 export type GuideInput = z.infer<typeof guideInputSchema>;
 export type GuideBlockInput = z.infer<typeof guideBlockInputSchema>;
 export type ManualFactInput = z.infer<typeof manualFactInputSchema>;
+
+// Contact details a site prints as written. Blank is "not published": the
+// site leaves the line out rather than printing an empty one.
+const optionalEmail = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? undefined : v))
+  .pipe(z.email({ error: "That isn't an email address" }).optional());
+
+const optionalUrl = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? undefined : v))
+  .pipe(
+    z
+      .string()
+      .regex(/^https?:\/\/\S+$/, { error: "Links start with https://" })
+      .optional(),
+  );
+
+// Printed as a bare domain ("www.komibright.com") and linked with https://.
+const optionalWebsite = z
+  .string()
+  .trim()
+  .transform((v) => (v === "" ? undefined : v.replace(/^https?:\/\//, "").replace(/\/$/, "")))
+  .pipe(
+    z
+      .string()
+      .regex(/^[\w.-]+\.[a-z]{2,}(\/\S*)?$/i, { error: "That isn't a website address" })
+      .optional(),
+  );
+
+const SOCIAL_NETWORKS = ["wechat", "linkedin", "facebook", "instagram", "youtube", "x", "tiktok", "weibo"] as const;
+export type SocialNetwork = (typeof SOCIAL_NETWORKS)[number];
+
+export const companyProfileInputSchema = z.object({
+  email: optionalEmail,
+  phone: optionalText,
+  whatsapp: optionalText,
+  icpNumber: optionalText,
+  catalogueUrl: optionalUrl,
+  salesName: optionalText,
+  salesWhatsapp: optionalText,
+  salesEmail: optionalEmail,
+  salesWeb: optionalWebsite,
+  // One "network url" pair per line, e.g. "linkedin https://…".
+  socials: z
+    .string()
+    .trim()
+    .transform((v, ctx) => {
+      const rows: { network: SocialNetwork; url: string }[] = [];
+      for (const line of v.split("\n").map((l) => l.trim()).filter(Boolean)) {
+        const [network, url] = line.split(/\s+/, 2);
+        const n = network.toLowerCase() as SocialNetwork;
+        if (!SOCIAL_NETWORKS.includes(n) || !/^https?:\/\/\S+$/.test(url ?? "")) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Social links: "${line}" should be a network (${SOCIAL_NETWORKS.join(", ")}) and an https:// link`,
+          });
+          return z.NEVER;
+        }
+        rows.push({ network: n, url });
+      }
+      return rows;
+    }),
+});
+
+export const officeInputSchema = z.object({
+  key: slugField,
+  tel: optionalText,
+  fax: optionalText,
+  email: optionalEmail,
+  web: optionalWebsite,
+  line: optionalText,
+  lat: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? undefined : Number(v)))
+    .pipe(z.number({ error: "Latitude is a number" }).min(-90).max(90).optional()),
+  lon: z
+    .string()
+    .trim()
+    .transform((v) => (v === "" ? undefined : Number(v)))
+    .pipe(z.number({ error: "Longitude is a number" }).min(-180).max(180).optional()),
+});
+
+export type CompanyProfileInput = z.infer<typeof companyProfileInputSchema>;
+export type OfficeInput = z.infer<typeof officeInputSchema>;
+export { SOCIAL_NETWORKS };

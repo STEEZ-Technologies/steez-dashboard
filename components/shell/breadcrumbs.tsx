@@ -32,6 +32,8 @@ export function Breadcrumbs() {
     resources: dict.nav.resources,
     events: dict.newsEvents.title,
     videos: dict.videos.title,
+    company: dict.nav.company,
+    offices: dict.company.officesTitle,
     preview: dict.publish.previewChanges,
     new: dict.actions.new,
     edit: dict.actions.edit,

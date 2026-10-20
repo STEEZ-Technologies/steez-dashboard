@@ -8,6 +8,7 @@ import {
   Settings,
   Inbox,
   Building2,
+  Contact,
   type LucideIcon,
 } from "lucide-react";
 
@@ -34,6 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/categories", label: "Categories", icon: FolderTree, group: "Catalog", inSidebar: false },
   { href: "/news", label: "News", icon: Newspaper, group: "Catalog" },
   { href: "/resources", label: "Resources", icon: BookOpen, group: "Catalog" },
+  { href: "/company", label: "Company", icon: Contact, group: "Catalog" },
   { href: "/team", label: "Team", icon: Users, group: "Workspace", inSidebar: false },
   { href: "/settings", label: "Settings", icon: Settings, group: "Workspace", activeFor: ["/team"] },
   {

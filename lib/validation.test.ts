@@ -5,6 +5,8 @@ import {
   finishInputSchema,
   userInviteSchema,
   passwordChangeSchema,
+  companyProfileInputSchema,
+  officeInputSchema,
 } from "./validation";
 
 describe("categoryInputSchema", () => {
@@ -110,5 +112,64 @@ describe("passwordChangeSchema", () => {
       passwordChangeSchema.safeParse({ currentPassword: "x", newPassword: "12345678" })
         .success,
     ).toBe(true);
+  });
+});
+
+describe("companyProfileInputSchema", () => {
+  const base = {
+    email: "",
+    phone: "",
+    whatsapp: "",
+    icpNumber: "",
+    catalogueUrl: "",
+    salesName: "",
+    salesWhatsapp: "",
+    salesEmail: "",
+    salesWeb: "",
+    socials: "",
+  };
+
+  it("treats blank as not published", () => {
+    const r = companyProfileInputSchema.parse(base);
+    expect(r.email).toBeUndefined();
+    expect(r.socials).toEqual([]);
+  });
+
+  it("strips the scheme off a website", () => {
+    expect(companyProfileInputSchema.parse({ ...base, salesWeb: "https://www.komibright.com/" }).salesWeb).toBe(
+      "www.komibright.com",
+    );
+  });
+
+  it("rejects a bad email and a catalogue link without a scheme", () => {
+    expect(companyProfileInputSchema.safeParse({ ...base, email: "info@" }).success).toBe(false);
+    expect(companyProfileInputSchema.safeParse({ ...base, catalogueUrl: "book.publuu.com" }).success).toBe(false);
+  });
+
+  it("parses social links, one per line", () => {
+    const r = companyProfileInputSchema.parse({
+      ...base,
+      socials: "LinkedIn https://linkedin.com/company/x\n\nyoutube https://youtube.com/@x",
+    });
+    expect(r.socials).toEqual([
+      { network: "linkedin", url: "https://linkedin.com/company/x" },
+      { network: "youtube", url: "https://youtube.com/@x" },
+    ]);
+    expect(companyProfileInputSchema.safeParse({ ...base, socials: "myspace https://x" }).success).toBe(false);
+  });
+});
+
+describe("officeInputSchema", () => {
+  const base = { key: "shanghai", tel: "", fax: "", email: "", web: "", line: "", lat: "", lon: "" };
+
+  it("reads coordinates as numbers and blank as none", () => {
+    expect(officeInputSchema.parse({ ...base, lat: "31.11", lon: "121.38" })).toMatchObject({ lat: 31.11, lon: 121.38 });
+    expect(officeInputSchema.parse(base).lat).toBeUndefined();
+  });
+
+  it("rejects coordinates off the globe and a bad key", () => {
+    expect(officeInputSchema.safeParse({ ...base, lat: "95" }).success).toBe(false);
+    expect(officeInputSchema.safeParse({ ...base, lon: "east" }).success).toBe(false);
+    expect(officeInputSchema.safeParse({ ...base, key: "Shanghai Office" }).success).toBe(false);
   });
 });
