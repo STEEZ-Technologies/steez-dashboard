@@ -35,6 +35,7 @@ export function CommandPalette() {
     "/": "overview",
     "/products": "products",
     "/categories": "categories",
+    "/homepage": "homepage",
     "/company": "company",
     "/team": "team",
     "/settings": "settings",

@@ -52,6 +52,7 @@ model Tenant {
   company        CompanyProfile?
   offices        Office[]
   documentGroups DocumentGroup[]
+  homeContent    HomeContent?
 }
 
 enum Role {
@@ -649,6 +650,19 @@ model RateLimitHit {
 //
 // Localized text is a Json object { en, zh?, fr?, it?, es?, ja? } (see
 // lib/localized.ts); a language left out falls back to English on the site.
+// The homepage's opening claim and the four figures under it. One row per
+// tenant, like CompanyProfile, so edits count towards Publish.
+model HomeContent {
+  id        String   @id @default(cuid())
+  tenantId  String   @unique
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  heroTitle Json? // Localized
+  heroSub   Json? // Localized
+  stats     Json? // [{ figure, unit, label, body: Localized, href }] — four of them
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model CompanyProfile {
   id            String   @id @default(cuid())
   tenantId      String   @unique
