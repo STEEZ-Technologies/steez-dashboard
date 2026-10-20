@@ -37,10 +37,15 @@ export async function OPTIONS() {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ tenantSlug: string }> },
 ) {
   const { tenantSlug } = await params;
+  // `?all=1` also returns unpublished rows, marked `published: false`, so a
+  // site that keeps its own copy of a product can hide it when the client
+  // unpublishes it here. Without it the response is published rows only, as
+  // Konlito's live fetch expects.
+  const all = new URL(request.url).searchParams.get("all") === "1";
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -51,7 +56,7 @@ export async function GET(
   }
 
   const products = await prisma.product.findMany({
-    where: { tenantId: tenant.id, published: true },
+    where: { tenantId: tenant.id, ...(all ? {} : { published: true }) },
     orderBy: { sortOrder: "asc" },
     include: {
       category: true,
@@ -90,6 +95,7 @@ export async function GET(
     models3d,
     specs: product.specs ?? {},
     featured: product.featured,
+    published: product.published,
     category: product.category
       ? { slug: product.category.slug, label: product.category.label }
       : null,
