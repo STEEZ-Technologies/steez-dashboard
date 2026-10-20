@@ -129,8 +129,13 @@ export function LanguageTabs({ className }: { className?: string }) {
         className,
       )}
     >
-      <span className="pl-1 text-xs font-medium text-muted-foreground">{dict.editor.writingIn}</span>
-      <Tabs value={scope.lang} onValueChange={(v) => v && scope.setLang(v as EditLang)}>
+      <span className="shrink-0 pl-1 text-xs font-medium text-muted-foreground">{dict.editor.writingIn}</span>
+      {/* Six languages don't fit a phone: the row scrolls sideways there. */}
+      <Tabs
+        value={scope.lang}
+        onValueChange={(v) => v && scope.setLang(v as EditLang)}
+        className="min-w-0 overflow-x-auto [scrollbar-width:none]"
+      >
         <TabsList>
           {scope.langs.map((id) => (
             <TabsTrigger key={id} value={id} className="px-3">
