@@ -12,9 +12,11 @@ import { useT } from "@/lib/i18n/provider";
 // hook are STEEZ's to set, from /admin.
 export function SettingsForm({
   name,
+  leadAlertEmails,
   canManage,
 }: {
   name: string;
+  leadAlertEmails: string;
   canManage: boolean;
 }) {
   const [error, formAction, pending] = useActionState(updateTenantSettings, undefined);
@@ -27,6 +29,19 @@ export function SettingsForm({
           <div className="grid gap-2">
             <Label htmlFor="name">{dict.settings.workspaceName}</Label>
             <Input id="name" name="name" defaultValue={name} disabled={!canManage} required />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="leadAlertEmails">{dict.settings.leadAlertEmails}</Label>
+            <Input
+              id="leadAlertEmails"
+              name="leadAlertEmails"
+              type="text"
+              inputMode="email"
+              placeholder="info@yourcompany.com"
+              defaultValue={leadAlertEmails}
+              disabled={!canManage}
+            />
+            <p className="text-xs text-muted-foreground">{dict.settings.leadAlertEmailsHelp}</p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           {canManage ? (

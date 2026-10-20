@@ -56,6 +56,7 @@ export default async function SettingsPage() {
 
         <SettingsForm
           name={tenant.name}
+          leadAlertEmails={tenant.leadAlertEmails ?? ""}
           canManage={session.role === "OWNER"}
         />
 

@@ -7,6 +7,7 @@ import {
   passwordChangeSchema,
   companyProfileInputSchema,
   officeInputSchema,
+  tenantSettingsSchema,
 } from "./validation";
 
 describe("categoryInputSchema", () => {
@@ -171,5 +172,22 @@ describe("officeInputSchema", () => {
     expect(officeInputSchema.safeParse({ ...base, lat: "95" }).success).toBe(false);
     expect(officeInputSchema.safeParse({ ...base, lon: "east" }).success).toBe(false);
     expect(officeInputSchema.safeParse({ ...base, key: "Shanghai Office" }).success).toBe(false);
+  });
+});
+
+describe("tenantSettingsSchema leadAlertEmails", () => {
+  it("splits, lower-cases and de-duplicates", () => {
+    const r = tenantSettingsSchema.parse({
+      name: "KomiBright",
+      leadAlertEmails: "Info@KomiBright.com; sales@komibright.com,\n info@komibright.com",
+    });
+    expect(r.leadAlertEmails).toEqual(["info@komibright.com", "sales@komibright.com"]);
+  });
+  it("empty means none; absent means untouched", () => {
+    expect(tenantSettingsSchema.parse({ name: "K", leadAlertEmails: " " }).leadAlertEmails).toEqual([]);
+    expect(tenantSettingsSchema.parse({ name: "K" }).leadAlertEmails).toBeUndefined();
+  });
+  it("rejects a malformed address", () => {
+    expect(tenantSettingsSchema.safeParse({ name: "K", leadAlertEmails: "info@" }).success).toBe(false);
   });
 });

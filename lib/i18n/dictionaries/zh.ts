@@ -575,6 +575,8 @@ export const zh: Dictionary = {
   settings: {
     subtitle: "工作区详情、账户与活动记录。",
     workspaceName: "工作区名称",
+    leadAlertEmails: "询盘通知邮箱",
+    leadAlertEmailsHelp: "网站每收到一条新询盘，都会发邮件到这里。多个地址用逗号分隔。留空则发送到您的登录邮箱。",
     publicSlug: "公开标识",
     slugLockedNote: "用于您公开产品目录 API 路径。更改会破坏正在使用的实时站点集成，因此已锁定。",
     siteUrlLabel: "正式网站地址",

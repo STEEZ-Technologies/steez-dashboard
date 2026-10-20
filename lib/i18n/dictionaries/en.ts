@@ -581,6 +581,9 @@ export const en = {
   settings: {
     subtitle: "Workspace details, your account, and activity.",
     workspaceName: "Workspace name",
+    leadAlertEmails: "Enquiry notification emails",
+    leadAlertEmailsHelp:
+      "Each new enquiry from the website is emailed here. Separate several addresses with commas. Leave empty to use your sign-in email.",
     publicSlug: "Public slug",
     slugLockedNote:
       "Used in your public catalog API path. Changing it would break the live site integration, so it's locked.",

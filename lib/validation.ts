@@ -130,8 +130,25 @@ export const userInviteSchema = z.object({
   role: z.enum(["OWNER", "STAFF"]),
 });
 
+/** "a@x.com, b@y.com" (commas, semicolons, spaces or new lines) → the
+    addresses, lower-cased and de-duplicated. */
+export function splitEmails(raw: string): string[] {
+  return [...new Set(raw.split(/[\s,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean))];
+}
+
 export const tenantSettingsSchema = z.object({
   name: z.string().trim().min(1, { error: "Name is required" }),
+  // Absent from the form → undefined → left as stored.
+  leadAlertEmails: z
+    .string()
+    .optional()
+    .transform((v) => (v === undefined ? undefined : splitEmails(v)))
+    .refine((list) => list === undefined || list.length <= 5, {
+      error: "Up to five notification emails",
+    })
+    .refine((list) => list === undefined || list.every((e) => z.email().safeParse(e).success), {
+      error: "One of the notification emails isn't a valid address",
+    }),
 });
 
 // How a workspace reaches its live site. Set by STEEZ from the admin page,

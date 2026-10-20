@@ -29,6 +29,9 @@ export async function updateTenantSettings(
     where: { id: session.tenantId },
     data: {
       name: parsed.data.name,
+      ...(parsed.data.leadAlertEmails !== undefined && {
+        leadAlertEmails: parsed.data.leadAlertEmails.join(", ") || null,
+      }),
     },
   });
   await logAudit({ action: "settings.update", entity: "tenant", entityId: session.tenantId, detail: parsed.data.name });

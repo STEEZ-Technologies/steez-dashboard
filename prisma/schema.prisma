@@ -22,6 +22,11 @@ model Tenant {
   deployHookUrl   String?
   lastPublishedAt DateTime?
 
+  // Where a new website enquiry is emailed — comma-separated, set by the
+  // owner in Settings (e.g. "info@komibright.com"). Null falls back to the
+  // owner's login email (lib/leadmail.ts).
+  leadAlertEmails String?
+
   // SEO fields — in progress in a concurrent session as of 2026-09-24
   // (migration 20260909035151_seo_fields already applied to this shared dev
   // DB); restored here so schema.prisma matches the DB and `prisma generate`
