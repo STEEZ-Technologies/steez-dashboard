@@ -3,24 +3,30 @@ import { prisma } from "@/lib/db";
 import { ProductForm } from "@/components/products/ProductForm";
 import { PageHeader } from "@/components/shell/page-header";
 import { createProduct } from "../actions";
-import { LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
+import { ALL_EDIT_LANGS, LanguageScope, LanguageTabs } from "@/components/shared/language-tabs";
 
 export default async function NewProductPage() {
   const { tenantId } = await getTenantFromSession();
-  const categories = await prisma.category.findMany({
-    where: { tenantId },
-    orderBy: { sortOrder: "asc" },
-  });
+  const [categories, tenant] = await Promise.all([
+    prisma.category.findMany({
+      where: { tenantId },
+      orderBy: { sortOrder: "asc" },
+    }),
+    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { slug: true } }),
+  ]);
+  // Same six languages as the edit page for KomiBright (see there).
+  const lean = tenant.slug === "komibright";
 
   return (
     <div>
       <PageHeader eyebrow="Catalog" title="New product" />
-      <LanguageScope>
+      <LanguageScope langs={lean ? ALL_EDIT_LANGS : undefined}>
         <LanguageTabs />
         <ProductForm
           action={createProduct}
           categories={categories}
           submitLabel="Create product"
+          lean={lean}
           defaultValues={{ published: true }}
         />
       </LanguageScope>

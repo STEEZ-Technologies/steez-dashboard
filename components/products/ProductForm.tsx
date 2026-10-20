@@ -261,16 +261,23 @@ export function ProductForm({
                 </div>
               </div>
 
-              {lean ? (
-                <input type="hidden" name="imagePath" value={defaultValues?.imagePath ?? ""} />
-              ) : (
+              <div className="grid gap-2">
                 <ImageUploadField
                   name="imagePath"
                   label="Product image"
                   defaultValue={defaultValues?.imagePath}
                   defaultUrl={defaultImageUrl}
                 />
-              )}
+                {/* KomiBright's site keeps STEEZ's checked photography for the
+                    products it already carries, and uses this photo only for
+                    a product added here. */}
+                {lean && (
+                  <p className="text-xs text-muted-foreground">
+                    Used on the website only for a product added here. The products already on the
+                    website keep their own photography.
+                  </p>
+                )}
+              </div>
 
               <div className="grid gap-2">
                 <Label>Category</Label>
