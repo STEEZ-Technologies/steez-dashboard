@@ -16,17 +16,27 @@ import { useT } from "@/lib/i18n/provider";
  * <Bilingual> outside a scope renders both languages side by side, which is
  * what every form did before this existed. */
 
-export type EditLang = "en" | "zh";
+export type EditLang = "en" | "zh" | "fr" | "it" | "es" | "ja";
 
-const LANGS: { id: EditLang; label: string }[] = [
-  { id: "en", label: "English" },
-  { id: "zh", label: "中文" },
-];
+/* English and Chinese for every tenant; the other four only where a scope asks
+   for them (KomiBright's site is published in all six). */
+export const ALL_EDIT_LANGS: EditLang[] = ["en", "zh", "fr", "it", "es", "ja"];
+const DEFAULT_LANGS: EditLang[] = ["en", "zh"];
+
+const LANG_LABELS: Record<EditLang, string> = {
+  en: "English",
+  zh: "中文",
+  fr: "Français",
+  it: "Italiano",
+  es: "Español",
+  ja: "日本語",
+};
 
 type Scope = {
   lang: EditLang;
   setLang: (lang: EditLang) => void;
   missing: EditLang[];
+  langs: EditLang[];
 };
 
 const LanguageContext = createContext<Scope | null>(null);
@@ -37,7 +47,7 @@ const LanguageContext = createContext<Scope | null>(null);
    editor's rows pair up the same way the form's do. A field marked
    `optional` (SEO extras a language may deliberately leave blank) is skipped
    on both sides, so the pairs stay aligned. */
-function findMissing(root: HTMLElement): EditLang[] {
+function findMissing(root: HTMLElement, langs: EditLang[]): EditLang[] {
   const fields = (lang: EditLang) =>
     Array.from(
       root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
@@ -47,8 +57,11 @@ function findMissing(root: HTMLElement): EditLang[] {
       ),
     );
   const en = fields("en");
-  const zh = fields("zh");
-  return zh.some((field, i) => !field.value.trim() && en[i]?.value.trim()) ? ["zh"] : [];
+  return langs.filter(
+    (lang) =>
+      lang !== "en" &&
+      fields(lang).some((field, i) => !field.value.trim() && en[i]?.value.trim()),
+  );
 }
 
 /** Switch the page's edit language from inside a scope (null outside one). */
@@ -56,7 +69,14 @@ export function useSetEditLanguage() {
   return useContext(LanguageContext)?.setLang ?? null;
 }
 
-export function LanguageScope({ children }: { children: React.ReactNode }) {
+export function LanguageScope({
+  children,
+  langs = DEFAULT_LANGS,
+}: {
+  children: React.ReactNode;
+  /** Which languages this page edits. English and Chinese unless told otherwise. */
+  langs?: EditLang[];
+}) {
   const [lang, setLang] = useState<EditLang>("en");
   const [missing, setMissing] = useState<EditLang[]>([]);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -65,7 +85,7 @@ export function LanguageScope({ children }: { children: React.ReactNode }) {
     const root = rootRef.current;
     if (!root) return;
     const recompute = () => {
-      const next = findMissing(root);
+      const next = findMissing(root, langs);
       setMissing((prev) => (prev.join() === next.join() ? prev : next));
     };
     recompute();
@@ -89,10 +109,10 @@ export function LanguageScope({ children }: { children: React.ReactNode }) {
       root.removeEventListener("input", recompute);
       root.removeEventListener("invalid", onInvalid, true);
     };
-  }, []);
+  }, [langs]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, missing }}>
+    <LanguageContext.Provider value={{ lang, setLang, missing, langs }}>
       <div ref={rootRef}>{children}</div>
     </LanguageContext.Provider>
   );
@@ -112,10 +132,10 @@ export function LanguageTabs({ className }: { className?: string }) {
       <span className="pl-1 text-xs font-medium text-muted-foreground">{dict.editor.writingIn}</span>
       <Tabs value={scope.lang} onValueChange={(v) => v && scope.setLang(v as EditLang)}>
         <TabsList>
-          {LANGS.map((l) => (
-            <TabsTrigger key={l.id} value={l.id} className="px-3">
-              {l.label}
-              {scope.missing.includes(l.id) && (
+          {scope.langs.map((id) => (
+            <TabsTrigger key={id} value={id} className="px-3">
+              {LANG_LABELS[id]}
+              {scope.missing.includes(id) && (
                 <span
                   className="size-1.5 rounded-full bg-amber-500"
                   aria-label={dict.editor.notTranslated}
@@ -157,9 +177,12 @@ export function Bilingual({
       </div>
     );
   }
+  // A two-language field on a page that also edits French and the rest shows
+  // its English while one of those is selected, rather than vanishing.
+  const showEn = scope.lang !== "zh";
   return (
     <div className={className}>
-      <div data-edit-lang="en" data-edit-optional={opt} className="grid gap-2" hidden={scope.lang !== "en"}>
+      <div data-edit-lang="en" data-edit-optional={opt} className="grid gap-2" hidden={!showEn}>
         {en}
       </div>
       <div data-edit-lang="zh" data-edit-optional={opt} className="grid gap-2" hidden={scope.lang !== "zh"}>
@@ -167,4 +190,49 @@ export function Bilingual({
       </div>
     </div>
   );
+}
+
+/** One field in every language the scope edits. `en` and `zh` are always
+    rendered; the others only when the scope includes them — so a form posts
+    no `name_fr` at all on a page that doesn't edit French, and its save leaves
+    whatever French is stored alone. Outside a scope it behaves like
+    <Bilingual>. */
+export function Multilingual({
+  fields,
+  optional,
+  className,
+}: {
+  fields: { en: React.ReactNode; zh: React.ReactNode } & Partial<
+    Record<Exclude<EditLang, "en" | "zh">, React.ReactNode>
+  >;
+  optional?: boolean;
+  className?: string;
+}) {
+  const scope = useContext(LanguageContext);
+  if (!scope) return <Bilingual en={fields.en} zh={fields.zh} optional={optional} className={className} />;
+  const opt = optional ? "" : undefined;
+  return (
+    <div className={className}>
+      {scope.langs.map((id) =>
+        fields[id] === undefined ? null : (
+          <div
+            key={id}
+            data-edit-lang={id}
+            data-edit-optional={opt}
+            className="grid gap-2"
+            hidden={scope.lang !== id}
+          >
+            {fields[id]}
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
+
+/** Whether the current scope edits a language (false outside a scope for
+    anything but English and Chinese). */
+export function useEditsLanguage(lang: EditLang) {
+  const scope = useContext(LanguageContext);
+  return (scope?.langs ?? DEFAULT_LANGS).includes(lang);
 }
