@@ -36,21 +36,22 @@ model Tenant {
   seoTitleTemplate        String?
   siteUrl                 String?
 
-  users         User[]
-  categories    Category[]
-  products      Product[]
-  articles      Article[]
-  guides        Guide[]
-  newsEvents    NewsEvent[]
-  videos        Video[]
-  manualFacts   ManualFact[]
-  productEvents ProductEvent[]
-  pageViews     PageView[]
-  auditLogs     AuditLog[]
-  leads         Lead[]
-  revisions     Revision[]
-  company       CompanyProfile?
-  offices       Office[]
+  users          User[]
+  categories     Category[]
+  products       Product[]
+  articles       Article[]
+  guides         Guide[]
+  newsEvents     NewsEvent[]
+  videos         Video[]
+  manualFacts    ManualFact[]
+  productEvents  ProductEvent[]
+  pageViews      PageView[]
+  auditLogs      AuditLog[]
+  leads          Lead[]
+  revisions      Revision[]
+  company        CompanyProfile?
+  offices        Office[]
+  documentGroups DocumentGroup[]
 }
 
 enum Role {
@@ -694,5 +695,45 @@ model Office {
   updatedAt DateTime @updatedAt
 
   @@unique([tenantId, key])
+  @@index([tenantId])
+}
+
+enum DocumentSection {
+  CERTIFICATES // certificates for the parts a system is built from
+  COMPANY // about the company or a finished machine
+}
+
+// The certificates and documents a site lets buyers open, grouped as the
+// site shows them (KomiBright: by the part they cover).
+model DocumentGroup {
+  id        String          @id @default(cuid())
+  tenantId  String
+  tenant    Tenant          @relation(fields: [tenantId], references: [id])
+  section   DocumentSection @default(CERTIFICATES)
+  title     Json // Localized
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  documents Document[]
+
+  @@index([tenantId])
+}
+
+model Document {
+  id        String        @id @default(cuid())
+  groupId   String
+  group     DocumentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  tenantId  String // denormalised for the publish count and the tenant guard
+  label     Json // Localized — the document's own name
+  // An OSS key for an upload, or a path on the client's own site
+  // ("/documents/…") for a file it already serves.
+  filePath  String
+  sortOrder Int           @default(0)
+  published Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([groupId])
   @@index([tenantId])
 }

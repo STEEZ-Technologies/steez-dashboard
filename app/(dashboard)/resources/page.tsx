@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { getPublishState } from "@/lib/publish";
@@ -14,7 +14,7 @@ export default async function ResourcesPage() {
   const { tenantId, role } = await getTenantFromSession();
   const dict = await getDictionary();
   const publishState = await getPublishState(tenantId);
-  const [guides, videos] = await Promise.all([
+  const [guides, videos, docGroups, docs] = await Promise.all([
     prisma.guide.findMany({
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
@@ -23,6 +23,8 @@ export default async function ResourcesPage() {
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
     }),
+    prisma.documentGroup.count({ where: { tenantId } }),
+    prisma.document.count({ where: { tenantId } }),
   ]);
 
   const rows: GuideRow[] = guides.map((g) => ({
@@ -74,6 +76,20 @@ export default async function ResourcesPage() {
           </LinkButton>
         </div>
         <VideosTable videos={videoRows} />
+      </section>
+
+      <section className="mt-10">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">{dict.documents.title}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              {dict.documents.summary.replace("{groups}", String(docGroups)).replace("{docs}", String(docs))}
+            </p>
+          </div>
+          <LinkButton href="/resources/documents" variant="outline" className="self-start sm:self-auto">
+            <FileText /> {dict.documents.manage}
+          </LinkButton>
+        </div>
       </section>
     </div>
   );

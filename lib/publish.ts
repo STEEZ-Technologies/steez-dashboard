@@ -22,7 +22,7 @@ export async function getPublishState(tenantId: string): Promise<PublishState> {
   // Never published → everything counts as pending.
   const where = since ? { tenantId, updatedAt: { gt: since } } : { tenantId };
 
-  const [products, categories, articles, guides, manualFacts, newsEvents, videos, company, offices] =
+  const [products, categories, articles, guides, manualFacts, newsEvents, videos, company, offices, docGroups, docs] =
     await Promise.all([
       prisma.product.count({ where }),
       prisma.category.count({ where }),
@@ -33,11 +33,14 @@ export async function getPublishState(tenantId: string): Promise<PublishState> {
       prisma.video.count({ where }),
       prisma.companyProfile.count({ where }),
       prisma.office.count({ where }),
+      prisma.documentGroup.count({ where }),
+      prisma.document.count({ where }),
     ]);
 
   return {
     pendingCount:
-      products + categories + articles + guides + manualFacts + newsEvents + videos + company + offices,
+      products + categories + articles + guides + manualFacts + newsEvents + videos + company + offices +
+      docGroups + docs,
     configured: Boolean(tenant.deployHookUrl),
     lastPublishedAt: tenant.lastPublishedAt,
   };
