@@ -10,6 +10,7 @@ import {
   Building2,
   Contact,
   House,
+  LifeBuoy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -40,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/company", label: "Company", icon: Contact, group: "Catalog" },
   { href: "/team", label: "Team", icon: Users, group: "Workspace", inSidebar: false },
   { href: "/settings", label: "Settings", icon: Settings, group: "Workspace", activeFor: ["/team"] },
+  { href: "/help", label: "Help", icon: LifeBuoy, group: "Workspace" },
   {
     href: "/admin",
     label: "Tenants",

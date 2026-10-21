@@ -12,6 +12,7 @@ export const zh: Dictionary = {
     settings: "设置",
     company: "公司信息",
     homepage: "首页",
+    help: "帮助",
     leads: "询盘",
     admin: "管理后台",
     groupOverview: "总览",
@@ -188,6 +189,15 @@ export const zh: Dictionary = {
     altEnPh: "例如 The KomiBright stand at Aquatech China",
     published: "已发布",
     errSlugTaken: "已有其他活动使用该短代码",
+  },
+  manual: {
+    title: "后台使用手册",
+    subtitle: "如何保持网站内容最新：每个页面的用途与操作步骤。",
+    contents: "目录",
+    pageHelp: "本页帮助",
+    openManual: "打开完整手册",
+    tip: "提示",
+    warning: "注意",
   },
   homepage: {
     title: "首页",

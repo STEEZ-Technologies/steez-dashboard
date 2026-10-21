@@ -10,6 +10,7 @@ export const en = {
     settings: "Settings",
     company: "Company",
     homepage: "Homepage",
+    help: "Help",
     leads: "Enquiries",
     admin: "Admin",
     groupOverview: "Overview",
@@ -192,6 +193,15 @@ export const en = {
     altEnPh: "E.g. The KomiBright stand at Aquatech China",
     published: "Published",
     errSlugTaken: "Another event already uses that short code",
+  },
+  manual: {
+    title: "Dashboard manual",
+    subtitle: "How to keep your website up to date: what each page is for, step by step.",
+    contents: "Contents",
+    pageHelp: "Help for this page",
+    openManual: "Open the full manual",
+    tip: "Tip",
+    warning: "Important",
   },
   homepage: {
     title: "Homepage",

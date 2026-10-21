@@ -31,6 +31,7 @@ const NAV_LABEL_KEY: Record<string, keyof Dictionary["nav"]> = {
   "/news": "news",
   "/resources": "resources",
   "/homepage": "homepage",
+  "/help": "help",
   "/company": "company",
   "/team": "team",
   "/settings": "settings",

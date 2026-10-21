@@ -1,3 +1,5 @@
+import { PageHelp } from "@/components/shell/page-help";
+
 export function PageHeader({
   title,
   description,
@@ -16,9 +18,12 @@ export function PageHeader({
       <div className="min-w-0">
         {/* `eyebrow` is still accepted but not drawn: the breadcrumbs in the
             header already say where you are. */}
-        <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-          {title}
-        </h1>
+        <div className="flex items-center gap-1.5">
+          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+            {title}
+          </h1>
+          <PageHelp />
+        </div>
         {description && (
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
