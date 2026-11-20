@@ -14,7 +14,7 @@ export default async function NewsPage() {
   const { tenantId, role } = await getTenantFromSession();
   const dict = await getDictionary();
   const publishState = await getPublishState(tenantId);
-  const [articles, newsEvents] = await Promise.all([
+  const [articles, newsEvents, tenant] = await Promise.all([
     prisma.article.findMany({
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
@@ -23,6 +23,7 @@ export default async function NewsPage() {
       where: { tenantId },
       orderBy: { sortOrder: "asc" },
     }),
+    prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { slug: true } }),
   ]);
 
   const rows: ArticleRow[] = articles.map((a) => ({
@@ -58,7 +59,7 @@ export default async function NewsPage() {
           </LinkButton>
         }
       />
-      <ArticlesTable articles={rows} />
+      <ArticlesTable articles={rows} companyLabel={tenant.slug === "kawada" ? "Company" : undefined} />
 
       <section className="mt-10">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

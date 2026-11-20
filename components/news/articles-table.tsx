@@ -43,7 +43,7 @@ export type ArticleRow = {
   published: boolean;
 };
 
-export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
+export function ArticlesTable({ articles, companyLabel }: { articles: ArticleRow[]; companyLabel?: string }) {
   const [pending, startTransition] = useTransition();
   const [toDelete, setToDelete] = useState<ArticleRow | null>(null);
   const { dict } = useT();
@@ -55,7 +55,7 @@ export function ArticlesTable({ articles }: { articles: ArticleRow[] }) {
     MAINTENANCE: t.topicMaintenance,
     WATER_QUALITY: t.topicWaterQuality,
     SUSTAINABILITY: t.topicSustainability,
-    COMPANY: t.topicCompany,
+    COMPANY: companyLabel ?? t.topicCompany,
   };
 
   function runAction(fn: () => Promise<void>, message: string) {

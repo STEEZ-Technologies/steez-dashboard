@@ -76,11 +76,16 @@ export async function importKawadaContent(tenantId: string): Promise<Counts> {
     counts.articles++;
   }
 
-  const document = await prisma.document.findFirst({ where: { tenantId, filePath: snapshot.catalog } });
+  const catalogUrl = new URL(snapshot.catalog, "https://dashboard.steez.digital").toString();
+  const document = await prisma.document.findFirst({ where: { tenantId, filePath: { in: [snapshot.catalog, catalogUrl] } } });
+  if (document?.filePath === snapshot.catalog) {
+    await prisma.document.update({ where: { id: document.id }, data: { filePath: catalogUrl } });
+    counts.documents++;
+  }
   if (!document) {
     await prisma.documentGroup.create({ data: {
       tenantId, section: "COMPANY", title: { en: "Kawada product catalogue" },
-      documents: { create: [{ tenantId, label: { en: "Kawada product catalogue" }, filePath: snapshot.catalog, sortOrder: 0 }] },
+      documents: { create: [{ tenantId, label: { en: "Kawada product catalogue" }, filePath: catalogUrl, sortOrder: 0 }] },
     } });
     counts.documents++;
   }
