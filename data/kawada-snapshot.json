@@ -1,0 +1,489 @@
+{
+  "categories": [
+    {
+      "id": "pantyliners",
+      "label": "Pantyliners"
+    },
+    {
+      "id": "sanitary-pads",
+      "label": "Sanitary Pads"
+    },
+    {
+      "id": "incontinence-pads",
+      "label": "Light Incontinence"
+    },
+    {
+      "id": "period-pants",
+      "label": "Period Pants"
+    }
+  ],
+  "products": [
+    {
+      "slug": "feminine-150mm",
+      "name": "Pantyliner 150 mm",
+      "category": "pantyliners",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-liner-150.webp",
+          "alt": "Pantyliner 150 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-2374aca5.webp",
+          "alt": "Pantyliner 150 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-81f70875.webp",
+          "alt": "Pantyliner 150 mm, another variant"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-0f69eea0.webp",
+          "alt": "Pantyliner 150 mm, photo 4"
+        }
+      ],
+      "specs": {
+        "Length": "150 mm",
+        "Wings": "Without",
+        "Elastic band": "Without",
+        "Folding": "Unfolded"
+      }
+    },
+    {
+      "slug": "feminine-155mm",
+      "name": "Pantyliner 155 mm",
+      "category": "pantyliners",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/photo-0671484b.webp",
+          "alt": "Pantyliner 155 mm, seen from above"
+        }
+      ],
+      "specs": {
+        "Length": "155 mm",
+        "Wings": "Without",
+        "Elastic band": "Without",
+        "Folding": "Unfolded"
+      }
+    },
+    {
+      "slug": "feminine-180mm",
+      "name": "Sanitary pad 180 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-pad-180-heart.webp",
+          "alt": "Sanitary pad 180 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-5aa8b503.webp",
+          "alt": "Sanitary pad 180 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-b1a7ae42.webp",
+          "alt": "Sanitary pad 180 mm, another variant"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-6e396786.webp",
+          "alt": "Sanitary pad 180 mm, photo 4"
+        }
+      ],
+      "specs": {
+        "Length": "180 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-190mm",
+      "name": "Sanitary pad 190 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-pad-190-heart.webp",
+          "alt": "Sanitary pad 190 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-b6e5fb04.webp",
+          "alt": "Sanitary pad 190 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-0f49f7d6.webp",
+          "alt": "Sanitary pad 190 mm, another variant"
+        }
+      ],
+      "specs": {
+        "Length": "190 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-240mm",
+      "name": "Sanitary pad 240 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-pad-240.webp",
+          "alt": "Sanitary pad 240 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-0d4ce594.webp",
+          "alt": "Sanitary pad 240 mm, alternative design"
+        }
+      ],
+      "specs": {
+        "Length": "240 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-285mm",
+      "name": "Sanitary pad 285 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/photo-11afb917.webp",
+          "alt": "Sanitary pad 285 mm, seen from above"
+        }
+      ],
+      "specs": {
+        "Length": "285 mm",
+        "Wings": "With",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-310mm",
+      "name": "Sanitary pad 310 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/photo-1ea138b6.webp",
+          "alt": "Sanitary pad 310 mm, seen from above"
+        }
+      ],
+      "specs": {
+        "Length": "310 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-360mm",
+      "name": "Sanitary pad 360 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-pad-360.webp",
+          "alt": "Sanitary pad 360 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/studio-pad-360-strip.webp",
+          "alt": "Sanitary pad 360 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-c508dd40.webp",
+          "alt": "Sanitary pad 360 mm, another variant"
+        }
+      ],
+      "specs": {
+        "Length": "360 mm",
+        "Wings": "With",
+        "Elastic band": "Without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "feminine-400mm",
+      "name": "Sanitary pad 400 mm",
+      "category": "sanitary-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-pad-400.webp",
+          "alt": "Sanitary pad 400 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-088f2da9.webp",
+          "alt": "Sanitary pad 400 mm, alternative design"
+        }
+      ],
+      "specs": {
+        "Length": "400 mm",
+        "Wings": "With",
+        "Elastic band": "Without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "incontinence-150mm",
+      "name": "Incontinence pad 150 mm",
+      "category": "incontinence-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/photo-57f72d66.webp",
+          "alt": "Incontinence pad 150 mm, seen from above"
+        }
+      ],
+      "specs": {
+        "Length": "150 mm",
+        "Wings": "Without",
+        "Elastic band": "Without",
+        "Folding": "Unfolded"
+      }
+    },
+    {
+      "slug": "incontinence-240mm",
+      "name": "Incontinence pad 240 mm",
+      "category": "incontinence-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-incontinence-240.webp",
+          "alt": "Incontinence pad 240 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-e8a5c23d.webp",
+          "alt": "Incontinence pad 240 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-eb3d24d6.webp",
+          "alt": "Incontinence pad 240 mm, another variant"
+        }
+      ],
+      "specs": {
+        "Length": "240 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "incontinence-285mm",
+      "name": "Incontinence pad 285 mm",
+      "category": "incontinence-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/photo-a87a7507.webp",
+          "alt": "Incontinence pad 285 mm, seen from above"
+        }
+      ],
+      "specs": {
+        "Length": "285 mm",
+        "Wings": "With",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "incontinence-310mm",
+      "name": "Incontinence pad 310 mm",
+      "category": "incontinence-pads",
+      "published": true,
+      "photos": [
+        {
+          "src": "/kawada/images/products/photos/studio-incontinence-310.webp",
+          "alt": "Incontinence pad 310 mm, seen from above"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-d70304c3.webp",
+          "alt": "Incontinence pad 310 mm, alternative design"
+        },
+        {
+          "src": "/kawada/images/products/photos/photo-005c8f79.webp",
+          "alt": "Incontinence pad 310 mm, another variant"
+        }
+      ],
+      "specs": {
+        "Length": "310 mm",
+        "Wings": "Available with or without",
+        "Elastic band": "Available with or without",
+        "Folding": "Folded"
+      }
+    },
+    {
+      "slug": "cotton-period-pants",
+      "name": "Cotton Period Pants",
+      "category": "period-pants",
+      "published": false,
+      "photos": [],
+      "specs": {
+        "Sizes": "S–M / L–XL",
+        "Absorbency": "Heavy / overnight",
+        "Shell": "Cotton-feel nonwoven",
+        "Pack size": "2 / 4"
+      }
+    }
+  ],
+  "events": [
+    {
+      "slug": "cidpex-2027",
+      "title": {
+        "en": "CIDPEX 2027 — The 34th China International Disposable Paper Expo",
+        "zh": "CIDPEX 2027 — 第34届生活用纸国际科技展览会",
+        "es": "CIDPEX 2027 — 34.ª Exposición Internacional de Papel Desechable de China"
+      },
+      "place": {
+        "en": "Nanjing International Expo Center, Nanjing, China",
+        "zh": "南京国际博览中心，中国 南京",
+        "es": "Centro Internacional de Exposiciones de Nanjing, Nanjing, China"
+      },
+      "start": "2027-04-15",
+      "end": "2027-04-17",
+      "booth": "Booth 6C49",
+      "image": null,
+      "alt": null
+    },
+    {
+      "slug": "index26",
+      "title": {
+        "en": "INDEX™26 Nonwovens Exhibition",
+        "zh": "INDEX™26 瑞士日内瓦无纺布展",
+        "es": "Exposición de No Tejidos INDEX™26"
+      },
+      "place": {
+        "en": "Geneva, Switzerland",
+        "zh": "瑞士 日内瓦",
+        "es": "Ginebra, Suiza"
+      },
+      "start": "2026-05-19",
+      "end": "2026-05-19",
+      "booth": null,
+      "image": "/kawada/expos/index26-geneva-02.webp",
+      "alt": {
+        "en": "Kawada booth at INDEX™26 in Geneva",
+        "zh": "川田在日内瓦 INDEX™26 的展位",
+        "es": "Stand de Kawada en INDEX™26 en Ginebra"
+      }
+    },
+    {
+      "slug": "cidpex-2026",
+      "title": {
+        "en": "The 33rd China International Disposable Paper Expo",
+        "zh": "第33届生活用纸国际科技展览会",
+        "es": "33.ª Exposición Internacional de Papel Desechable de China"
+      },
+      "place": {
+        "en": "",
+        "zh": ""
+      },
+      "start": "2026-04-15",
+      "end": "2026-04-15",
+      "booth": null,
+      "image": "/kawada/expos/cidpex-2026-02.webp",
+      "alt": {
+        "en": "Kawada booth at CIDPEX 2026",
+        "zh": "川田在 CIDPEX 2026 的展位",
+        "es": "Stand de Kawada en CIDPEX 2026"
+      }
+    }
+  ],
+  "articles": [
+    {
+      "slug": "construction-begins-etsuda-plant",
+      "title": "Construction begins on our new Etsuda plant",
+      "excerpt": "Ground is broken on a purpose-built plant that adds production lines, a larger quality lab and room for the products our partners ask for next.",
+      "date": "2026-10-02",
+      "cover": "/kawada/images/oem/etsuda-render.jpg",
+      "coverAlt": "Aerial rendering of the new Etsuda plant",
+      "body": "\nThis month we broke ground on our new plant in Etsuda. It is the biggest investment in Kawada's history, and it starts from a simple question our partners keep asking: *can you make more of this, and can you make the next thing too?*\n\nThe new site is planned to open in 2027. Here is what it will add, and what it means for the brands we already work with.\n\n## More lines, shorter lead times\n\nThe plant is designed around additional high-speed lines for pads, liners and period pants. More capacity means we can schedule launches and seasonal peaks without pushing back existing orders.\n\n- Dedicated lines for the Cotton Series and the Performance Series\n- A separate line for period pants and maternity products\n- Space reserved for lines we have not specified yet\n\n<PullQuote cite=\"Kawada operations team\">\nWe designed the building around the products our partners will ask for in five years, not only the ones they order today.\n</PullQuote>\n\n## A bigger quality lab\n\nEvery batch we ship is tested before it leaves the factory. The new lab doubles the bench space for absorbency, leakage and adhesion tests, and adds a room for material incoming inspection, so raw materials are checked before they ever reach a line.\n\n<Figure\n  src=\"/images/home/factory-lab.jpg\"\n  alt=\"A quality technician measuring a pad sample in the lab\"\n  caption=\"Batch testing will move into a larger lab with a dedicated incoming-materials room.\"\n/>\n\n## Built for lower impact\n\nThe plant is being built with energy-efficient lines, heat recovery and better waste sorting, so offcuts and packaging waste can be recycled rather than landfilled. We will share the numbers once the site is running.\n\n## What happens to existing orders\n\nNothing changes. Our current factory keeps running at full capacity through construction, and we will move production in stages so no partner sees a gap in supply.\n\n### Timeline\n\n1. Groundwork and foundations: autumn 2026\n2. Building shell and utilities: 2027\n3. First lines commissioned and qualified: 2027\n\nIf you are planning a launch for 2027 or later and want to reserve capacity, [get in touch](/en/contact-us/) and we will walk you through the schedule.\n",
+      "published": false
+    },
+    {
+      "slug": "meet-us-at-cosmoprof-asia-2026",
+      "title": "Meet Kawada at Cosmoprof Asia 2026 in Hong Kong",
+      "excerpt": "We are bringing the Cotton Series, the new overnight pad and our packaging options to Hong Kong this November. Book a meeting with our team.",
+      "date": "2026-09-30",
+      "cover": "/kawada/images/company/team-sample-review.webp",
+      "coverAlt": "The Kawada team reviewing product samples and packaging",
+      "body": "\nWe are exhibiting at Cosmoprof Asia in Hong Kong this November, and we would love to meet you there.\n\n## What you can see on the stand\n\n- The full **Cotton Series**, from day pads to liners\n- The new **Performance Series overnight pad**\n- **Packaging options**, from retail boxes to recyclable wraps\n- Samples you can take home and test\n\n<PullQuote cite=\"Kawada sales team\">\nThe best way to judge a pad is to hold it. Come and feel the difference between the two series.\n</PullQuote>\n\n## Book a meeting\n\nOur sales and product teams will be on the stand all three days. Meetings are 30 minutes and cover your range, your timeline and your MOQ. Book ahead and we will have samples ready for your category.\n\n## Can't make it?\n\nWe can send the same sample kit by courier, or set up a video call with the team. [Get in touch](/en/contact-us/) either way.\n",
+      "published": false
+    },
+    {
+      "slug": "new-overnight-pad-performance-series",
+      "title": "A new overnight pad for our Performance Series",
+      "excerpt": "Longer coverage and a faster core, developed with partners for heavy-flow nights.",
+      "date": "2026-09-18",
+      "cover": "/kawada/images/about/product-detail.webp",
+      "coverAlt": "Close-up of a Kawada pad absorbing liquid",
+      "body": "\nNights are where pads are tested hardest. Long hours, changing positions and heavy flow all at once. Our partners asked for an overnight pad that could keep up, so we built one for the Performance Series.\n\n## What is new\n\n- **Longer coverage** at the back, where most overnight leaks start\n- **A faster core** that pulls fluid away from the surface quickly\n- **Wider wings** that stay put when you move in your sleep\n- **A soft, breathable backsheet** that stays quiet\n\n<PullQuote cite=\"Kawada product team\">\nWe tested it the way people actually sleep: on their side, on their back, and everything in between.\n</PullQuote>\n\n## Developed with partners\n\nThe design went through several rounds of samples with partner brands before it was finalised. Each round was tested in our lab for absorption, rewet and leakage, and the feedback shaped the shape, the length and the wing design.\n\n<Figure\n  src=\"/images/home/range-overnight-pad.jpg\"\n  alt=\"The overnight pad laid flat to show its length and wings\"\n  caption=\"Extra length at the back, where overnight leaks usually start.\"\n/>\n\n## Ready for your brand\n\nThe overnight pad is available now for OEM and private label, with your choice of length, packaging and print. See the full specs on the [product page](/en/products/feminine-400mm/), or [request samples](/en/contact-us/).\n",
+      "published": false
+    },
+    {
+      "slug": "where-our-materials-come-from",
+      "title": "Where our materials come from",
+      "excerpt": "From cotton field to topsheet. How we choose, trace and check the materials in every pad we make.",
+      "date": "2026-08-27",
+      "cover": "/kawada/images/about/texture.webp",
+      "coverAlt": "Close-up of the soft absorbent fibres in a Kawada pad",
+      "body": "\nA pad is only as good as what goes into it. The topsheet touches skin for hours, the core has to absorb fast, and the backsheet has to stay quiet and breathable. So we treat material sourcing as product design, not purchasing.\n\n## The layers, and what we look for\n\nEach layer of a pad does a different job, and each one has its own supplier standards.\n\n- **Topsheet**: soft, skin-friendly and quick to let fluid through. Cotton for the Cotton Series, a performance non-woven for the Performance Series.\n- **Acquisition layer**: spreads fluid so the core can do its work evenly.\n- **Absorbent core**: holds fluid and locks it away from the surface.\n- **Backsheet**: breathable and leak-proof.\n- **Adhesive and release paper**: hold firmly and peel cleanly.\n\n> Good materials are not the most expensive ones. They are the ones that behave the same way in every roll.\n\n## Tracing every lot\n\nEvery roll and bale that arrives is logged with its supplier, lot number and certificate. Incoming materials are inspected before they reach a line, and lot numbers follow the material all the way to the finished batch. If a question ever comes up about a shipment, we can trace it back to the material lot.\n\n<Figure\n  src=\"/images/home/about-cotton.jpg\"\n  alt=\"Close-up of soft cotton fibre\"\n  caption=\"Cotton for the Cotton Series topsheet is traced lot by lot.\"\n/>\n\n## Choosing suppliers\n\nWe work with a short list of approved suppliers and audit them regularly. A new supplier has to pass sample testing, a trial production run and a full batch test before their material goes into a partner's product.\n\n## Greener options\n\nMore partners are asking for plant-based and biodegradable materials. We test these to the same standard as everything else, so a greener pad never has to be a weaker one. [Talk to us](/en/contact-us/) about the options for your range.\n",
+      "published": false
+    },
+    {
+      "slug": "how-we-test-every-production-batch",
+      "title": "How we test every production batch",
+      "excerpt": "Weight, absorbency, leakage and adhesion. The checks every batch passes before it ships, and why we never skip one.",
+      "date": "2026-07-30",
+      "cover": "/kawada/images/company/qc-cleanroom-inspection.webp",
+      "coverAlt": "Quality technicians checking a production batch in the Kawada cleanroom",
+      "body": "\nWhen a brand puts its name on a pad we make, it is trusting us with its reputation. That trust is earned one batch at a time, so every batch is tested before it leaves the factory. No exceptions, no sampling holidays.\n\n## What we test\n\nSamples are pulled from the start, middle and end of each run. Each sample goes through the same set of checks:\n\n- **Weight and dimensions**, to confirm the pad matches its spec sheet\n- **Absorption speed and capacity**, using standard test fluid\n- **Rewet**, to make sure the surface stays dry under pressure\n- **Leakage**, on an inclined test bench\n- **Adhesion**, so the pad stays in place and peels off cleanly\n- **Packaging seal and print**, checked against the approved artwork\n\n<PullQuote cite=\"Kawada quality team\">\nA batch that passes on Monday says nothing about Tuesday. That is why we test every one.\n</PullQuote>\n\n## What happens when a batch fails\n\nIf a sample falls outside spec, the batch is held. We trace the cause, whether that is a material lot, a machine setting or a packaging issue, fix it, and retest. A held batch only ships when it passes, and the partner sees the full record.\n\n<Figure\n  src=\"/images/home/factory-lab.jpg\"\n  alt=\"A technician weighing a pad sample on a lab balance\"\n  caption=\"Samples are pulled from the start, middle and end of every run.\"\n/>\n\n## Records you can see\n\nEvery batch gets a test report tied to its lot number. Partners can request the reports for any shipment, and we keep them on file so a question two years from now still has an answer.\n\n## Why it matters for your brand\n\nConsistent product means fewer complaints, fewer returns and fewer surprises for your customers. It also makes audits and retailer onboarding faster, because the evidence is already there.\n\nWant to see a sample report? [Ask our team](/en/contact-us/) and we will send one over.\n",
+      "published": false
+    },
+    {
+      "slug": "highlights-from-cidpex-2026",
+      "title": "Highlights from CIDPEX 2026",
+      "excerpt": "Three days, hundreds of conversations. What buyers asked us about at this year's disposable paper expo, and what it says about the market.",
+      "date": "2026-06-12",
+      "cover": "/kawada/expos/cidpex-2026-02.webp",
+      "coverAlt": "The Kawada stand at CIDPEX 2026",
+      "body": "\nThank you to everyone who visited our stand at CIDPEX this year. Here is what we heard most often, and what it tells us about where the market is going.\n\n## Three questions we heard all week\n\n1. **Can you do a cotton topsheet at our price point?** Cotton is no longer a niche request. Brands in every market asked about it.\n2. **What are the greener options?** Plant-based and biodegradable materials came up in almost every conversation.\n3. **How low can the MOQ go?** New brands want to test a range before committing to large runs.\n\n<PullQuote cite=\"Kawada sales team\">\nThe conversation has moved from \"what does it cost\" to \"what is it made of\".\n</PullQuote>\n\n## What we showed\n\nWe brought the Cotton Series, early samples of the Performance Series overnight pad and our packaging range. The overnight pad samples ran out on day two.\n\n<Figure\n  src=\"/images/home/series-cotton.jpg\"\n  alt=\"Cotton Series pads on display\"\n  caption=\"The Cotton Series drew the most questions on the stand.\"\n/>\n\n## What comes next\n\nWe are following up with every visitor who left their details. If we missed you, [get in touch](/en/contact-us/) and we will send the sample kit.\n",
+      "published": false
+    }
+  ],
+  "home": {
+    "heroTitle": "More care, more love",
+    "heroSub": "Sanitary pads, for your brand",
+    "stats": [
+      {
+        "figure": "2002",
+        "unit": null,
+        "label": "Founded",
+        "href": "/en/about/"
+      },
+      {
+        "figure": "73",
+        "unit": null,
+        "label": "Patents",
+        "href": "/en/innovation/"
+      },
+      {
+        "figure": "549",
+        "unit": null,
+        "label": "People",
+        "href": "/en/about/"
+      },
+      {
+        "figure": "7–30",
+        "unit": "days",
+        "label": "Sample development",
+        "href": "/en/oem/"
+      }
+    ]
+  },
+  "catalog": "/kawada/files/kawada-catalog.pdf"
+}

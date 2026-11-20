@@ -46,6 +46,7 @@ export async function GET(
   // unpublishes it here. Without it the response is published rows only, as
   // Konlito's live fetch expects.
   const all = new URL(request.url).searchParams.get("all") === "1";
+  const origin = new URL(request.url).origin;
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -71,12 +72,12 @@ export async function GET(
 
   const payload = products.map((product) => {
     // Gallery URLs, ordered; hero (imagePath) stays first for backward-compat.
-    const galleryUrls = product.images.map((img) => getPublicUrl(img.imagePath));
-    const heroUrl = product.imagePath ? getPublicUrl(product.imagePath) : null;
+    const galleryUrls = product.images.map((img) => getPublicUrl(img.imagePath, origin));
+    const heroUrl = product.imagePath ? getPublicUrl(product.imagePath, origin) : null;
     const images = heroUrl
       ? [heroUrl, ...galleryUrls.filter((u) => u !== heroUrl)]
       : galleryUrls;
-    const models3d = product.models3d.map((m) => getPublicUrl(m.modelPath));
+    const models3d = product.models3d.map((m) => getPublicUrl(m.modelPath, origin));
 
     return {
     id: product.slug,
@@ -102,7 +103,7 @@ export async function GET(
     finishes: product.finishes.map((finish) => ({
       key: finish.key,
       material: finish.materialLabel,
-      image: getPublicUrl(finish.imagePath),
+      image: getPublicUrl(finish.imagePath, origin),
       accent: finish.accentHex,
     })),
     contents: product.contents.map((c) => ({ en: c.textEn, zh: c.textZh, ...readTextI18n(c.textI18n) })),

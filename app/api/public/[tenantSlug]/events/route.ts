@@ -24,10 +24,11 @@ export async function OPTIONS() {
  *  `upcoming` is worked out here from the dates, so the static site is right
  *  as of the day it was built. */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ tenantSlug: string }> },
 ) {
   const { tenantSlug } = await params;
+  const origin = new URL(request.url).origin;
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -52,7 +53,7 @@ export async function GET(
     place: e.placeEn ? { en: e.placeEn, zh: e.placeZh } : null,
     booth: e.booth,
     photo: e.imagePath
-      ? { src: getPublicUrl(e.imagePath), alt: { en: e.imageAltEn, zh: e.imageAltZh } }
+      ? { src: getPublicUrl(e.imagePath, origin), alt: { en: e.imageAltEn, zh: e.imageAltZh } }
       : null,
   }));
 

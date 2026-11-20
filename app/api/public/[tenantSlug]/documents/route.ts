@@ -18,10 +18,11 @@ export async function OPTIONS() {
  *  no groups at all, which the site reads as "keep your own copy".
  *  Localized fields are { en, zh?, … }. */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ tenantSlug: string }> },
 ) {
   const { tenantSlug } = await params;
+  const origin = new URL(request.url).origin;
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -45,7 +46,7 @@ export async function GET(
           documents: g.documents.map((d) => ({
             id: d.id,
             label: readLocalized(d.label),
-            href: d.filePath.startsWith("/") ? d.filePath : getPublicUrl(d.filePath),
+            href: getPublicUrl(d.filePath, origin),
           })),
         }));
 

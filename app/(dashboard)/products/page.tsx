@@ -68,7 +68,7 @@ export default async function ProductsPage() {
         description={`${products.length} ${products.length === 1 ? dict.products.countOne : dict.products.countOther}`}
         action={
           <div className="flex flex-wrap items-center gap-2">
-            <ProductsMoreMenu />
+            <ProductsMoreMenu canImportKawada={tenant.slug === "kawada" && role === "OWNER"} />
             <LinkButton href="/products/new">
               <Plus /> {dict.actions.newProduct}
             </LinkButton>

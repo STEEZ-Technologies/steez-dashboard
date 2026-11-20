@@ -32,10 +32,11 @@ export async function OPTIONS() {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ tenantSlug: string }> },
 ) {
   const { tenantSlug } = await params;
+  const origin = new URL(request.url).origin;
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -61,7 +62,7 @@ export async function GET(
     keywords: a.keywordsEn,
     keywordsZh: a.keywordsZh.length > 0 ? a.keywordsZh : undefined,
     image: {
-      src: a.imagePath ? getPublicUrl(a.imagePath) : null,
+      src: a.imagePath ? getPublicUrl(a.imagePath, origin) : null,
       alt: { en: a.imageAltEn, zh: a.imageAltZh },
     },
     body: a.blocks

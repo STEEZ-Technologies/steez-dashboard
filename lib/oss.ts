@@ -23,10 +23,12 @@ export async function uploadBuffer(
   await getClient().put(key, buffer, { mime: contentType });
 }
 
-export function getPublicUrl(key: string): string {
+export function getPublicUrl(key: string, origin?: string): string {
   // Absolute URLs (e.g. imported from Konlito's own site, pre-OSS-migration)
   // pass through unchanged — only relative OSS keys get the bucket base.
   if (/^https?:\/\//.test(key)) return key;
+  // Client assets imported into this dashboard's public/ directory.
+  if (key.startsWith("/")) return origin ? new URL(key, origin).toString() : key;
   const base = process.env.ASSET_BASE_URL ?? "";
   return `${base.replace(/\/$/, "")}/${key}`;
 }
