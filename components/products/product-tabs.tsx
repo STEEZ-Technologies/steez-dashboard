@@ -38,11 +38,13 @@ export function useSelectProductTab() {
 export function ProductTabs({
   initialTab,
   children,
+  kawada = false,
 }: {
   initialTab?: string;
   children: React.ReactNode;
+  kawada?: boolean;
 }) {
-  const [tab, setTab] = useState<ProductTab>(isTab(initialTab) ? initialTab : "basics");
+  const [tab, setTab] = useState<ProductTab>(isTab(initialTab) && (!kawada || initialTab !== "finder") ? initialTab : "basics");
 
   function select(next: ProductTab) {
     setTab(next);
@@ -62,10 +64,10 @@ export function ProductTabs({
         className="mb-4 max-w-2xl"
       >
         <TabsList className="w-full sm:w-max">
-          {TABS.map((t) => (
+          {TABS.filter((t) => !kawada || t.id !== "finder").map((t) => (
             <TabsTrigger key={t.id} value={t.id} className="px-3">
-              <span className="sm:hidden">{t.short}</span>
-              <span className="hidden sm:inline">{t.label}</span>
+              <span className="sm:hidden">{kawada && t.id === "media" ? "Photos" : t.short}</span>
+              <span className="hidden sm:inline">{kawada && t.id === "media" ? "Photos" : kawada && t.id === "specs" ? "Specs" : t.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>

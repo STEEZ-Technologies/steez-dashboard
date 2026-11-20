@@ -75,6 +75,8 @@ export async function createProduct(
   const { tenantId } = await getTenantFromSession();
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
+  const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { slug: true } });
+  if (tenant.slug === "kawada") parsed.data.model = parsed.data.name;
 
   const { categoryId, featured, published, specs, kind, useCases, i18n } =
     extractProductExtras(formData);
@@ -105,7 +107,7 @@ export async function createProduct(
       sortOrder: (maxSort._max.sortOrder ?? -1) + 1,
     },
   });
-  await upsertProductFit(created.id, formData);
+  if (tenant.slug !== "kawada") await upsertProductFit(created.id, formData);
 
   await logAudit({
     action: "product.create",
@@ -125,6 +127,8 @@ export async function updateProduct(
   const { tenantId } = await getTenantFromSession();
   const parsed = productInputSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return parsed.error.issues[0]?.message ?? "Invalid input";
+  const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { slug: true } });
+  if (tenant.slug === "kawada") parsed.data.model = parsed.data.name;
 
   const { categoryId, featured, published, specs, kind, useCases, i18n } =
     extractProductExtras(formData);
@@ -141,7 +145,7 @@ export async function updateProduct(
     where: { id, tenantId },
     data: { ...parsed.data, categoryId, featured, published, specs, kind, useCases, ...i18n },
   });
-  await upsertProductFit(id, formData);
+  if (tenant.slug !== "kawada") await upsertProductFit(id, formData);
 
   await logAudit({
     action: "product.update",

@@ -71,6 +71,7 @@ export function ProductForm({
   defaultImageUrl,
   submitLabel,
   lean = false,
+  kawada = false,
 }: {
   action: (
     prevState: string | undefined,
@@ -83,6 +84,7 @@ export function ProductForm({
   /** Hide the fields this tenant's site never reads — the dashboard-only
       product photo and the Featured flag. Their values still post unchanged. */
   lean?: boolean;
+  kawada?: boolean;
 }) {
   const [error, formAction, pending] = useActionState(action, undefined);
   const [categoryId, setCategoryId] = useState(defaultValues?.categoryId ?? "none");
@@ -155,13 +157,15 @@ export function ProductForm({
                     words separated by dashes, no spaces.
                   </p>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="model">Model code</Label>
-                  <Input id="model" name="model" defaultValue={defaultValues?.model} required />
-                  <p className="text-xs text-muted-foreground">
-                    The catalogue code printed on the unit, e.g. KB-C25R.
-                  </p>
-                </div>
+                {kawada ? (
+                  <input type="hidden" name="model" value={defaultValues?.model ?? "Product"} />
+                ) : (
+                  <div className="grid gap-2">
+                    <Label htmlFor="model">Model code</Label>
+                    <Input id="model" name="model" defaultValue={defaultValues?.model} required />
+                    <p className="text-xs text-muted-foreground">The catalogue code printed on the unit, e.g. KB-C25R.</p>
+                  </div>
+                )}
               </div>
 
               <Multilingual
@@ -229,7 +233,7 @@ export function ProductForm({
                 }}
               />
 
-              <div className="grid gap-2">
+              {!kawada && <div className="grid gap-2">
                 <Label>Kind</Label>
                 <Select
                   value={kind}
@@ -244,9 +248,9 @@ export function ProductForm({
                     <SelectItem value="ACCESSORY">Accessory</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div>}
 
-              <div className="grid gap-2">
+              {!kawada && <div className="grid gap-2">
                 <Label>Use cases</Label>
                 <div className="flex flex-wrap gap-4">
                   {USE_CASES.map((uc) => (
@@ -259,7 +263,7 @@ export function ProductForm({
                     </label>
                   ))}
                 </div>
-              </div>
+              </div>}
 
               <div className="grid gap-2">
                 <ImageUploadField
@@ -301,7 +305,7 @@ export function ProductForm({
               </div>
 
               <div className="grid gap-3">
-                {!lean && (
+                {!lean && !kawada && (
                   <div>
                     <label className="flex items-center gap-2 text-sm">
                       <Switch checked={featured} onCheckedChange={setFeatured} /> Featured
@@ -323,7 +327,7 @@ export function ProductForm({
               <SpecRows initialText={defaultValues?.specsText} />
             </ProductTabPanel>
 
-            <ProductTabPanel tab="finder">
+            {!kawada && <ProductTabPanel tab="finder">
               <div className="grid gap-3 rounded-lg border p-4">
                 <label className="flex items-center gap-2 text-sm font-medium">
                   <Switch checked={hasFit} onCheckedChange={setHasFit} /> Water capacity &amp;
@@ -396,7 +400,7 @@ export function ProductForm({
                 )}
               </div>
 
-            </ProductTabPanel>
+            </ProductTabPanel>}
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
@@ -404,7 +408,7 @@ export function ProductForm({
               <Button type="submit" disabled={pending}>
                 {pending ? "Saving…" : submitLabel}
               </Button>
-              {!defaultValues?.slug && (
+              {!defaultValues?.slug && !kawada && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Save this first — you&apos;ll add box contents on the next screen.
                 </p>

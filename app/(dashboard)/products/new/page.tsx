@@ -16,6 +16,7 @@ export default async function NewProductPage() {
   ]);
   // Same six languages as the edit page for KomiBright (see there).
   const lean = tenant.slug === "komibright";
+  const kawada = tenant.slug === "kawada";
 
   return (
     <div>
@@ -27,6 +28,7 @@ export default async function NewProductPage() {
           categories={categories}
           submitLabel="Create product"
           lean={lean}
+          kawada={kawada}
           defaultValues={{ published: true }}
         />
       </LanguageScope>

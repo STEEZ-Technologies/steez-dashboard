@@ -42,6 +42,7 @@ export default async function EditProductPage({
   // KomiBright's site never reads the dashboard's product photo or the
   // Featured flag — so its editors don't see them.
   const lean = tenant.slug === "komibright";
+  const kawada = tenant.slug === "kawada";
 
   const [galleryRows, model3dRows, contentRows, applicationRows] = await Promise.all([
     prisma.productImage.findMany({
@@ -124,13 +125,14 @@ export default async function EditProductPage({
           edited in six; every other tenant keeps English and Chinese. */}
       <LanguageScope langs={lean ? ALL_EDIT_LANGS : undefined}>
         <LanguageTabs />
-        <ProductTabs initialTab={tab}>
+        <ProductTabs initialTab={tab} kawada={kawada}>
           <CompletenessBar completeness={completeness} />
           <ProductForm
             action={updateProduct.bind(null, product.id)}
             categories={categories}
             submitLabel="Save changes"
             lean={lean}
+            kawada={kawada}
             defaultImageUrl={product.imagePath ? getPublicUrl(product.imagePath) : undefined}
             defaultValues={{
               slug: product.slug,
@@ -172,7 +174,7 @@ export default async function EditProductPage({
             </ProductTabPanel>
           )}
 
-          <ProductTabPanel tab="specs">
+          {!kawada && <ProductTabPanel tab="specs">
             <Card className="mt-6 max-w-2xl">
               <CardHeader>
                 <CardTitle>Box contents</CardTitle>
@@ -181,7 +183,7 @@ export default async function EditProductPage({
                 <ProductContent productId={product.id} items={contents} />
               </CardContent>
             </Card>
-          </ProductTabPanel>
+          </ProductTabPanel>}
 
           <ProductTabPanel tab="media" className="grid max-w-2xl gap-6">
             <Card>
@@ -193,14 +195,14 @@ export default async function EditProductPage({
               </CardContent>
             </Card>
 
-            <Card>
+            {!kawada && <Card>
               <CardHeader>
                 <CardTitle>3D models</CardTitle>
               </CardHeader>
               <CardContent>
                 <ProductModels3D productId={product.id} models={models3d} />
               </CardContent>
-            </Card>
+            </Card>}
 
           </ProductTabPanel>
         </ProductTabs>
