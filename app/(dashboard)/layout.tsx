@@ -1,4 +1,7 @@
 import { getTenantFromSession } from "@/lib/tenant";
+import Image from "next/image";
+import kawadaLogo from "@/public/brand/kawada-logo-h144.webp";
+import kawadaLogoLight from "@/public/brand/kawada-logo-h144-light.webp";
 import { siteIconUrls } from "@/lib/site-icon";
 import { prisma } from "@/lib/db";
 import { getPublicUrl } from "@/lib/oss";
@@ -35,7 +38,7 @@ export default async function DashboardLayout({
 
   return (
     <I18nProvider dict={dict} locale={locale}>
-    <SidebarProvider>
+    <SidebarProvider data-tenant={tenant.slug}>
       <AppSidebar
         tenantName={tenant.name}
         tenantSlug={tenant.slug}
@@ -58,6 +61,22 @@ export default async function DashboardLayout({
             slides under it and through the blur. */}
         <header className="glass sticky top-2 z-10 mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-3 md:mx-4">
           <SidebarTrigger />
+          {tenant.slug === "kawada" && (
+            <span className="mr-1 flex shrink-0 items-center border-r pr-3">
+              <Image
+                src={kawadaLogo}
+                alt="Kawada"
+                unoptimized
+                className="h-9 w-auto dark:hidden"
+              />
+              <Image
+                src={kawadaLogoLight}
+                alt="Kawada"
+                unoptimized
+                className="hidden h-9 w-auto dark:block"
+              />
+            </span>
+          )}
           <Breadcrumbs />
           <div className="ml-auto flex items-center gap-2">
             <CommandPalette />
