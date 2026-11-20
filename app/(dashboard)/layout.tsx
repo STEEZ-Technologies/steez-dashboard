@@ -21,6 +21,7 @@ import { getDictionary, getLocale } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { isSuperAdmin, PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 import { ActingBanner } from "@/components/shell/acting-banner";
+import { kawadaTheme } from "./kawada-theme";
 
 export default async function DashboardLayout({
   children,
@@ -36,16 +37,21 @@ export default async function DashboardLayout({
     prisma.user.findUnique({ where: { id: user.id }, select: { name: true, avatarPath: true } }),
   ]);
 
+  const isKawada = tenant.slug === "kawada";
+
   return (
     <I18nProvider dict={dict} locale={locale}>
     <SidebarProvider data-tenant={tenant.slug}>
+      {isKawada && <style>{kawadaTheme}</style>}
       <AppSidebar
         tenantName={tenant.name}
         tenantSlug={tenant.slug}
         email={user.email ?? ""}
         displayName={profile?.name ?? null}
         avatarUrls={
-          profile?.avatarPath
+          isKawada
+            ? [kawadaLogo.src]
+            : profile?.avatarPath
             ? [getPublicUrl(profile.avatarPath)]
             : // No picture uploaded: the workspace's own site icon. Each URL
               // is tried in turn; if none loads, the avatar shows initials.
@@ -61,7 +67,7 @@ export default async function DashboardLayout({
             slides under it and through the blur. */}
         <header className="glass sticky top-2 z-10 mx-2 mt-2 flex h-14 shrink-0 items-center gap-2 rounded-2xl px-3 md:mx-4">
           <SidebarTrigger />
-          {tenant.slug === "kawada" && (
+          {isKawada && (
             <span className="mr-1 flex shrink-0 items-center border-r pr-3">
               <Image
                 src={kawadaLogo}

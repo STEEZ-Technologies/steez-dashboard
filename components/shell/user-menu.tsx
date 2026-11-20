@@ -22,12 +22,14 @@ export function UserMenu({
   email,
   displayName = null,
   avatarUrls = [],
+  useLogoAvatar = false,
   role,
   onSignOut,
 }: {
   email: string;
   displayName?: string | null;
   avatarUrls?: string[];
+  useLogoAvatar?: boolean;
   role: string;
   onSignOut: () => void;
 }) {
@@ -49,7 +51,7 @@ export function UserMenu({
                   key={avatarUrl}
                   src={avatarUrl}
                   alt=""
-                  className="rounded-lg object-cover"
+                  className={useLogoAvatar ? "rounded-lg bg-white object-contain p-0.5" : "rounded-lg object-cover"}
                   onLoadingStatusChange={(s) => s === "error" && setUrlIndex((i) => i + 1)}
                 />
               )}

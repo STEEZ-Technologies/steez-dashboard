@@ -158,6 +158,7 @@ export function AppSidebar({
           email={email}
           displayName={displayName}
           avatarUrls={avatarUrls}
+          useLogoAvatar={tenantSlug === "kawada"}
           role={role}
           onSignOut={() => signOutAction()}
         />
