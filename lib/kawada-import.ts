@@ -24,9 +24,13 @@ export async function importKawadaContent(tenantId: string): Promise<Counts> {
     });
     const hero = product.photos[0];
     let productId: string;
+    // Legacy browser uploads for this liner point at an unreachable OSS path.
+    // Replace only this known broken gallery with its verified site photos.
+    const repairLegacyLiner = product.slug === "feminine-150mm" &&
+      Boolean(existing?.imagePath && !existing.imagePath.startsWith("/kawada/"));
     if (existing) {
       productId = existing.id;
-      if (!existing.imagePath && hero) {
+      if ((!existing.imagePath || repairLegacyLiner) && hero) {
         await prisma.product.update({ where: { id: existing.id }, data: { imagePath: hero.src, imageAlt: hero.alt } });
         counts.primaryImages++;
       }
@@ -43,7 +47,8 @@ export async function importKawadaContent(tenantId: string): Promise<Counts> {
     }
     // Browser uploads already populated some galleries. Keep them as edited;
     // only seed gallery from real site photos when one has no images at all.
-    if (product.photos.length > 0 && (!existing || existing._count.images === 0)) {
+    if (repairLegacyLiner) await prisma.productImage.deleteMany({ where: { productId } });
+    if (product.photos.length > 0 && (!existing || existing._count.images === 0 || repairLegacyLiner)) {
       await prisma.productImage.createMany({ data: product.photos.map((photo, index) => ({
         productId, imagePath: photo.src, alt: photo.alt, sortOrder: index,
       })) });
