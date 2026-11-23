@@ -27,19 +27,30 @@ function str(value: unknown, max = MAX_FIELD): string | undefined {
   return trimmed.slice(0, max);
 }
 
-export async function OPTIONS(request: Request) {
+type RouteContext = { params: Promise<{ tenantSlug: string }> };
+
+function leadCors(origin: string | null, tenantSlug: string) {
+  const headers = corsHeadersFor(origin);
+  if (tenantSlug === "kawada" && origin === "https://kawada.steez.digital") {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
+}
+
+export async function OPTIONS(request: Request, { params }: RouteContext) {
+  const { tenantSlug } = await params;
   return new Response(null, {
     status: 204,
-    headers: corsHeadersFor(request.headers.get("origin")),
+    headers: leadCors(request.headers.get("origin"), tenantSlug),
   });
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ tenantSlug: string }> },
+  { params }: RouteContext,
 ) {
-  const CORS = corsHeadersFor(request.headers.get("origin"));
   const { tenantSlug } = await params;
+  const CORS = leadCors(request.headers.get("origin"), tenantSlug);
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
