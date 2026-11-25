@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { kawadaSource } from "@/lib/kawada-attribution";
 import { prisma } from "@/lib/db";
 import {
   splitLanguage,
@@ -269,7 +270,7 @@ const firstViewPerVisit = cache((tenantId: string, days: number) => {
 
 function countTop(keys: (string | null)[], limit: number) {
   const counts = new Map<string, number>();
-  for (const k of keys) if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
+  for (const k of keys) if (k !== null) counts.set(k, (counts.get(k) ?? 0) + 1);
   return Array.from(counts.entries())
     .map(([key, count]) => ({ key, count }))
     .sort((a, b) => b.count - a.count)
@@ -307,10 +308,10 @@ export async function getVisitLanguages(tenantId: string, days = 30) {
   );
 }
 
-export async function getTopReferrers(tenantId: string, days = 30, limit = 8) {
+export async function getTopReferrers(tenantId: string, days = 30, limit = 8, isKawada = false) {
   const rows = await firstViewPerVisit(tenantId, days);
-  return countTop(rows.map((r) => hostOf(r.referrer)), limit).map(
-    ({ key, count }) => ({ source: key, count }),
+  return countTop(rows.map((r) => isKawada ? kawadaSource(r.referrer) ?? "" : hostOf(r.referrer)), limit).map(
+    ({ key, count }) => ({ source: key || null, count }),
   );
 }
 
@@ -392,6 +393,7 @@ export async function getProductAnalytics(
   tenantId: string,
   productId: string,
   days = 30,
+  isKawada = false,
 ) {
   const since = daysAgo(days);
   const prevStart = daysAgo(days * 2);
@@ -438,9 +440,9 @@ export async function getProductAnalytics(
     .sort((a, b) => a.date.localeCompare(b.date));
 
   // Top referrers for this product.
-  const refCounts = new Map<string, number>();
+  const refCounts = new Map<string | null, number>();
   for (const r of referrerRows) {
-    const host = hostOf(r.referrer);
+    const host = isKawada ? kawadaSource(r.referrer) : hostOf(r.referrer);
     refCounts.set(host, (refCounts.get(host) ?? 0) + 1);
   }
   const referrers = Array.from(refCounts.entries())
@@ -459,12 +461,12 @@ export async function getProductAnalytics(
 
 /* ── Weekly digest (in-dashboard summary — no email provider yet) ─ */
 
-export async function getWeeklyDigest(tenantId: string) {
+export async function getWeeklyDigest(tenantId: string, isKawada = false) {
   const [kpis, topByClicks, topByViews, referrers] = await Promise.all([
     getKpis(tenantId, 7),
     getTopProductsByClicks(tenantId, 7, 5),
     getTopProductsByViews(tenantId, 7, 5),
-    getTopReferrers(tenantId, 7, 3),
+    getTopReferrers(tenantId, 7, 3, isKawada),
   ]);
   return { kpis, topByClicks, topByViews, referrers };
 }

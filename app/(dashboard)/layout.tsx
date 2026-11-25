@@ -85,7 +85,7 @@ export default async function DashboardLayout({
           )}
           <Breadcrumbs />
           <div className="ml-auto flex items-center gap-2">
-            <CommandPalette />
+            <CommandPalette tenantSlug={tenant.slug} />
             <LanguageSwitcher />
             <ThemeToggle />
           </div>

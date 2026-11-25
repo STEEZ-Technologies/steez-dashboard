@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ChevronDown,
@@ -63,6 +63,8 @@ import {
 } from "@/app/(dashboard)/leads/actions";
 import { useT } from "@/lib/i18n/provider";
 import { LeadJourneyView } from "@/components/leads/lead-journey";
+import { ENQUIRY_FIELDS } from "@/lib/kawada-enquiry-options";
+import { enquiryLabel } from "@/lib/kawada-enquiry-labels";
 import { CountryCode } from "@/components/shared/country-code";
 
 type LeadStatus = "NEW" | "CONTACTED" | "QUOTED" | "WON" | "LOST" | "ARCHIVED";
@@ -91,14 +93,18 @@ export type LeadRow = {
   dealValue: number | null;
   dealCurrency: string | null;
   country: string | null;
+  buyerCountry: string | null;
+  productInterest: string | null;
+  orderVolume: string | null;
+  formLanguage: string | null;
   productId: string | null;
   productName: string | null;
   productModel: string | null;
   createdAt: string; // ISO — formatted client-side
 };
 
-function relativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+function relativeTime(iso: string, now: number, locale: string): string {
+  const diff = now - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins}m ago`;
@@ -106,14 +112,18 @@ function relativeTime(iso: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
+  return new Intl.DateTimeFormat(locale, { timeZone: "UTC" }).format(new Date(iso));
 }
 
-export function LeadsTable({ leads }: { leads: LeadRow[] }) {
-  const { dict } = useT();
+export function LeadsTable({ leads, showBuyerFields, keepNew, now }: {
+  leads: LeadRow[];
+  showBuyerFields?: boolean;
+  keepNew?: boolean;
+  now: number;
+}) {
+  const { dict, locale } = useT();
   const t = dict.leads;
   const [pending, startTransition] = useTransition();
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [toDelete, setToDelete] = useState<LeadRow | null>(null);
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
@@ -161,11 +171,6 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
     });
   }
 
-  const visible = useMemo(
-    () => (statusFilter === "ALL" ? leads : leads.filter((l) => l.status === statusFilter)),
-    [leads, statusFilter],
-  );
-
   function setStatus(lead: LeadRow, status: LeadRow["status"]) {
     startTransition(async () => {
       const err = await updateLeadStatus(lead.id, status);
@@ -185,7 +190,8 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
 
   // Opening a lead is how you "read" it — auto-clear it from the NEW badge
   // the same way an email client marks a message read on open, instead of
-  // requiring a separate manual status change just to make the count honest.
+  // requiring a separate manual status change. In a NEW-only view, keep
+  // the row visible so the owner can read it before choosing to move it.
   function toggleExpand(lead: LeadRow) {
     const opening = !expanded.has(lead.id);
     setExpanded((prev) => {
@@ -196,7 +202,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
     });
     // Outside the updater: React may run updaters during render, where
     // starting a transition throws.
-    if (opening && lead.status === "NEW") {
+    if (opening && !keepNew && lead.status === "NEW") {
       startTransition(async () => {
         await updateLeadStatus(lead.id, "CONTACTED");
       });
@@ -205,27 +211,6 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? "ALL")}>
-          <SelectTrigger className="w-[200px]">
-            {/* Render the label explicitly — SelectValue echoes the raw value. */}
-            <span>
-              {statusFilter === "ALL"
-                ? t.allStatus
-                : statusLabel(statusFilter as LeadStatus)}
-            </span>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">{t.allStatus}</SelectItem>
-            {STATUSES.map((s) => (
-              <SelectItem key={s} value={s}>
-                {statusLabel(s)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="rounded-xl border bg-card">
         <Table>
           <TableHeader>
@@ -239,14 +224,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                  {t.noMatch}
-                </TableCell>
-              </TableRow>
-            ) : (
-              visible.map((lead) => {
+            {leads.map((lead) => {
                 const isOpen = expanded.has(lead.id);
                 return (
                   <Fragment key={lead.id}>
@@ -301,13 +279,31 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                               {lead.phone}
                             </a>
                           )}
-                          {lead.country && <CountryCode code={lead.country} />}
+                          {lead.country && (
+                            <span className="inline-flex items-center gap-1">
+                              {showBuyerFields && dict.enquiryAnalytics.ipCountry}
+                              <CountryCode code={lead.country} />
+                            </span>
+                          )}
                         </div>
+                        {showBuyerFields && (
+                          <dl className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                            {ENQUIRY_FIELDS.map((field) => {
+                              const value = lead[field];
+                              return (
+                                <div className="flex gap-1" key={field}>
+                                  <dt>{dict.enquiryAnalytics.fields[field]}</dt>
+                                  <dd className="text-foreground">{value ? enquiryLabel(field, value, dict, locale) : dict.enquiryAnalytics.unknown}</dd>
+                                </div>
+                              );
+                            })}
+                          </dl>
+                        )}
                         {/* Product, status and time, which have their own columns from sm up. */}
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground sm:hidden">
                           {statusBadge(lead.status)}
                           <span>{lead.productId ? lead.productName : t.noProduct}</span>
-                          <span>{relativeTime(lead.createdAt)}</span>
+                          <span>{relativeTime(lead.createdAt, now, locale)}</span>
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-muted-foreground" onClick={(e) => e.stopPropagation()}>
@@ -327,7 +323,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                         {statusBadge(lead.status)}
                       </TableCell>
                       <TableCell className="hidden sm:table-cell whitespace-nowrap text-muted-foreground">
-                        {relativeTime(lead.createdAt)}
+                        {relativeTime(lead.createdAt, now, locale)}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
@@ -454,8 +450,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                     )}
                   </Fragment>
                 );
-              })
-            )}
+              })}
           </TableBody>
         </Table>
       </div>

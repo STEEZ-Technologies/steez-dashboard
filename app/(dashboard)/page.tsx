@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CountryCode } from "@/components/shared/country-code";
-import { Download, Plus } from "lucide-react";
+import { ArrowRight, Download, House, Inbox, Package, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 import { PLATFORM_TENANT_SLUG } from "@/lib/super-admin";
 import { getTenantFromSession } from "@/lib/tenant";
@@ -28,7 +28,11 @@ import { PublishBanner } from "@/components/shell/publish-banner";
 import { PageHeader } from "@/components/shell/page-header";
 import { StatCard } from "@/components/overview/stat-card";
 import { WeeklyDigest } from "@/components/overview/weekly-digest";
+import { KawadaEnquiries } from "@/components/overview/kawada-enquiries";
+import { enquiryFilters, type EnquirySearch } from "@/lib/kawada-enquiry-options";
+import { getKawadaFunnel, getKawadaEnquiryReport } from "@/lib/kawada-enquiry-report";
 import { DealsCard } from "@/components/overview/deals-card";
+import { reportPeriod } from "@/lib/enquiry-query";
 import { getDealStats, getEnquiryMarkets } from "@/lib/leads-stats";
 import { EnquiryMarkets } from "@/components/overview/enquiry-markets";
 import { RangeTabs } from "@/components/analytics/range-tabs";
@@ -56,7 +60,7 @@ const SESSION_IS_VISIT = new Set(["komibright"]);
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string }>;
+  searchParams: Promise<EnquirySearch>;
 }) {
   const { tenantId, role } = await getTenantFromSession();
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
@@ -65,8 +69,11 @@ export default async function OverviewPage({
   const [dict, locale] = await Promise.all([getDictionary(), getLocale()]);
   const publishState = await getPublishState(tenantId);
   const sp = await searchParams;
-  const rangeStr = sp.range && ALLOWED.has(sp.range) ? sp.range : "30";
+  const rangeStr = typeof sp.range === "string" && ALLOWED.has(sp.range) ? sp.range : "30";
   const days = Number(rangeStr);
+  const isKawada = tenant.slug === "kawada";
+  const filters = enquiryFilters(sp);
+  const period = reportPeriod(days);
 
   const [
     kpis,
@@ -85,23 +92,27 @@ export default async function OverviewPage({
     enquiryCount,
     entryPages,
     languages,
+    funnel,
+    enquiryReport,
   ] = await Promise.all([
     getKpis(tenantId, days),
     getViewsVsClicksByDay(tenantId, days),
     getPageViewsByDay(tenantId, days),
     getRecentActivity(tenantId, 10),
-    getWeeklyDigest(tenantId),
+    getWeeklyDigest(tenantId, isKawada),
     getTopProductsByViews(tenantId, days),
     getTopProductsByClicks(tenantId, days),
-    getTopReferrers(tenantId, days),
+    getTopReferrers(tenantId, days, 8, isKawada),
     getDeviceBreakdown(tenantId, days),
     getTopCountries(tenantId, days),
     getProductPerformance(tenantId, days),
-    getDealStats(tenantId, days),
-    getEnquiryMarkets(tenantId, days),
+    getDealStats(tenantId, period),
+    isKawada ? null : getEnquiryMarkets(tenantId, period),
     prisma.lead.count({ where: { tenantId, status: { not: "ARCHIVED" } } }),
     getEntryPages(tenantId, days),
     getVisitLanguages(tenantId, days),
+    isKawada ? getKawadaFunnel(tenantId, period) : null,
+    isKawada ? getKawadaEnquiryReport(tenantId, period, filters) : null,
   ]);
   // A site that doesn't send enquiries here yet (KomiBright's copy is off until
   // its privacy policy covers it) would only show a wall of zeros; the sales
@@ -148,20 +159,39 @@ export default async function OverviewPage({
             >
               <Download />
             </LinkButton>
-            <LinkButton href="/products/new">
+            {tenant.slug !== "kawada" && <LinkButton href="/products/new">
               <Plus /> {dict.actions.newProduct}
-            </LinkButton>
+            </LinkButton>}
           </div>
         }
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      {tenant.slug === "kawada" && (
+        <nav aria-label={locale === "zh" ? "常用操作" : "Common tasks"} className="mb-6 grid gap-3 sm:grid-cols-3">
+          {[
+            { href: "/website/home", title: locale === "zh" ? "编辑首页" : "Edit the homepage", icon: House },
+            { href: "/products", title: locale === "zh" ? "更新产品" : "Update products", icon: Package },
+            { href: "/leads", title: locale === "zh" ? "查看询盘" : "Read enquiries", icon: Inbox },
+          ].map(({ href, title, icon: Icon }) => (
+            <Link key={href} href={href} className="flex items-center gap-3 rounded-xl border bg-card p-4 font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary">
+              <Icon className="size-5 shrink-0 text-primary" aria-hidden />
+              <span className="flex-1">{title}</span>
+              <ArrowRight className="size-4 shrink-0" aria-hidden />
+            </Link>
+          ))}
+        </nav>
+      )}
+
+      {funnel && enquiryReport && (
+        <KawadaEnquiries funnel={funnel} report={enquiryReport} period={period} filters={filters} range={rangeStr} dict={dict} locale={locale} />
+      )}
+
+      <div className={isKawada ? "grid grid-cols-2 gap-4 lg:grid-cols-4" : "grid grid-cols-2 gap-4 lg:grid-cols-5"}>
         <StatCard label={dict.overview.pageViews} info={dict.help.pageViews} value={kpis.pageViews.value} delta={kpis.pageViews.delta} spark={pvSpark} />
-        <StatCard label={SESSION_IS_VISIT.has(tenant.slug) ? dict.analytics.visits : dict.analytics.uniqueVisitors} info={SESSION_IS_VISIT.has(tenant.slug) ? dict.help.visits : dict.help.uniqueVisitors} value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />
+        {!isKawada && <StatCard label={SESSION_IS_VISIT.has(tenant.slug) ? dict.analytics.visits : dict.analytics.uniqueVisitors} info={SESSION_IS_VISIT.has(tenant.slug) ? dict.help.visits : dict.help.uniqueVisitors} value={kpis.uniqueVisitors.value} delta={kpis.uniqueVisitors.delta} />}
         <StatCard label={dict.overview.productViews} info={dict.help.productViews} value={kpis.productViews.value} delta={kpis.productViews.delta} spark={viewSpark} />
         <StatCard label={dict.overview.productClicks} info={dict.help.productClicks} value={kpis.productClicks.value} delta={kpis.productClicks.delta} spark={clickSpark} />
-        {/* Fifth card spans the row on phones instead of sitting alone. */}
-        <div className="col-span-2 grid lg:col-span-1">
+        <div className={isKawada ? "grid" : "col-span-2 grid lg:col-span-1"}>
           <StatCard label={dict.overview.ctr} info={dict.help.ctr} value={`${kpis.ctr.value}%`} delta={kpis.ctr.delta} deltaSuffix="pts" />
         </div>
       </div>
@@ -169,17 +199,18 @@ export default async function OverviewPage({
       {showSales && (
         <>
           <div className="mt-4">
-            <DealsCard stats={deals} days={days} dict={dict} />
+            <DealsCard stats={deals} period={period} days={days} dict={dict} />
           </div>
 
-          <div className="mt-4">
+          {markets && <div className="mt-4">
             <EnquiryMarkets
               countries={markets.countries}
               sources={markets.sources}
+              period={period}
               dict={dict}
               locale={locale}
             />
-          </div>
+          </div>}
         </>
       )}
 
@@ -198,7 +229,7 @@ export default async function OverviewPage({
             <MetricTitle title={dict.overview.recentActivity} info={dict.help.recentActivity} />
           </CardHeader>
           <CardContent>
-            <ActivityFeed items={activity} />
+            <ActivityFeed items={activity} dict={dict} now={period.end.getTime()} />
           </CardContent>
         </Card>
       </div>
@@ -315,18 +346,18 @@ export default async function OverviewPage({
         </Card>
         <Card>
           <CardHeader>
-            <MetricTitle title={dict.analytics.topReferrers} info={dict.help.topReferrers} />
+            <MetricTitle title={dict.analytics.topReferrers} info={isKawada ? dict.enquiryAnalytics.sourceHelp : dict.help.topReferrers} />
           </CardHeader>
           <CardContent>
             <BarList
-              items={referrers.map((r) => ({ label: r.source, count: r.count }))}
+              items={referrers.map((r) => ({ label: r.source ?? dict.enquiryAnalytics.unknownSource, count: r.count }))}
               emptyLabel={dict.analytics.noReferrers}
             />
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <MetricTitle title={dict.analytics.topCountries} info={dict.help.topCountries} />
+            <MetricTitle title={isKawada ? dict.enquiryAnalytics.trafficCountries : dict.analytics.topCountries} info={dict.help.topCountries} />
           </CardHeader>
           <CardContent>
             <BarList

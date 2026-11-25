@@ -12,7 +12,8 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { NAV_ITEMS } from "./nav-items";
+import { workspaceNav } from "./nav-items";
+import { requestDashboardNavigation } from "@/lib/dashboard-navigation";
 import { useT } from "@/lib/i18n/provider";
 
 type SearchResult = {
@@ -22,7 +23,7 @@ type SearchResult = {
 
 const NO_RESULTS: SearchResult = { products: [], categories: [] };
 
-export function CommandPalette() {
+export function CommandPalette({ tenantSlug }: { tenantSlug: string }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [fetched, setFetched] = useState<SearchResult>(NO_RESULTS);
@@ -30,7 +31,7 @@ export function CommandPalette() {
   // and it also hides results left over from the previous query.
   const results = query.trim() ? fetched : NO_RESULTS;
   const router = useRouter();
-  const { dict } = useT();
+  const { dict, locale } = useT();
   const NAV_LABEL_KEY: Record<string, keyof typeof dict.nav> = {
     "/": "overview",
     "/products": "products",
@@ -43,7 +44,7 @@ export function CommandPalette() {
   };
 
   useEffect(() => {
-    if (!query.trim()) return;
+    if (tenantSlug === "kawada" || !query.trim()) return;
     const id = setTimeout(() => {
       fetch(`/api/dashboard-search?q=${encodeURIComponent(query)}`)
         .then((r) => r.json())
@@ -51,7 +52,7 @@ export function CommandPalette() {
         .catch(() => setFetched(NO_RESULTS));
     }, 200);
     return () => clearTimeout(id);
-  }, [query]);
+  }, [query, tenantSlug]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -66,7 +67,7 @@ export function CommandPalette() {
 
   function go(href: string) {
     setOpen(false);
-    router.push(href);
+    requestDashboardNavigation(href, () => router.push(href));
   }
 
   return (
@@ -117,7 +118,7 @@ export function CommandPalette() {
             </>
           )}
           <CommandGroup heading={dict.command.navigate}>
-            {NAV_ITEMS.map((item) => (
+            {workspaceNav(tenantSlug, locale).map((item) => (
               <CommandItem
                 key={item.href}
                 onSelect={() => go(item.href)}
@@ -130,6 +131,7 @@ export function CommandPalette() {
           </CommandGroup>
           <CommandSeparator />
           <CommandGroup heading={dict.command.create}>
+            {tenantSlug !== "kawada" && <>
             <CommandItem onSelect={() => go("/products/new")} value="new product">
               <Plus className="size-4" />
               {dict.actions.newProduct}
@@ -138,6 +140,7 @@ export function CommandPalette() {
               <Plus className="size-4" />
               {dict.actions.newCategory}
             </CommandItem>
+            </>}
             <CommandItem onSelect={() => go("/team")} value="invite member">
               <Plus className="size-4" />
               {dict.nav.team}

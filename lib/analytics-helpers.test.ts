@@ -72,6 +72,12 @@ describe("bucketByDay", () => {
 });
 
 describe("splitLanguage", () => {
+  it("groups the three Kawada entry paths while preserving their language", () => {
+    for (const lang of ["en", "zh", "es"]) {
+      expect(splitLanguage(`/${lang}/products/?product=pad`)).toEqual({ lang, path: "/products" });
+    }
+  });
+
   it("treats an unprefixed path as English", () => {
     expect(splitLanguage("/products/kb-c25r/")).toEqual({ lang: "en", path: "/products/kb-c25r" });
     expect(splitLanguage("/")).toEqual({ lang: "en", path: "/" });

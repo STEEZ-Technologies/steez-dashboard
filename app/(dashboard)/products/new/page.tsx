@@ -21,7 +21,7 @@ export default async function NewProductPage() {
   return (
     <div>
       <PageHeader eyebrow="Catalog" title="New product" />
-      <LanguageScope langs={lean ? ALL_EDIT_LANGS : undefined}>
+      <LanguageScope langs={lean ? ALL_EDIT_LANGS : kawada ? ["en", "zh", "es"] : undefined}>
         <LanguageTabs />
         <ProductForm
           action={createProduct}

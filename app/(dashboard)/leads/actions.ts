@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { kawadaSource } from "@/lib/kawada-attribution";
 import { hostOf } from "@/lib/analytics-helpers";
 import { buildJourney, type RawStep } from "@/lib/lead-journey-helpers";
 
@@ -129,7 +130,7 @@ export async function getLeadJourney(id: string): Promise<LeadJourney | null> {
   const session = await getTenantFromSession();
   const lead = await prisma.lead.findFirst({
     where: { id, tenantId: session.tenantId },
-    select: { sessionId: true, createdAt: true, tenant: { select: { siteUrl: true } } },
+    select: { sessionId: true, createdAt: true, referrer: true, tenant: { select: { siteUrl: true, slug: true } } },
   });
   if (!lead?.sessionId) return null;
 
@@ -194,6 +195,8 @@ export async function getLeadJourney(id: string): Promise<LeadJourney | null> {
     visits: summary.visits,
     productsViewed: summary.productsViewed,
     firstSeen: summary.firstSeen?.toISOString() ?? null,
-    source: sourceHost && sourceHost !== "Direct" && sourceHost !== ownHost ? sourceHost : null,
+    source: lead.tenant.slug === "kawada"
+      ? kawadaSource(lead.referrer ?? summary.firstReferrer, lead.tenant.siteUrl)
+      : sourceHost && sourceHost !== "Direct" && sourceHost !== ownHost ? sourceHost : null,
   };
 }

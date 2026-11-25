@@ -41,6 +41,9 @@ model Tenant {
   seoTitleTemplate        String?
   siteUrl                 String?
 
+  websiteMedia   WebsiteMedia[]
+  websiteCopy    WebsiteCopy[]
+  websiteCopyRevisions WebsiteCopyRevision[]
   users          User[]
   categories     Category[]
   products       Product[]
@@ -51,6 +54,7 @@ model Tenant {
   manualFacts    ManualFact[]
   productEvents  ProductEvent[]
   pageViews      PageView[]
+  enquiryStarts  EnquiryStart[]
   auditLogs      AuditLog[]
   leads          Lead[]
   revisions      Revision[]
@@ -551,6 +555,16 @@ model PageView {
   @@index([tenantId, sessionId])
 }
 
+model EnquiryStart {
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sessionId String
+  createdAt DateTime @default(now())
+
+  @@id([tenantId, sessionId])
+  @@index([createdAt])
+}
+
 enum LeadStatus {
   NEW
   CONTACTED
@@ -590,12 +604,17 @@ model Lead {
   sessionId    String?
   path         String?
   referrer     String?
-  country      String?
+  country      String? // IP-derived country
+  buyerCountry String? // ISO country declared by the buyer
+  productInterest String?
+  orderVolume  String?
+  formLanguage String?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
   @@index([tenantId, createdAt])
   @@index([tenantId, status])
+  @@index([tenantId, sessionId, createdAt])
   @@index([productId])
 }
 
@@ -755,4 +774,51 @@ model Document {
 
   @@index([groupId])
   @@index([tenantId])
+}
+
+model WebsiteCopy {
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  page     String
+  language String
+  position Int
+  text     String
+  version  Int @default(0)
+
+  @@id([tenantId, page, language, position])
+}
+
+model WebsiteCopyRevision {
+  id         String   @id @default(cuid())
+  tenantId   String
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  page       String
+  language   String
+  position   Int
+  version    Int
+  action     String
+  before     String?
+  after      String?
+  userId     String?
+  userEmail  String?
+  createdAt  DateTime @default(now())
+
+  @@unique([tenantId, page, language, position, version], map: "WebsiteCopyRevision_field_version_key")
+  @@index([tenantId, page, language, createdAt], map: "WebsiteCopyRevision_page_date_idx")
+}
+
+model WebsiteMedia {
+  id       String @id @default(cuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  page     String
+  language String
+  section  Int
+  kind     String
+  label    String
+  url      String?
+  file     Bytes?
+  mime     String?
+  version  Int @default(0)
+  @@index([tenantId, page, language])
 }

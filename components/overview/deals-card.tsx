@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { enquiryHref, reportParameters, type EnquiryPeriod } from "@/lib/enquiry-query";
 import { ArrowRight } from "lucide-react";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
@@ -28,10 +30,12 @@ function Figure({
 export function DealsCard({
   stats,
   days,
+  period,
   dict,
 }: {
   stats: DealStats;
   days: number;
+  period: EnquiryPeriod;
   dict: Dictionary;
 }) {
   const t = dict.overview;
@@ -55,8 +59,8 @@ export function DealsCard({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4">
-          <Figure label={t.dealsEnquiries} info={dict.help.dealsEnquiries}>{stats.enquiries}</Figure>
-          <Figure label={t.dealsWon} info={dict.help.dealsWon}>{stats.won}</Figure>
+          <Figure label={t.dealsEnquiries} info={dict.help.dealsEnquiries}><Link className="underline underline-offset-4" aria-label={`${stats.enquiries} ${t.dealsEnquiries}`} href={enquiryHref(reportParameters("received", period))}>{stats.enquiries}</Link></Figure>
+          <Figure label={t.dealsWon} info={dict.help.dealsWon}><Link className="underline underline-offset-4" aria-label={`${stats.won} ${t.dealsWon}`} href={enquiryHref(reportParameters("won", period))}>{stats.won}</Link></Figure>
           <Figure label={t.dealsWinRate} info={dict.help.dealsWinRate}>
             {stats.winRate == null ? "—" : `${stats.winRate}%`}
           </Figure>

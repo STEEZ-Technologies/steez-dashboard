@@ -22,6 +22,14 @@ export function corsHeadersFor(origin: string | null): Record<string, string> {
   };
 }
 
+export function corsHeadersForPublicTenant(origin: string | null, tenantSlug: string) {
+  const headers = corsHeadersFor(origin);
+  if (tenantSlug === "kawada" && origin === "https://kawada.steez.digital") {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
+}
+
 // Backward-compatible default (used where no request origin is available).
 export const PUBLIC_CORS_HEADERS = corsHeadersFor(null);
 

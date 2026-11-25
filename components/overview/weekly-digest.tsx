@@ -100,7 +100,7 @@ export function WeeklyDigest({ digest }: { digest: Digest }) {
                   {dict.digest.topReferrers}
                 </p>
                 <BarList
-                  items={referrers.map((r) => ({ label: r.source, count: r.count }))}
+                  items={referrers.map((r) => ({ label: r.source ?? dict.enquiryAnalytics.unknownSource, count: r.count }))}
                 />
               </div>
             </div>

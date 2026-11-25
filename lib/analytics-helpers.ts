@@ -57,15 +57,16 @@ export function bucketByDay(rows: { createdAt: Date }[]): {
 
 // Client sites put every language but English under its own first path
 // segment ("/zh/products/…"); a path with none of these is English.
-const LANGUAGE_PREFIXES = new Set(["zh", "fr", "it", "es", "ja", "ar", "ru", "de", "pt", "ko"]);
+const LANGUAGE_PREFIXES = new Set(["en", "zh", "fr", "it", "es", "ja", "ar", "ru", "de", "pt", "ko"]);
 
 /** The page's language and the path without its language prefix, with any
  *  query string and trailing slash dropped so "/about/" and "/about" match. */
 export function splitLanguage(path: string): { lang: string; path: string } {
   const clean = path.split(/[?#]/)[0];
   const segments = clean.split("/").filter(Boolean);
-  const lang = segments.length > 0 && LANGUAGE_PREFIXES.has(segments[0]) ? segments[0] : "en";
-  const rest = lang === "en" ? segments : segments.slice(1);
+  const prefixed = LANGUAGE_PREFIXES.has(segments[0]);
+  const lang = prefixed ? segments[0] : "en";
+  const rest = prefixed ? segments.slice(1) : segments;
   return { lang, path: "/" + rest.join("/") };
 }
 

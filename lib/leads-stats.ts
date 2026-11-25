@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
-import { daysAgo, hostOf } from "@/lib/analytics-helpers";
+import { enquiryWhere, reportPeriod, type EnquiryPeriod } from "@/lib/enquiry-query";
+import { enquirySource } from "@/lib/enquiry-attribution-query";
 
 export type DealStats = {
   enquiries: number;
@@ -13,32 +14,26 @@ export type DealStats = {
 
 /** Enquiries received in the window, and deals closed in it. Archived
  *  enquiries (spam) count toward neither. */
-export async function getDealStats(tenantId: string, days = 30): Promise<DealStats> {
-  const since = daysAgo(days);
-  const [enquiries, closed, valueRows] = await Promise.all([
+export async function getDealStats(tenantId: string, period = reportPeriod(30)): Promise<DealStats> {
+  const wonScope = enquiryWhere(tenantId, { report: "won", period });
+  const [enquiries, lost, won, valueRows] = await Promise.all([
     prisma.lead.count({
-      where: { tenantId, createdAt: { gte: since }, status: { not: "ARCHIVED" } },
+      where: enquiryWhere(tenantId, { report: "received", period }),
     }),
-    prisma.lead.groupBy({
-      by: ["status"],
-      where: { tenantId, status: { in: ["WON", "LOST"] }, closedAt: { gte: since } },
-      _count: { _all: true },
+    prisma.lead.count({
+      where: { tenantId, status: "LOST", closedAt: { gte: period.start, lt: period.end } },
     }),
+    prisma.lead.count({ where: wonScope }),
     prisma.lead.groupBy({
       by: ["dealCurrency"],
       where: {
-        tenantId,
-        status: "WON",
-        closedAt: { gte: since },
+        ...wonScope,
         dealCurrency: { not: null },
         dealValue: { not: null },
       },
       _sum: { dealValue: true },
     }),
   ]);
-
-  const won = closed.find((c) => c.status === "WON")?._count._all ?? 0;
-  const lost = closed.find((c) => c.status === "LOST")?._count._all ?? 0;
 
   return {
     enquiries,
@@ -63,12 +58,11 @@ export type MarketRow = {
  *  Archived (spam) enquiries are left out. */
 export async function getEnquiryMarkets(
   tenantId: string,
-  days = 30,
+  period: EnquiryPeriod = reportPeriod(30),
   limit = 6,
 ): Promise<{ countries: MarketRow[]; sources: MarketRow[] }> {
-  const since = daysAgo(days);
   const leads = await prisma.lead.findMany({
-    where: { tenantId, createdAt: { gte: since }, status: { not: "ARCHIVED" } },
+    where: enquiryWhere(tenantId, { report: "market", period }),
     select: { country: true, referrer: true, status: true },
   });
 
@@ -89,7 +83,7 @@ export async function getEnquiryMarkets(
   };
 
   const byCountry = tally((l) => l.country);
-  const bySource = tally((l) => hostOf(l.referrer));
+  const bySource = tally((l) => enquirySource(l.referrer, false));
 
   // Visitors per enquiring country, for the enquiry rate.
   const codes = byCountry.map((c) => c.key);
@@ -100,7 +94,8 @@ export async function getEnquiryMarkets(
           SELECT "country", COUNT(DISTINCT "sessionId") AS n
           FROM "PageView"
           WHERE "tenantId" = ${tenantId}
-            AND "createdAt" >= ${since}
+            AND "createdAt" >= ${period.start}
+            AND "createdAt" < ${period.end}
             AND "country" = ANY(${codes})
           GROUP BY "country"`;
   const visitorsOf = new Map(visitors.map((v) => [v.country, Number(v.n)]));

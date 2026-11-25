@@ -1,14 +1,12 @@
-"use client";
-
 import { Eye, MousePointerClick, FileText } from "lucide-react";
 import type { ActivityItem } from "@/lib/analytics";
 import { humanizePath } from "@/lib/analytics-helpers";
-import { useT } from "@/lib/i18n/provider";
+import type { Dictionary } from "@/lib/i18n";
 
-function timeAgo(date: Date): string {
+function timeAgo(date: Date, now: number): string {
   // Clamp at 0: a row timestamped slightly ahead of the client clock (server
   // vs browser skew) would otherwise render as "-28623s ago".
-  const s = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+  const s = Math.max(0, Math.floor((now - date.getTime()) / 1000));
   if (s < 60) return `${s}s ago`;
   const m = Math.floor(s / 60);
   if (m < 60) return `${m}m ago`;
@@ -23,8 +21,7 @@ const ICON = {
   product_click: MousePointerClick,
 } as const;
 
-export function ActivityFeed({ items }: { items: ActivityItem[] }) {
-  const { dict } = useT();
+export function ActivityFeed({ items, dict, now }: { items: ActivityItem[]; dict: Dictionary; now: number }) {
   const LABEL = {
     page_view: dict.overview.pageViewed,
     product_view: dict.overview.productViewed,
@@ -63,7 +60,7 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
               )}
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">
-              {timeAgo(item.at)}
+              {timeAgo(item.at, now)}
             </span>
           </li>
         );

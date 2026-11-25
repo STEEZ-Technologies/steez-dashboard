@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import geoip from "geoip-lite";
 import { prisma } from "@/lib/db";
-import { corsHeadersFor, isBot } from "@/lib/cors";
+import { corsHeadersForPublicTenant, isBot } from "@/lib/cors";
+import { kawadaPath, kawadaSource, kawadaVisitId } from "@/lib/kawada-attribution";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 function clientIp(request: Request): string | null {
@@ -10,19 +11,23 @@ function clientIp(request: Request): string | null {
   return request.headers.get("x-real-ip");
 }
 
-export async function OPTIONS(request: Request) {
+type RouteContext = { params: Promise<{ tenantSlug: string }> };
+
+export async function OPTIONS(request: Request, { params }: RouteContext) {
+  const { tenantSlug } = await params;
   return new Response(null, {
     status: 204,
-    headers: corsHeadersFor(request.headers.get("origin")),
+    headers: corsHeadersForPublicTenant(request.headers.get("origin"), tenantSlug),
   });
 }
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ tenantSlug: string }> },
+  { params }: RouteContext,
 ) {
-  const CORS = corsHeadersFor(request.headers.get("origin"));
   const { tenantSlug } = await params;
+  const origin = request.headers.get("origin");
+  const CORS = corsHeadersForPublicTenant(origin, tenantSlug);
 
   const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
   if (!tenant) {
@@ -58,14 +63,29 @@ export async function POST(
     return NextResponse.json({ error: "sessionId is required" }, { status: 400, headers: CORS });
   }
 
+  const isKawada = tenantSlug === "kawada";
+  if (isKawada && !kawadaVisitId(sessionId)) {
+    return NextResponse.json({ error: "Invalid sessionId" }, { status: 400, headers: CORS });
+  }
+  const eventPath = isKawada ? kawadaPath(path) : typeof path === "string" ? path : undefined;
+  const source = isKawada ? kawadaSource(referrer, origin) : typeof referrer === "string" ? referrer : undefined;
+
+  if (kind === "enquiry_start" && isKawada) {
+    await prisma.enquiryStart.createMany({
+      data: [{ tenantId: tenant.id, sessionId }],
+      skipDuplicates: true,
+    });
+    return NextResponse.json({ ok: true }, { headers: CORS });
+  }
+
   if (kind === "page_view") {
     const country = ip !== "unknown" ? geoip.lookup(ip)?.country ?? null : null;
     await prisma.pageView.create({
       data: {
         tenantId: tenant.id,
         sessionId,
-        path: typeof path === "string" ? path : "",
-        referrer: typeof referrer === "string" ? referrer : undefined,
+        path: eventPath ?? "",
+        referrer: source,
         userAgent: ua ?? undefined,
         country,
       },
@@ -98,15 +118,15 @@ export async function POST(
         finishKey: typeof finishKey === "string" ? finishKey : undefined,
         eventType,
         sessionId,
-        path: typeof path === "string" ? path : undefined,
-        referrer: typeof referrer === "string" ? referrer : undefined,
+        path: eventPath,
+        referrer: source,
       },
     });
     return NextResponse.json({ ok: true }, { headers: CORS });
   }
 
   return NextResponse.json(
-    { error: "kind must be page_view or product_event" },
+    { error: isKawada ? "Invalid Kawada event kind" : "kind must be page_view or product_event" },
     { status: 400, headers: CORS },
   );
 }

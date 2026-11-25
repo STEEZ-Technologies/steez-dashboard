@@ -7,9 +7,9 @@ import { ACTING_TENANT_COOKIE, getTenantFromSession } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 
-export async function signOutAction() {
+export async function signOutAction(workspace?: string) {
   (await cookies()).delete(ACTING_TENANT_COOKIE);
-  await signOut({ redirectTo: "/login" });
+  await signOut({ redirectTo: workspace === "kawada" ? "/login?workspace=kawada" : "/login" });
 }
 
 /**

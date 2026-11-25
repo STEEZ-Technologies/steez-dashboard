@@ -49,6 +49,7 @@ const CSP = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
+  "media-src 'self' https:",
   "font-src 'self' data:",
   // ws: is the Turbopack HMR socket — dev only.
   // *.sentry.io is Sentry's error-reporting ingest endpoint.

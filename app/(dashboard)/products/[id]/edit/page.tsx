@@ -99,7 +99,7 @@ export default async function EditProductPage({
     <div>
       <PageHeader
         eyebrow="Catalog"
-        title="Edit product"
+        title={kawada ? product.name : "Edit product"}
         description={product.model}
         action={
           <div className="flex items-center gap-2">
@@ -122,8 +122,8 @@ export default async function EditProductPage({
       />
 
       {/* KomiBright's site is published in six languages, so its products are
-          edited in six; every other tenant keeps English and Chinese. */}
-      <LanguageScope langs={lean ? ALL_EDIT_LANGS : undefined}>
+          edited in six. Kawada also edits Spanish. */}
+      <LanguageScope langs={lean ? ALL_EDIT_LANGS : kawada ? ["en", "zh", "es"] : undefined}>
         <LanguageTabs />
         <ProductTabs initialTab={tab} kawada={kawada}>
           <CompletenessBar completeness={completeness} />

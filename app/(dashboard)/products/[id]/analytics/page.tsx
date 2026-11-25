@@ -26,14 +26,14 @@ export default async function ProductAnalyticsPage({
   const { tenantId } = await getTenantFromSession();
   const product = await prisma.product.findFirst({
     where: { id, tenantId },
-    select: { id: true, name: true, model: true },
+    select: { id: true, name: true, model: true, tenant: { select: { slug: true } } },
   });
   if (!product) notFound();
 
   const sp = await searchParams;
   const rangeStr = sp.range && ALLOWED.has(sp.range) ? sp.range : "30";
   const days = Number(rangeStr);
-  const data = await getProductAnalytics(tenantId, product.id, days);
+  const data = await getProductAnalytics(tenantId, product.id, days, product.tenant.slug === "kawada");
   const dict = await getDictionary();
 
   return (
@@ -80,7 +80,7 @@ export default async function ProductAnalyticsPage({
           </CardHeader>
           <CardContent>
             <BarList
-              items={data.referrers.map((r) => ({ label: r.source, count: r.count }))}
+              items={data.referrers.map((r) => ({ label: r.source ?? dict.enquiryAnalytics.unknownSource, count: r.count }))}
               emptyLabel={dict.analytics.noReferrers}
             />
           </CardContent>

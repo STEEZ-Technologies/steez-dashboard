@@ -11,12 +11,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { kawadaPages } from "@/lib/kawada-pages";
 import { useT } from "@/lib/i18n/provider";
 
 export function Breadcrumbs() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
-  const { dict } = useT();
+  const { dict, locale } = useT();
 
   const LABELS: Record<string, string> = {
     "": dict.nav.overview,
@@ -43,6 +44,11 @@ export function Breadcrumbs() {
     edit: dict.actions.edit,
   };
   function label(seg: string) {
+    if (segments[0] === "website") {
+      if (seg === "website") return locale === "zh" ? "网站" : "Website";
+      const page = kawadaPages.find(([slug]) => slug === seg);
+      if (page) return page[locale === "zh" ? 2 : 1];
+    }
     return LABELS[seg] ?? seg;
   }
 

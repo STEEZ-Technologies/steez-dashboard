@@ -9,9 +9,9 @@ import { parseSpecsText } from "@/lib/specs";
 import { logAudit } from "@/lib/audit";
 import { captureRevision, captureRevisions } from "@/lib/revisions";
 import { Prisma, type ProductKind, type ProductUseCase } from "@/app/generated/prisma/client";
-import { isEmptyI18n, productI18nFromForm } from "@/lib/product-i18n";
+import { isEmptyI18n, productI18nFromForm, readProductI18n } from "@/lib/product-i18n";
 
-function extractProductExtras(formData: FormData) {
+function extractProductExtras(formData: FormData, currentI18n?: Prisma.JsonValue) {
   const categoryIdRaw = formData.get("categoryId");
   const categoryId =
     typeof categoryIdRaw === "string" && categoryIdRaw !== ""
@@ -25,10 +25,15 @@ function extractProductExtras(formData: FormData) {
   const useCases = formData
     .getAll("useCases")
     .filter((v): v is string => typeof v === "string") as ProductUseCase[];
-  // Only a form that rendered the French/Italian/Spanish/Japanese fields
-  // says so; any other save leaves the stored translations alone.
+  // Only a form with extra language fields posts this marker.
   const i18nPosted = formData.get("i18nFields") === "on";
   const i18nValue = i18nPosted ? productI18nFromForm(formData) : null;
+  if (i18nValue && currentI18n !== undefined) {
+    // Kawada edits Spanish here. Preserve translations outside that scope.
+    const otherTranslations = readProductI18n(currentI18n);
+    delete otherTranslations.es;
+    Object.assign(i18nValue, otherTranslations);
+  }
   const i18n = i18nValue
     ? { i18n: isEmptyI18n(i18nValue) ? Prisma.DbNull : (i18nValue as Prisma.InputJsonObject) }
     : {};
@@ -130,8 +135,17 @@ export async function updateProduct(
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { id: tenantId }, select: { slug: true } });
   if (tenant.slug === "kawada") parsed.data.model = parsed.data.name;
 
+  const current = await prisma.product.findFirst({
+    where: { id, tenantId },
+    select: { slug: true, i18n: true },
+  });
+  if (!current) return "Product not found";
+  if (tenant.slug === "kawada" && parsed.data.slug !== current.slug) {
+    return "This product link is fixed so existing links keep working.";
+  }
+
   const { categoryId, featured, published, specs, kind, useCases, i18n } =
-    extractProductExtras(formData);
+    extractProductExtras(formData, tenant.slug === "kawada" ? current.i18n : undefined);
 
   if (categoryId) {
     const category = await prisma.category.findFirst({

@@ -25,6 +25,12 @@ const TABS: { id: ProductTab; label: string; short: string }[] = [
   { id: "finder", label: "Finder quiz", short: "Finder" },
 ];
 
+const KAWADA_TABS = {
+  basics: "Overview",
+  media: "Image gallery",
+  specs: "Specifications",
+} as const;
+
 const isTab = (v: unknown): v is ProductTab => TABS.some((t) => t.id === v);
 
 const TabContext = createContext<ProductTab | null>(null);
@@ -67,7 +73,7 @@ export function ProductTabs({
           {TABS.filter((t) => !kawada || t.id !== "finder").map((t) => (
             <TabsTrigger key={t.id} value={t.id} className="px-3">
               <span className="sm:hidden">{kawada && t.id === "media" ? "Photos" : t.short}</span>
-              <span className="hidden sm:inline">{kawada && t.id === "media" ? "Photos" : kawada && t.id === "specs" ? "Specs" : t.label}</span>
+              <span className="hidden sm:inline">{kawada && t.id !== "finder" ? KAWADA_TABS[t.id] : t.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>

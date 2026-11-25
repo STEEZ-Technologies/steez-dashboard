@@ -16,7 +16,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NAV_GROUPS, NAV_ITEMS, isItemActive } from "./nav-items";
+import { NAV_GROUPS, workspaceNav, isItemActive } from "./nav-items";
 import { UserMenu } from "./user-menu";
 import { signOutAction } from "@/app/(dashboard)/actions";
 import { useT } from "@/lib/i18n/provider";
@@ -69,7 +69,7 @@ export function AppSidebar({
   isPlatformWorkspace?: boolean;
 }) {
   const pathname = usePathname();
-  const { dict } = useT();
+  const { dict, locale } = useT();
   // Going to another page closes the sidebar: the phone drawer shuts, and on
   // desktop it collapses to its icon rail, so the page gets the room. Reopen
   // it with the toggle in the header. Keyed off the path changing rather than
@@ -111,7 +111,7 @@ export function AppSidebar({
 
       <SidebarContent>
         {NAV_GROUPS.map((group) => {
-          const items = NAV_ITEMS.filter(
+          const items = workspaceNav(tenantSlug, locale).filter(
             (i) =>
               i.group === group &&
               i.inSidebar !== false &&
@@ -160,7 +160,7 @@ export function AppSidebar({
           avatarUrls={avatarUrls}
           useLogoAvatar={tenantSlug === "kawada"}
           role={role}
-          onSignOut={() => signOutAction()}
+          onSignOut={() => signOutAction(tenantSlug)}
         />
       </SidebarFooter>
       <SidebarRail />

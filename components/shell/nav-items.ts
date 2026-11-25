@@ -1,5 +1,9 @@
+import { kawadaPages } from "@/lib/kawada-pages";
 import {
   LayoutDashboard,
+  Factory,
+  FlaskConical,
+  LibraryBig,
   Package,
   FolderTree,
   Newspaper,
@@ -60,4 +64,32 @@ export function isActive(pathname: string, href: string): boolean {
 
 export function isItemActive(pathname: string, item: NavItem): boolean {
   return [item.href, ...(item.activeFor ?? [])].some((h) => isActive(pathname, h));
+}
+
+const kawadaPageIcons = {
+  home: House,
+  "about-us": Building2,
+  products: Package,
+  "oem-odm": Factory,
+  innovation: FlaskConical,
+  news: Newspaper,
+  "contact-us": Contact,
+  catalogue: LibraryBig,
+  terms: BookOpen,
+  privacy: BookOpen,
+  cookies: BookOpen,
+} satisfies Record<(typeof kawadaPages)[number][0], LucideIcon>;
+
+export function workspaceNav(tenantSlug: string, locale: string): NavItem[] {
+  if (tenantSlug !== "kawada") return NAV_ITEMS;
+  const pages: NavItem[] = kawadaPages.flatMap(([page, en, zh]) => {
+    return [{
+      href: page === "products" ? "/products" : `/website/${page}`,
+      activeFor: page === "products" ? ["/website/products", "/categories"] : undefined,
+      label: locale === "zh" ? zh : en,
+      icon: kawadaPageIcons[page],
+      group: "Catalog",
+    }];
+  });
+  return NAV_ITEMS.flatMap(item => item.group !== "Catalog" ? [item] : item.href === "/products" ? pages : []);
 }

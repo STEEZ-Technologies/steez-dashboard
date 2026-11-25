@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { enquiryHref, reportParameters, type EnquiryPeriod } from "@/lib/enquiry-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { MarketRow } from "@/lib/leads-stats";
 import type { Dictionary, Locale } from "@/lib/i18n";
@@ -6,11 +8,15 @@ function MarketList({
   title,
   rows,
   nameOf,
+  period,
+  field,
   showRate,
   dict,
 }: {
   title: string;
   rows: MarketRow[];
+  period: EnquiryPeriod;
+  field: "country" | "source";
   nameOf: (key: string) => string;
   showRate: boolean;
   dict: Dictionary;
@@ -29,11 +35,13 @@ function MarketList({
               <div className="flex items-center justify-between gap-3 px-2.5 py-1.5">
                 <span className="z-10 min-w-0 truncate text-sm font-medium">{nameOf(r.key)}</span>
                 <span className="z-10 shrink-0 text-xs tabular-nums text-muted-foreground">
-                  <span className="text-sm text-foreground">{r.enquiries}</span>
+                  <Link prefetch={false} className="text-sm text-foreground underline" aria-label={`${r.enquiries} ${t.dealsEnquiries} · ${nameOf(r.key)}`}
+                    href={enquiryHref({ ...reportParameters("market", period), [field]: r.key })}>{r.enquiries}</Link>
                   {r.won > 0 && (
-                    <span className="ml-2 text-[var(--chart-2)]">
+                    <Link prefetch={false} className="ml-2 text-[var(--chart-2)] underline" aria-label={`${r.won} ${t.marketsWon} · ${nameOf(r.key)}`}
+                      href={enquiryHref({ ...reportParameters("market", period), [field]: r.key, status: "WON" })}>
                       {r.won} {t.marketsWon}
-                    </span>
+                    </Link>
                   )}
                   {showRate && r.rate != null && (
                     <span className="ml-2" title={t.marketsRateHelp}>
@@ -59,11 +67,13 @@ function MarketList({
 export function EnquiryMarkets({
   countries,
   sources,
+  period,
   dict,
   locale,
 }: {
   countries: MarketRow[];
   sources: MarketRow[];
+  period: EnquiryPeriod;
   dict: Dictionary;
   locale: Locale;
 }) {
@@ -94,6 +104,8 @@ export function EnquiryMarkets({
             title={t.marketsByCountry}
             rows={countries}
             nameOf={countryName}
+            period={period}
+            field="country"
             showRate
             dict={dict}
           />
@@ -101,6 +113,8 @@ export function EnquiryMarkets({
             title={t.marketsBySource}
             rows={sources}
             nameOf={(k) => k}
+            period={period}
+            field="source"
             showRate={false}
             dict={dict}
           />

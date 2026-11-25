@@ -26,15 +26,17 @@ export async function runRetention(now = Date.now()) {
   const analyticsBefore = new Date(now - ANALYTICS_RETENTION_DAYS * DAY_MS);
   const rateBefore = new Date(now - RATE_LIMIT_MAX_AGE_MS);
 
-  const [pageViews, productEvents, rateLimitHits] = await Promise.all([
+  const [pageViews, productEvents, enquiryStarts, rateLimitHits] = await Promise.all([
     prisma.pageView.deleteMany({ where: { createdAt: { lt: analyticsBefore } } }),
     prisma.productEvent.deleteMany({ where: { createdAt: { lt: analyticsBefore } } }),
+    prisma.enquiryStart.deleteMany({ where: { createdAt: { lt: analyticsBefore } } }),
     prisma.rateLimitHit.deleteMany({ where: { createdAt: { lt: rateBefore } } }),
   ]);
 
   return {
     pageViews: pageViews.count,
     productEvents: productEvents.count,
+    enquiryStarts: enquiryStarts.count,
     rateLimitHits: rateLimitHits.count,
   };
 }

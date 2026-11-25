@@ -28,7 +28,7 @@ export function RankBarChart({
         className="flex items-center justify-center text-sm text-muted-foreground"
         style={{ height }}
       >
-        {dict.digest.noData}
+        {dict.analytics.noActivityInPeriod}
       </div>
     );
   }

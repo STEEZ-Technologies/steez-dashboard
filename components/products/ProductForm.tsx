@@ -100,7 +100,7 @@ export function ProductForm({
   const [powered, setPowered] = useState(defaultValues?.fit?.powered ?? false);
   // True on a page that edits the four extra languages (KomiBright's). The
   // form then posts them, and says so, so the save action writes them.
-  const editsExtra = useEditsLanguage("fr");
+  const editsExtra = useEditsLanguage("es");
   const extra = (render: (lang: ExtraLang) => React.ReactNode) =>
     editsExtra
       ? Object.fromEntries(EXTRA_LANGS.map((l) => [l, render(l)]))
@@ -150,11 +150,11 @@ export function ProductForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="grid gap-2">
                   <Label htmlFor="slug">Web address</Label>
-                  <Input id="slug" name="slug" defaultValue={defaultValues?.slug} required />
+                  <Input id="slug" name="slug" defaultValue={defaultValues?.slug} required readOnly={kawada && Boolean(defaultValues?.slug)} />
                   <p className="text-xs text-muted-foreground">
-                    The end of the product&apos;s link, e.g. komibright.com/products/
-                    <span className="font-medium text-foreground">your-web-address</span>. Lowercase
-                    words separated by dashes, no spaces.
+                    {kawada && defaultValues?.slug
+                      ? "This link stays fixed so customers can still find the product from saved links."
+                      : "Use lowercase words separated by dashes, with no spaces."}
                   </p>
                 </div>
                 {kawada ? (
@@ -316,8 +316,7 @@ export function ProductForm({
                   </div>
                 )}
                 <label className="flex items-center gap-2 text-sm">
-                  <Switch checked={published} onCheckedChange={setPublished} /> Published (visible on
-                  the website)
+                  <Switch checked={published} onCheckedChange={setPublished} /> {kawada ? "Include in the dashboard catalogue" : "Published (visible on the website)"}
                 </label>
               </div>
 
