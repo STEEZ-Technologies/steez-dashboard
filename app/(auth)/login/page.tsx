@@ -69,7 +69,16 @@ export default function LoginPage() {
     <div data-tenant="kawada" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
       <style>{kawadaTheme}</style>
       <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
-        <GlimmerVale style={{ minWidth: 0, minHeight: 0 }} />
+        <GlimmerVale
+          speed={25}
+          scale={173}
+          density={100}
+          sparkle={100}
+          background="#000000"
+          skyTop="#3A3F8E"
+          skyHorizon="#62649A"
+          style={{ minWidth: 0, minHeight: 0 }}
+        />
       </div>
       <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20, display: "flex", gap: 8 }}>
         <LanguageSwitcher />
