@@ -35,6 +35,8 @@ html:has([data-tenant="kawada"]) {
   --sidebar-ring: var(--ring);
   --glass-bg: rgb(250 245 255 / 72%);
   --glass-bg-strong: rgb(250 245 255 / 96%);
+  --glass-edge: rgb(255 255 255 / 75%);
+  --glass-highlight: rgb(255 255 255 / 90%);
   --glass-shadow: rgb(74 38 112 / 16%);
   --card-shadow: 0 1px 2px rgb(74 38 112 / 5%), 0 6px 20px -8px var(--glass-shadow);
   --ambient-a: rgb(137 82 190 / 16%);
@@ -70,6 +72,8 @@ html.dark:has([data-tenant="kawada"]) {
   --sidebar: #271c31;
   --glass-bg: rgb(45 30 58 / 72%);
   --glass-bg-strong: rgb(45 30 58 / 96%);
+  --glass-edge: rgb(255 255 255 / 12%);
+  --glass-highlight: rgb(255 255 255 / 10%);
   --glass-shadow: rgb(0 0 0 / 40%);
   --card-shadow: 0 0 0 1px rgb(208 165 245 / 10%);
   --ambient-a: rgb(137 82 190 / 23%);

@@ -19,6 +19,7 @@ interface SignInPageProps {
   signingInLabel?: string;
   pending?: boolean;
   errorMessage?: string;
+  panelClassName?: string;
   onSignIn?: (event: React.FormEvent<HTMLFormElement>) => void;
   onResetPassword?: () => void;
 }
@@ -26,7 +27,7 @@ interface SignInPageProps {
 // --- SUB-COMPONENTS ---
 
 const GlassInputWrapper = ({ children }: { children: React.ReactNode }) => (
-  <div className="rounded-2xl border border-border bg-foreground/5 backdrop-blur-sm transition-colors focus-within:border-violet-400/70 focus-within:bg-violet-500/10">
+  <div className="rounded-xl border border-border/80 bg-foreground/5 backdrop-blur-sm transition-colors focus-within:border-primary/60 focus-within:bg-primary/5">
     {children}
   </div>
 );
@@ -47,26 +48,27 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   signingInLabel = "Signing in…",
   pending = false,
   errorMessage,
+  panelClassName,
   onSignIn,
   onResetPassword,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-8">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen w-full items-center justify-center p-5 sm:p-6">
+      <div className={`w-full max-w-lg ${panelClassName ?? ""}`}>
         <div className="flex flex-col gap-6">
           {logo && <div className="animate-element animate-delay-100">{logo}</div>}
-          <h1 className="animate-element animate-delay-100 text-4xl font-semibold leading-tight md:text-5xl">
+          <h1 className="animate-element animate-delay-100 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             {title}
           </h1>
-          <p className="animate-element animate-delay-200 text-muted-foreground">
+          <p className="animate-element animate-delay-200 text-sm leading-relaxed text-muted-foreground">
             {description}
           </p>
 
           <form className="space-y-5" onSubmit={onSignIn}>
             <div className="animate-element animate-delay-300">
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="mb-2 block text-xs font-semibold tracking-wide text-foreground/75">
                 {emailLabel}
               </label>
               <GlassInputWrapper>
@@ -76,13 +78,13 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                   required
                   autoComplete="email"
                   placeholder={emailPlaceholder}
-                  className="w-full rounded-2xl bg-transparent p-4 text-sm focus:outline-none"
+                  className="w-full rounded-xl bg-transparent px-4 py-3.5 text-sm focus:outline-none"
                 />
               </GlassInputWrapper>
             </div>
 
             <div className="animate-element animate-delay-400">
-              <label className="text-sm font-medium text-muted-foreground">
+              <label className="mb-2 block text-xs font-semibold tracking-wide text-foreground/75">
                 {passwordLabel}
               </label>
               <GlassInputWrapper>
@@ -93,7 +95,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                     required
                     autoComplete="current-password"
                     placeholder={passwordPlaceholder}
-                    className="w-full rounded-2xl bg-transparent p-4 pr-12 text-sm focus:outline-none"
+                    className="w-full rounded-xl bg-transparent px-4 py-3.5 pr-11 text-sm focus:outline-none"
                   />
                   <button
                     type="button"
@@ -121,7 +123,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
                   e.preventDefault();
                   onResetPassword?.();
                 }}
-                className="text-violet-400 transition-colors hover:underline"
+                className="text-primary transition-colors hover:underline"
               >
                 {resetPasswordLabel}
               </a>
@@ -136,7 +138,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
             <button
               type="submit"
               disabled={pending}
-              className="animate-element animate-delay-600 w-full rounded-2xl bg-primary py-4 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              className="animate-element animate-delay-600 w-full rounded-xl bg-primary py-3.5 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
               {pending ? signingInLabel : signInLabel}
             </button>

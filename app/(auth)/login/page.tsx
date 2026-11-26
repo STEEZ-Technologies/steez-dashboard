@@ -1,20 +1,17 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import Image from "next/image";
 import { authenticate } from "../actions";
 import { SignInPage } from "@/components/ui/sign-in";
 import { TotpStep } from "@/components/auth/totp-step";
-import { ShaderBackground } from "@/components/shared/shader-background";
+import GlimmerVale from "@/components/originkit/ui/glimmer-vale";
 import { STEEZWordmark } from "@/components/shared/steez-wordmark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { LanguageSwitcher } from "@/components/shell/language-switcher";
 import { useT } from "@/lib/i18n/provider";
-
-// The store never changes: the client snapshot is always true and the server
-// snapshot always false, which is exactly "have we hydrated yet".
-const subscribeToNothing = () => () => {};
+import { kawadaTheme } from "../../(dashboard)/kawada-theme";
 
 export default function LoginPage() {
   const { dict } = useT();
@@ -30,18 +27,6 @@ export default function LoginPage() {
     password: string;
     rememberMe: string;
   } | null>(null);
-
-  // Same pattern as the STEEZ marketing hero: pick shader colors from the
-  // resolved theme, only after mount (avoids a light/dark hydration flash).
-  const { resolvedTheme } = useTheme();
-  const mounted = useSyncExternalStore(
-    subscribeToNothing,
-    () => true,
-    () => false,
-  );
-  const isDark = mounted && resolvedTheme === "dark";
-  const color1 = "#019d86";
-  const color2 = isDark ? "#0A0A0A" : "#F0F9FF";
 
   function handleSignIn(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -81,8 +66,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
-      <ShaderBackground color1={color1} color2={color2} speed={1} />
+    <div data-tenant="kawada" style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
+      <style>{kawadaTheme}</style>
+      <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}>
+        <GlimmerVale style={{ minWidth: 0, minHeight: 0 }} />
+      </div>
       <div style={{ position: "absolute", top: 16, right: 16, zIndex: 20, display: "flex", gap: 8 }}>
         <LanguageSwitcher />
         <ThemeToggle />
@@ -101,7 +89,17 @@ export default function LoginPage() {
         ) : (
           <SignInPage
             logo={
-              <STEEZWordmark size={26} color="var(--foreground)" />
+              <div className="flex items-center gap-2.5">
+                <STEEZWordmark size={24} color="var(--foreground)" />
+                <span className="text-sm font-medium text-muted-foreground">×</span>
+                <Image
+                  src="/brand/kawada-logo-h144.webp"
+                  alt="Kawada"
+                  width={66}
+                  height={48}
+                  className="h-9 w-auto object-contain"
+                />
+              </div>
             }
             title={<span className="font-light text-foreground tracking-tighter">{dict.auth.welcomeBack}</span>}
             description={dict.auth.signInSub}
@@ -115,6 +113,7 @@ export default function LoginPage() {
             signingInLabel={dict.auth.signingIn}
             pending={pending}
             errorMessage={error}
+            panelClassName="rounded-3xl border border-(--glass-edge) bg-[rgb(250_245_255/55%)] p-6 shadow-[0_10px_35px_-18px_var(--glass-shadow),inset_0_1px_0_var(--glass-highlight)] backdrop-blur-md dark:bg-[rgb(45_30_58/55%)] sm:p-9"
             onSignIn={handleSignIn}
             onResetPassword={() => router.push("/forgot-password")}
           />
